@@ -17,3 +17,17 @@ python bot.py
 
 ## دستورها
 `/setbalance 5000000` · `/balance` · `/list` · `/undo`
+
+## اجرا روی گوشی اندروید (Termux)
+1. **Termux** را از F-Droid نصب کن (نسخه Google Play قدیمی است).
+2. داخل Termux:
+```
+pkg install -y git
+git clone <آدرس-ریپو> && cd <ریپو>/bot
+git checkout claude/mobile-app-installation-4qjbhe
+bash termux-setup.sh
+nano .env        # توکن و کلیدها را پر کن
+bash run.sh
+```
+3. برای اینکه اندروید بات را نبندد: Termux را از بهینه‌سازی باتری مستثنی کن (Settings ← Battery ← Unrestricted) و نوتیفیکیشن Termux را نبند. `run.sh` خودش wake-lock می‌گیرد.
+4. گوشی باید اینترنت داشته باشد. اگر OpenAI/Anthropic بدون VPN باز نمی‌شوند، VPN گوشی باید روشن بماند.
