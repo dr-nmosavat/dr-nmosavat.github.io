@@ -153,3 +153,19 @@ footer { padding-block: 26px 40px; color: var(--muted); font-size: 14px; border-
 .side dt { color: var(--muted); font-size: 13.5px; margin-top: 10px; }
 .side dd { margin: 0; font-weight: 700; }
 @media (max-width: 800px) { .book-grid { grid-template-columns: 1fr; } .form .two { grid-template-columns: 1fr; } }
+
+/* hero accordion */
+.acc { display: grid; gap: 10px; position: relative; }
+.acc details { background: rgba(255,255,255,.1); border-radius: 14px; overflow: hidden; transition: background .15s; }
+.acc details[open] { background: rgba(255,255,255,.18); }
+.acc summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 12px; padding: 12px 14px; font-weight: 500; }
+.acc summary::-webkit-details-marker { display: none; }
+.acc summary:hover { background: rgba(255,255,255,.08); }
+.acc summary > svg:first-child { width: 24px; height: 24px; flex: none; }
+.acc summary span { flex: 1; min-width: 0; }
+.acc .chev { width: 20px; height: 20px; flex: none; transition: transform .2s; opacity: .8; }
+.acc details[open] .chev { transform: rotate(180deg); }
+.acc p { margin: 0; padding: 0 14px 14px 14px; font-size: 15px; line-height: 1.8; opacity: .92; }
+.acc p a { color: #fff; font-weight: 700; text-underline-offset: 3px; }
+.acc summary:focus-visible { outline-color: #fff; }
+@media (prefers-reduced-motion: reduce) { .acc .chev, .acc details { transition: none; } }
