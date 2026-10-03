@@ -76,3 +76,9 @@ if (bk) {
   bk.addEventListener("change", build);
   build();
 }
+
+// دکمهٔ شناور مشاوره
+var consultLink = INFO.whatsapp ? "https://wa.me/" + INFO.whatsapp + "?text=" + encodeURIComponent("سلام، نیاز به مشاوره دارم.") : "";
+document.querySelectorAll("[data-consult]").forEach(function (a) {
+  if (consultLink) { a.href = consultLink; a.target = "_blank"; a.rel = "noopener"; a.removeAttribute("data-go"); }
+});

@@ -169,3 +169,19 @@ footer { padding-block: 26px 40px; color: var(--muted); font-size: 14px; border-
 .acc p a { color: #fff; font-weight: 700; text-underline-offset: 3px; }
 .acc summary:focus-visible { outline-color: #fff; }
 @media (prefers-reduced-motion: reduce) { .acc .chev, .acc details { transition: none; } }
+
+/* services: navy frame with paw header */
+.group { padding: 0; overflow: hidden; border: 2px solid var(--panel); }
+.group header.gh { background: var(--panel); color: #fff; padding: 20px 24px; margin: 0; position: relative; overflow: hidden; }
+.group header.gh > *:not(.pawdeco) { position: relative; }
+.group header.gh .ic { background: rgba(255,255,255,.16); color: #fff; }
+.group header.gh h2 { color: #fff; }
+.group header.gh p { color: rgba(255,255,255,.85); }
+.pawdeco { position: absolute; inset-inline-start: -18px; inset-block-start: -22px; width: 150px; height: 150px; color: rgba(255,255,255,.11); transform: rotate(-12deg); }
+.group .items { margin: 0; padding: 20px 24px 24px; }
+
+/* floating consultation button */
+body { padding-block-end: 96px; }
+.fab { position: fixed; z-index: 30; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); display: inline-flex; align-items: center; gap: 8px; background: var(--blue); color: var(--on-blue); text-decoration: none; font-weight: 700; padding: 13px 22px; border-radius: 999px; box-shadow: 0 10px 28px rgba(23,64,111,.35); border: 2px solid var(--on-blue); white-space: nowrap; }
+.fab svg { width: 22px; height: 22px; }
+.fab:hover { filter: brightness(1.07); }
