@@ -4,18 +4,7 @@
   --blue: #1f5ea6; --blue-deep: #17406f; --blue-soft: #dbe7f5; --line: #d3dbe5; --on-blue: #ffffff;
   --panel: #17406f;
   --font: "Vazirmatn", Tahoma, "Segoe UI", sans-serif;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0e151e; --surface: #16202c; --ink: #e5ecf4; --muted: #9aaabc;
-    --blue: #6fa9ec; --blue-deep: #a9cdf6; --blue-soft: #1b2d45; --line: #263546; --on-blue: #0e151e; --panel: #1f3a5c;
-    color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #0e151e; --surface: #16202c; --ink: #e5ecf4; --muted: #9aaabc;
-  --blue: #6fa9ec; --blue-deep: #a9cdf6; --blue-soft: #1b2d45; --line: #263546; --on-blue: #0e151e; --panel: #1f3a5c;
-  color-scheme: dark;
+  color-scheme: light;
 }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
