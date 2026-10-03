@@ -82,3 +82,65 @@ var consultLink = INFO.whatsapp ? "https://wa.me/" + INFO.whatsapp + "?text=" + 
 document.querySelectorAll("[data-consult]").forEach(function (a) {
   if (consultLink) { a.href = consultLink; a.target = "_blank"; a.rel = "noopener"; a.removeAttribute("data-go"); }
 });
+
+// نمایش بزرگ عکس‌ها
+(function () {
+  var lb = document.getElementById("lb");
+  if (!lb) return;
+  var body = lb.querySelector(".lb-body");
+  var items = [], idx = -1, lastFocus = null;
+
+  if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    document.querySelectorAll(".ph video").forEach(function (v) { v.removeAttribute("autoplay"); try { v.pause(); } catch (e) {} });
+  }
+
+  function render() {
+    var a = items[idx], el;
+    body.innerHTML = "";
+    if (a.getAttribute("data-type") === "video") {
+      el = document.createElement("video");
+      el.src = a.getAttribute("data-src");
+      el.poster = a.getAttribute("data-poster") || "";
+      el.muted = true; el.loop = true; el.autoplay = true; el.playsInline = true;
+      el.setAttribute("playsinline", ""); el.setAttribute("muted", "");
+      var p = el.play(); if (p && p.catch) p.catch(function () {});
+    } else {
+      el = document.createElement("img");
+      el.src = a.getAttribute("href");
+    }
+    el.setAttribute("alt", a.getAttribute("data-alt") || "");
+    body.appendChild(el);
+    lb.setAttribute("data-single", items.length > 1 ? "0" : "1");
+  }
+  function open(a) {
+    items = [].slice.call(document.querySelectorAll('.ph[data-group="' + a.getAttribute("data-group") + '"]'));
+    idx = items.indexOf(a);
+    lastFocus = document.activeElement;
+    render();
+    lb.hidden = false;
+    document.body.classList.add("lb-open");
+    lb.querySelector(".lb-x").focus();
+  }
+  function close() {
+    lb.hidden = true; body.innerHTML = "";
+    document.body.classList.remove("lb-open");
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  function step(d) { if (items.length < 2) return; idx = (idx + d + items.length) % items.length; render(); }
+
+  document.addEventListener("click", function (e) {
+    var t = e.target;
+    var a = t.closest ? t.closest(".ph") : null;
+    if (a) { e.preventDefault(); open(a); return; }
+    if (lb.hidden) return;
+    if (t.closest(".lb-x") || t === lb || t === body) close();
+    else if (t.closest(".lb-prev")) step(-1);
+    else if (t.closest(".lb-next")) step(1);
+  });
+  document.addEventListener("keydown", function (e) {
+    if (lb.hidden) return;
+    if (e.key === "Escape") close();
+    else if (e.key === "ArrowRight") step(-1);
+    else if (e.key === "ArrowLeft") step(1);
+  });
+})();
