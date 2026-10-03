@@ -15,7 +15,7 @@ var waText = encodeURIComponent("سلام، برای گرفتن نوبت پیا�
 var waLink = INFO.whatsapp ? "https://wa.me/" + INFO.whatsapp + "?text=" + waText : "";
 
 document.querySelectorAll("[data-book]").forEach(function (a) {
-  if (waLink) { a.href = waLink; a.target = "_blank"; a.rel = "noopener"; }
+  if (waLink) { a.href = waLink; a.target = "_blank"; a.rel = "noopener"; a.removeAttribute("data-go"); }
 });
 
 var host = document.getElementById("contact-rows");
@@ -55,4 +55,24 @@ if (host) {
     el.appendChild(val);
     host.appendChild(el);
   });
+}
+
+// فرم نوبت: ساخت پیام آماده برای واتساپ
+var bk = document.getElementById("bk-form");
+if (bk) {
+  var send = document.getElementById("bk-send");
+  var val = function (id) { return (document.getElementById(id).value || "").trim(); };
+  var build = function () {
+    var lines = ["سلام دکتر مساوات، می‌خوام نوبت بگیرم."];
+    if (val("bk-name")) lines.push("نام: " + val("bk-name"));
+    var pet = [val("bk-type"), val("bk-pet")].filter(Boolean).join(" - ");
+    if (pet) lines.push("پت: " + pet);
+    if (val("bk-service")) lines.push("خدمت: " + val("bk-service"));
+    if (val("bk-time")) lines.push("زمان مناسب: " + val("bk-time"));
+    if (val("bk-note")) lines.push("توضیح: " + val("bk-note"));
+    if (INFO.whatsapp) send.href = "https://wa.me/" + INFO.whatsapp + "?text=" + encodeURIComponent(lines.join("\n"));
+  };
+  bk.addEventListener("input", build);
+  bk.addEventListener("change", build);
+  build();
 }

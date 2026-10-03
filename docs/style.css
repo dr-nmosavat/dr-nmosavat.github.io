@@ -122,3 +122,25 @@ footer { padding-block: 26px 40px; color: var(--muted); font-size: 14px; border-
   nav a { padding: 6px 12px; }
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+/* booking */
+.book-top { background: var(--panel); color: #fff; border-radius: 28px; padding: 30px 28px; margin-top: 8px; position: relative; overflow: hidden; }
+.book-top h1 { margin: 8px 0 6px; font-size: clamp(30px, 5vw, 44px); }
+.book-top p { margin: 0; max-width: 52ch; opacity: .9; position: relative; }
+.book-top > *:not(.paw-bg) { position: relative; }
+.paw-bg { position: absolute; inset-block-start: -40px; inset-inline-start: -30px; width: 240px; height: 240px; color: rgba(255,255,255,.09); }
+.paw-bg svg { width: 100%; height: 100%; }
+.book-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 18px; align-items: start; }
+.book-grid > * { min-width: 0; }
+.form label { display: block; font-weight: 700; margin: 14px 0 4px; }
+.form label:first-child { margin-top: 0; }
+.form input, .form select, .form textarea { width: 100%; font: inherit; color: var(--ink); background: var(--bg); border: 1.5px solid var(--line); border-radius: 12px; padding: 10px 14px; min-width: 0; }
+.form input:focus, .form select:focus, .form textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-soft); }
+.form .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form .two > * { min-width: 0; }
+.form .send { margin-top: 20px; width: 100%; justify-content: center; }
+.form .hint { margin: 10px 0 0; font-size: 13.5px; color: var(--muted); }
+.side dl { margin: 10px 0 0; }
+.side dt { color: var(--muted); font-size: 13.5px; margin-top: 10px; }
+.side dd { margin: 0; font-weight: 700; }
+@media (max-width: 800px) { .book-grid { grid-template-columns: 1fr; } .form .two { grid-template-columns: 1fr; } }
