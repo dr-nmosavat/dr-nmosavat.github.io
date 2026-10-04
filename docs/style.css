@@ -681,3 +681,16 @@ a.vet-tag:hover { filter: brightness(1.12); transform: translateY(-1px); }
 .about .table th, .about .table td { padding: 8px 12px; font-size: 15px; }
 .about .table th { font-size: 14px; }
 @media (max-width: 800px) { .photo { aspect-ratio: 1; height: auto; min-height: 0; } .about > div { display: block; } }
+
+/* about v3: smaller photo, compact bulleted facts */
+.about { grid-template-columns: minmax(220px, 300px) 1fr; align-items: center; gap: 28px; padding: 22px 26px; }
+.about > div { display: block; }
+.photo { aspect-ratio: 4 / 5; height: auto; min-height: 0; max-width: 300px; justify-self: start; }
+.about p { font-size: 16px; line-height: 1.8; margin: 0 0 6px; }
+.facts { list-style: none; margin: 12px 0 0; padding: 0; }
+.facts li { position: relative; padding: 5px 22px 5px 0; line-height: 1.7; font-size: 15px; color: var(--ink); }
+.facts li::before { content: ""; position: absolute; inset-inline-start: 0; top: 14px; width: 8px; height: 8px; border-radius: 50%; background: var(--blue); }
+.facts b { color: var(--blue-deep); margin-inline-end: 4px; }
+@media (max-width: 800px) { .about { grid-template-columns: 1fr; } .photo { max-width: 260px; margin-inline: auto; justify-self: center; } }
+.about .facts li { display: block; border: 0; border-radius: 0; background: none; padding: 4px 22px 4px 0; min-width: 0; }
+.about .facts { display: block; gap: 0; margin: 10px 0 0; } .about .facts li { padding-block: 3px; line-height: 1.65; } .about .facts li::before { top: 11px; }
