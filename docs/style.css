@@ -770,3 +770,11 @@ header.top nav a { padding-inline: 11px; font-size: 15px; }
 @media (max-width: 800px) { header.top nav { gap: 0; padding: 6px 6px; justify-content: space-between; } header.top nav a { font-size: 13px; padding: 7px 8px; } }
 @media (max-width: 800px) { header.top nav { padding: 6px 4px; } header.top nav a { font-size: 12.5px; padding: 7px 5px; } }
 @media (max-width: 800px) { nav a { font-size: 12px !important; padding: 7px 3px !important; } header.top nav { padding: 6px 3px; } }
+
+/* slider heading centered on phones */
+@media (max-width: 800px) {
+  .banner-head { flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 4px; }
+  .banner-head > div { width: 100%; text-align: center; }
+  .banner-head .bh-main, .banner-head .bh-small { text-align: center; }
+  .banner-head .link { align-self: center; text-align: center; }
+}
