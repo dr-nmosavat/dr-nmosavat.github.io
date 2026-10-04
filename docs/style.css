@@ -671,3 +671,13 @@ a.vet-tag:hover { filter: brightness(1.12); transform: translateY(-1px); }
 .fab span { max-width: 0; opacity: 0; white-space: nowrap; transition: max-width .25s ease, opacity .2s ease, margin .25s ease; }
 .fab:hover span, .fab:focus-visible span { max-width: 170px; opacity: 1; margin-inline-start: 8px; }
 .fab:hover, .fab:focus-visible { background: #12335f; filter: none; }
+
+/* about: balanced photo + text */
+.about { align-items: stretch; gap: 24px; padding: 22px; }
+.about > div { display: flex; flex-direction: column; justify-content: center; }
+.about p { font-size: 16px; line-height: 1.9; margin: 0 0 8px; }
+.photo { aspect-ratio: auto; height: 100%; min-height: 380px; }
+.about .table { margin-top: 10px; }
+.about .table th, .about .table td { padding: 8px 12px; font-size: 15px; }
+.about .table th { font-size: 14px; }
+@media (max-width: 800px) { .photo { aspect-ratio: 1; height: auto; min-height: 0; } .about > div { display: block; } }
