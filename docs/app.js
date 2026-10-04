@@ -7,7 +7,7 @@ var INFO = {
   bale: "dr_niloofar_mosavat",
   hours: "۱۱:۰۰ تا ۲۱:۰۰",
   address: "ونک، شیخ بهایی شمالی، برج مرمر، طبقه اول",
-  neshan: "",
+  neshan: "https://nshn.ir/d6sbvrTDWxOVnZ",
   balad: ""
 };
 var mapQuery = "مرکز تخصصی دامپزشکی ونک، شیخ بهایی شمالی، برج مرمر";
