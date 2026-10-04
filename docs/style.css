@@ -862,3 +862,5 @@ ul.plain li::before { content: ""; position: absolute; inset-inline-start: 0; to
   .svc p { grid-column: 1 / -1; font-size: 12px; line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-top: 3px; }
   .svc .paw { width: 56px; height: 56px; inset-inline-start: -10px; inset-block-end: -12px; }
 }
+
+@media (min-width: 801px) { .rv-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
