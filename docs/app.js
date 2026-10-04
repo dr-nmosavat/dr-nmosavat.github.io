@@ -134,12 +134,6 @@ if (bk) {
   build();
 }
 
-// دکمهٔ شناور مشاوره
-var consultLink = INFO.whatsapp ? "https://wa.me/" + INFO.whatsapp + "?text=" + encodeURIComponent("سلام، نیاز به مشاوره دارم.") : "";
-document.querySelectorAll("[data-consult]").forEach(function (a) {
-  if (consultLink) { a.href = consultLink; a.target = "_blank"; a.rel = "noopener"; a.removeAttribute("data-go"); }
-});
-
 // نمایش بزرگ عکس‌ها
 (function () {
   var lb = document.getElementById("lb");
@@ -310,6 +304,68 @@ document.querySelectorAll("[data-bale]").forEach(function (a) {
     var t = e.target;
     if (t.closest && t.closest("[data-online]")) { e.preventDefault(); open(); return; }
     if (!sh.hidden && (t === sh || (t.closest && t.closest(".sheet-x")))) close();
+  });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !sh.hidden) close(); });
+})();
+
+// فرم نظر: ساخت پیام آماده برای واتساپ
+(function () {
+  var sh = document.getElementById("rsheet");
+  if (!sh) return;
+  var stars = [].slice.call(sh.querySelectorAll("#rv-stars button"));
+  var rating = 5;
+  var fa = ["۱", "۲", "۳", "۴", "۵"];
+  function paint() { stars.forEach(function (b) { b.classList.toggle("on", parseInt(b.getAttribute("data-v"), 10) <= rating); }); }
+  function build() {
+    var name = document.getElementById("rv-name").value.trim();
+    var who = document.getElementById("rv-who").value;
+    var text = document.getElementById("rv-text").value.trim();
+    var ok = document.getElementById("rv-ok").checked;
+    var lines = ["سلام، می‌خوام نظرم رو دربارهٔ دکتر مساوات بنویسم."];
+    lines.push("امتیاز: " + fa[rating - 1] + " از ۵");
+    if (name) lines.push("نام: " + name);
+    if (who) lines.push("پت: " + who);
+    if (text) lines.push("نظر: " + text);
+    lines.push(ok ? "اجازه می‌دهم نظرم با اسم کوچک در سایت نمایش داده شود." : "لطفاً نظرم در سایت نمایش داده نشود.");
+    if (INFO.whatsapp) document.getElementById("rv-send").href = "https://wa.me/" + INFO.whatsapp + "?text=" + encodeURIComponent(lines.join("\n"));
+  }
+  function open() { sh.hidden = false; document.body.classList.add("lb-open"); build(); }
+  function close() { sh.hidden = true; document.body.classList.remove("lb-open"); }
+  stars.forEach(function (b) { b.addEventListener("click", function () { rating = parseInt(b.getAttribute("data-v"), 10); paint(); build(); }); });
+  sh.addEventListener("input", build);
+  sh.addEventListener("change", build);
+  document.addEventListener("click", function (e) {
+    var t = e.target;
+    if (t.closest && t.closest("[data-review]")) { e.preventDefault(); open(); return; }
+    if (!sh.hidden && (t === sh || (t.closest && t.closest(".sheet-x") && sh.contains(t)))) close();
+  });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !sh.hidden) close(); });
+  paint();
+})();
+
+// نیاز به مشاوره: انتخاب پیام‌رسان
+(function () {
+  var sh = document.getElementById("csheet");
+  if (!sh) return;
+  var list = sh.querySelector(".sheet-list");
+  var opts = [];
+  if (INFO.whatsapp) opts.push({ t: "واتساپ", u: "https://wa.me/" + INFO.whatsapp + "?text=" + encodeURIComponent("سلام، نیاز به مشاوره دارم."), n: "پیام آماده می‌شود" });
+  if (INFO.bale) opts.push({ t: "بله", u: "https://ble.ir/" + INFO.bale, n: "پیام را خودتان بنویسید", alt: true });
+  if (INFO.instagram) opts.push({ t: "اینستاگرام", u: "https://ig.me/m/" + INFO.instagram, n: "پیام مستقیم", alt: true });
+  opts.forEach(function (o) {
+    var a = document.createElement("a");
+    a.className = "sheet-opt" + (o.alt ? " alt" : "");
+    a.href = o.u; a.target = "_blank"; a.rel = "noopener";
+    var b = document.createElement("span"); b.textContent = o.t;
+    var sm = document.createElement("small"); sm.textContent = o.n;
+    a.appendChild(b); a.appendChild(sm); list.appendChild(a);
+  });
+  function open() { sh.hidden = false; document.body.classList.add("lb-open"); }
+  function close() { sh.hidden = true; document.body.classList.remove("lb-open"); }
+  document.addEventListener("click", function (e) {
+    var t = e.target;
+    if (t.closest && t.closest("[data-consult]")) { e.preventDefault(); open(); return; }
+    if (!sh.hidden && (t === sh || (t.closest && t.closest(".sheet-x") && sh.contains(t)))) close();
   });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !sh.hidden) close(); });
 })();
