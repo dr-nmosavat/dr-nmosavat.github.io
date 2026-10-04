@@ -5,7 +5,7 @@ var INFO = {
   whatsapp: "989057392125",
   instagram: "Dr.niloofarmosavat",
   bale: "dr_niloofar_mosavat",
-  hours: "۱۵:۰۰ تا ۲۱:۰۰",
+  hours: "یکشنبه ۱۱ تا ۲۱ · سه‌شنبه و جمعه ۱۵ تا ۲۱ · سایر روزها با وقت قبلی",
   address: "ونک، شیخ بهایی شمالی، برج مرمر، طبقه اول",
   neshan: "",
   balad: ""
@@ -59,39 +59,62 @@ if (host) {
   });
 }
 
-// تاریخ و ساعت (تاریخ شمسی، ۱۴ روز آینده؛ ساعت ۱۵ تا ۲۰:۳۰)
+// تاریخ و ساعت برای فرم‌ها (تاریخ شمسی، ۱۴ روز آینده). ساعت شروع هر روز از برنامهٔ کلینیک می‌آید.
 var WHEN = (function () {
   var fmt;
   try { fmt = new Intl.DateTimeFormat("fa-IR-u-ca-persian", { weekday: "long", day: "numeric", month: "long" }); }
   catch (e) { fmt = new Intl.DateTimeFormat("fa-IR", { weekday: "long", day: "numeric", month: "long" }); }
   var nf = new Intl.NumberFormat("fa-IR", { useGrouping: false, minimumIntegerDigits: 2 });
+  var wd = new Intl.DateTimeFormat("en-US", { weekday: "short" });
+  var KEY = { Sat: "sat", Sun: "sun", Mon: "mon", Tue: "tue", Wed: "wed", Thu: "thu", Fri: "fri" };
   function days() {
     var out = [], d = new Date();
     if (d.getHours() >= 20) d.setDate(d.getDate() + 1);
     for (var k = 0; k < 14; k++) {
       var x = new Date(d.getTime()); x.setDate(d.getDate() + k);
       var pp = {}; fmt.formatToParts(x).forEach(function (q) { pp[q.type] = q.value; });
-      out.push([pp.weekday, pp.day, pp.month].filter(Boolean).join(" "));
+      out.push({ label: [pp.weekday, pp.day, pp.month].filter(Boolean).join(" "), key: KEY[wd.format(x)] });
     }
     return out;
   }
-  function hours() {
-    var out = [];
-    for (var h = 15; h <= 20; h++) { out.push(nf.format(h) + ":" + nf.format(0)); if (h < 21) out.push(nf.format(h) + ":" + nf.format(30)); }
-    return out;
-  }
-  function fill(sel, list, first) {
+  function t(h) { var hh = Math.floor(h), mm = Math.round((h - hh) * 60); return nf.format(hh) + ":" + nf.format(mm); }
+  function hours(from) { var out = []; for (var h = from; h <= 20.5; h += 0.5) out.push(t(h)); return out; }
+  function put(sel, list, first) {
     if (!sel) return;
     sel.innerHTML = "";
     var o0 = document.createElement("option"); o0.value = ""; o0.textContent = first; sel.appendChild(o0);
-    list.forEach(function (t) { var o = document.createElement("option"); o.value = t; o.textContent = t; sel.appendChild(o); });
+    list.forEach(function (it) {
+      var o = document.createElement("option");
+      var label = typeof it === "string" ? it : it.label;
+      o.value = label; o.textContent = label;
+      if (it.key) o.setAttribute("data-key", it.key);
+      sel.appendChild(o);
+    });
   }
-  return { fill: fill, days: days, hours: hours };
+  // ساعت شروع ویزیت در هر روز (روزهای حضور دکتر از SCHEDULE)
+  function startFor(key) {
+    var r = typeof SCHEDULE !== "undefined" ? SCHEDULE.inperson[key] : null;
+    return (Array.isArray(r) && r.length && r[0][0]) || 11;
+  }
+  function hintFor(key) {
+    var r = typeof SCHEDULE !== "undefined" ? SCHEDULE.inperson[key] : null;
+    if (Array.isArray(r) && r.length) return "این روز دکتر در کلینیک حضور دارد: از " + t(r[0][0]) + " تا " + t(r[r.length - 1][1]) + ".";
+    return "این روز ویزیت فقط با وقت قبلی (حضوری یا آنلاین) انجام می‌شود.";
+  }
+  function link(dateSel, hourSel, hintEl) {
+    if (!dateSel || !hourSel) return;
+    put(dateSel, days(), "انتخاب تاریخ");
+    put(hourSel, hours(11), "انتخاب ساعت");
+    dateSel.addEventListener("change", function () {
+      var o = dateSel.options[dateSel.selectedIndex], k = o && o.getAttribute("data-key");
+      put(hourSel, hours(k ? startFor(k) : 11), "انتخاب ساعت");
+      if (hintEl) hintEl.textContent = k ? hintFor(k) : "";
+    });
+  }
+  return { link: link };
 })();
-WHEN.fill(document.getElementById("bk-date"), WHEN.days(), "انتخاب تاریخ");
-WHEN.fill(document.getElementById("bk-hour"), WHEN.hours(), "انتخاب ساعت");
-WHEN.fill(document.getElementById("sh-date"), WHEN.days(), "تاریخ (اختیاری)");
-WHEN.fill(document.getElementById("sh-hour"), WHEN.hours(), "ساعت (اختیاری)");
+WHEN.link(document.getElementById("bk-date"), document.getElementById("bk-hour"), document.getElementById("bk-hint"));
+WHEN.link(document.getElementById("sh-date"), document.getElementById("sh-hour"), null);
 
 // فرم نوبت: ساخت پیام آماده برای واتساپ
 var bk = document.getElementById("bk-form");
@@ -294,100 +317,12 @@ document.querySelectorAll("[data-bale]").forEach(function (a) {
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !sh.hidden) close(); });
 })();
 
-// تاریخ و ساعت امروز (به وقت تهران)
-(function () {
-  var el = document.getElementById("today");
-  if (!el) return;
-  var tz = "Asia/Tehran", df, tf;
-  try {
-    df = new Intl.DateTimeFormat("fa-IR-u-ca-persian", { timeZone: tz, weekday: "long", day: "numeric", month: "long", year: "numeric" });
-    tf = new Intl.DateTimeFormat("fa-IR", { timeZone: tz, hour: "2-digit", minute: "2-digit", hour12: false });
-  } catch (e) { el.hidden = true; return; }
-  var hourFmt = new Intl.DateTimeFormat("en-US", { timeZone: tz, hour: "numeric", hour12: false });
-  var dEl = el.querySelector(".t-date"), tEl = el.querySelector(".t-time"), sEl = el.querySelector(".t-state");
-  function tick() {
-    var now = new Date();
-    var parts = {};
-    df.formatToParts(now).forEach(function (p) { parts[p.type] = p.value; });
-    dEl.textContent = [parts.weekday, parts.day, parts.month, parts.year].filter(Boolean).join(" ");
-    tEl.textContent = tf.format(now);
-    var h = parseInt(hourFmt.format(now), 10) % 24;
-    var open = h >= 15 && h < 21;
-    sEl.textContent = open ? "اکنون در ساعت کاری" : "ساعت کاری ۱۵ تا ۲۱";
-    el.classList.toggle("is-open", open);
-  }
-  tick();
-  setInterval(tick, 20000);
-})();
-
-// فرم نظر: ساخت پیام آماده برای واتساپ
-(function () {
-  var sh = document.getElementById("rsheet");
-  if (!sh) return;
-  var stars = [].slice.call(sh.querySelectorAll("#rv-stars button"));
-  var rating = 5;
-  var fa = ["۱", "۲", "۳", "۴", "۵"];
-  function paint() { stars.forEach(function (b) { b.classList.toggle("on", parseInt(b.getAttribute("data-v"), 10) <= rating); }); }
-  function build() {
-    var name = document.getElementById("rv-name").value.trim();
-    var who = document.getElementById("rv-who").value;
-    var text = document.getElementById("rv-text").value.trim();
-    var ok = document.getElementById("rv-ok").checked;
-    var lines = ["سلام، می‌خوام نظرم رو دربارهٔ دکتر مساوات بنویسم."];
-    lines.push("امتیاز: " + fa[rating - 1] + " از ۵");
-    if (name) lines.push("نام: " + name);
-    if (who) lines.push("پت: " + who);
-    if (text) lines.push("نظر: " + text);
-    lines.push(ok ? "اجازه می‌دهم نظرم با اسم کوچک در سایت نمایش داده شود." : "لطفاً نظرم در سایت نمایش داده نشود.");
-    if (INFO.whatsapp) document.getElementById("rv-send").href = "https://wa.me/" + INFO.whatsapp + "?text=" + encodeURIComponent(lines.join("\n"));
-  }
-  function open() { sh.hidden = false; document.body.classList.add("lb-open"); build(); }
-  function close() { sh.hidden = true; document.body.classList.remove("lb-open"); }
-  stars.forEach(function (b) { b.addEventListener("click", function () { rating = parseInt(b.getAttribute("data-v"), 10); paint(); build(); }); });
-  sh.addEventListener("input", build);
-  sh.addEventListener("change", build);
-  document.addEventListener("click", function (e) {
-    var t = e.target;
-    if (t.closest && t.closest("[data-review]")) { e.preventDefault(); open(); return; }
-    if (!sh.hidden && (t === sh || (t.closest && t.closest(".sheet-x") && sh.contains(t)))) close();
-  });
-  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !sh.hidden) close(); });
-  paint();
-})();
-
-// نیاز به مشاوره: انتخاب پیام‌رسان
-(function () {
-  var sh = document.getElementById("csheet");
-  if (!sh) return;
-  var list = sh.querySelector(".sheet-list");
-  var opts = [];
-  if (INFO.whatsapp) opts.push({ t: "واتساپ", u: "https://wa.me/" + INFO.whatsapp + "?text=" + encodeURIComponent("سلام، نیاز به مشاوره دارم."), n: "پیام آماده می‌شود" });
-  if (INFO.bale) opts.push({ t: "بله", u: "https://ble.ir/" + INFO.bale, n: "پیام را خودتان بنویسید", alt: true });
-  if (INFO.instagram) opts.push({ t: "اینستاگرام", u: "https://ig.me/m/" + INFO.instagram, n: "پیام مستقیم", alt: true });
-  opts.forEach(function (o) {
-    var a = document.createElement("a");
-    a.className = "sheet-opt" + (o.alt ? " alt" : "");
-    a.href = o.u; a.target = "_blank"; a.rel = "noopener";
-    var b = document.createElement("span"); b.textContent = o.t;
-    var sm = document.createElement("small"); sm.textContent = o.n;
-    a.appendChild(b); a.appendChild(sm); list.appendChild(a);
-  });
-  function open() { sh.hidden = false; document.body.classList.add("lb-open"); }
-  function close() { sh.hidden = true; document.body.classList.remove("lb-open"); }
-  document.addEventListener("click", function (e) {
-    var t = e.target;
-    if (t.closest && t.closest("[data-consult]")) { e.preventDefault(); open(); return; }
-    if (!sh.hidden && (t === sh || (t.closest && t.closest(".sheet-x") && sh.contains(t)))) close();
-  });
-  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !sh.hidden) close(); });
-})();
-
 // برنامهٔ ساعت ویزیت. ساعت‌ها به‌صورت [شروع، پایان] و ۲۴ ساعته نوشته می‌شود (مثلاً [15, 21] یا [16.5, 20]).
-// هر روز می‌تواند چند بازه داشته باشد: [[9, 12], [16, 20]]. مقدار null یعنی آن روز تعطیل است.
-// ساعت‌های فعلی نمونه است و باید با شیفت واقعی دکتر عوض شود.
+// هر روز می‌تواند چند بازه داشته باشد: [[9, 12], [16, 20]].
+// مقدارهای ویژه: "appt" یعنی فقط با وقت قبلی، "auto" یعنی با هماهنگی در پیام، null یعنی نیست.
 var SCHEDULE = {
-  inperson: { sat: [[15, 21]], sun: [[15, 21]], mon: [[15, 21]], tue: [[15, 21]], wed: [[15, 21]], thu: [[15, 21]], fri: [[15, 21]] },
-  online:   { sat: "auto", sun: "auto", mon: "auto", tue: "auto", wed: "auto", thu: "auto", fri: "auto" } // "auto" یعنی با هماهنگی
+  inperson: { sat: "appt", sun: [[11, 21]], mon: "appt", tue: [[15, 21]], wed: "appt", thu: "appt", fri: [[15, 21]] },
+  online:   { sat: "appt", sun: "auto", mon: "appt", tue: "auto", wed: "appt", thu: "appt", fri: "auto" }
 };
 var DAY_ORDER = ["sat", "sun", "mon", "tue", "wed", "thu", "fri"];
 var DAY_NAME = { sat: "شنبه", sun: "یکشنبه", mon: "دوشنبه", tue: "سه‌شنبه", wed: "چهارشنبه", thu: "پنجشنبه", fri: "جمعه" };
@@ -405,39 +340,48 @@ var DAY_NAME = { sat: "شنبه", sun: "یکشنبه", mon: "دوشنبه", tue:
   var KEY = { Sat: "sat", Sun: "sun", Mon: "mon", Tue: "tue", Wed: "wed", Thu: "thu", Fri: "fri" };
 
   function t(h) { var hh = Math.floor(h), mm = Math.round((h - hh) * 60); return nf.format(hh) + ":" + nf.format(mm); }
-  function rangesText(r) {
-    if (!r) return null;
-    return r.map(function (x) { return "از " + t(x[0]) + " تا " + t(x[1]); }).join(" و ");
-  }
+  function ranges(r) { return r.map(function (x) { return "از " + t(x[0]) + " تا " + t(x[1]); }).join(" و "); }
   function now() {
     var d = new Date(), p = {};
     hmFmt.formatToParts(d).forEach(function (x) { p[x.type] = x.value; });
     return { date: d, key: KEY[wdFmt.format(d)], h: (parseInt(p.hour, 10) % 24) + parseInt(p.minute, 10) / 60 };
   }
-  function isOpen(r, h) { return !!r && r.some(function (x) { return h >= x[0] && h < x[1]; }); }
+  function isOpen(r, h) { return Array.isArray(r) && r.some(function (x) { return h >= x[0] && h < x[1]; }); }
+  function inText(v, today) {
+    if (Array.isArray(v)) return (today ? "امروز " : "") + ranges(v);
+    if (v === "appt") return today ? "امروز فقط با وقت قبلی" : "با وقت قبلی";
+    return today ? "امروز ویزیت حضوری ندارد" : "تعطیل";
+  }
+  function onText(v, today) {
+    if (Array.isArray(v)) return (today ? "امروز " : "") + ranges(v);
+    if (v === "auto") return today ? "با هماهنگی در پیام" : "با هماهنگی";
+    if (v === "appt") return today ? "امروز آنلاین، با وقت قبلی" : "با وقت قبلی";
+    return today ? "امروز ویزیت آنلاین ندارد" : "—";
+  }
 
   function render() {
     var n = now();
-    var inR = SCHEDULE.inperson[n.key], onR = SCHEDULE.online[n.key];
+    var inV = SCHEDULE.inperson[n.key], onV = SCHEDULE.online[n.key];
     var parts = {}; df.formatToParts(n.date).forEach(function (x) { parts[x.type] = x.value; });
     var dateText = [parts.weekday, parts.day, parts.month, parts.year].filter(Boolean).join(" ");
     cards.forEach(function (c) {
       c.querySelector(".tc-date").textContent = dateText;
-      var inEl = c.querySelector(".tc-in"), onEl = c.querySelector(".tc-on");
-      inEl.textContent = inR ? "امروز " + rangesText(inR) : "امروز ویزیت حضوری ندارد";
-      onEl.textContent = onR === "auto" ? "با هماهنگی در پیام" : (onR ? "امروز " + rangesText(onR) : "امروز ویزیت آنلاین ندارد");
-      var open = isOpen(inR, n.h);
+      c.querySelector(".tc-in").textContent = inText(inV, true);
+      c.querySelector(".tc-on").textContent = onText(onV, true);
+      var open = isOpen(inV, n.h);
       var st = c.querySelector(".tc-state");
-      st.textContent = open ? "اکنون در کلینیک هستند" : (inR ? "اکنون خارج از شیفت" : "امروز تعطیل");
+      if (open) st.textContent = "اکنون در کلینیک هستند";
+      else if (Array.isArray(inV)) st.textContent = "اکنون خارج از شیفت";
+      else st.textContent = "امروز با وقت قبلی";
       c.classList.toggle("is-open", open);
       var tb = c.querySelector(".tc-table tbody");
       if (tb && !tb.children.length) {
         DAY_ORDER.forEach(function (k) {
           var tr = document.createElement("tr"); tr.setAttribute("data-day", k);
-          var a = document.createElement("td"); a.textContent = DAY_NAME[k];
-          var b = document.createElement("td"); b.textContent = SCHEDULE.inperson[k] ? rangesText(SCHEDULE.inperson[k]) : "تعطیل";
-          var o = document.createElement("td"); o.textContent = SCHEDULE.online[k] === "auto" ? "با هماهنگی" : (SCHEDULE.online[k] ? rangesText(SCHEDULE.online[k]) : "—");
-          tr.appendChild(a); tr.appendChild(b); tr.appendChild(o); tb.appendChild(tr);
+          [DAY_NAME[k], inText(SCHEDULE.inperson[k], false), onText(SCHEDULE.online[k], false)].forEach(function (txt) {
+            var td = document.createElement("td"); td.textContent = txt; tr.appendChild(td);
+          });
+          tb.appendChild(tr);
         });
       }
       if (tb) [].forEach.call(tb.children, function (tr) { tr.classList.toggle("is-today", tr.getAttribute("data-day") === n.key); });
