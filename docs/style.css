@@ -619,3 +619,14 @@ a.vet-tag:hover { filter: brightness(1.12); transform: translateY(-1px); }
 .grid.two .card p { font-size: 14px; line-height: 1.7; transition: color .15s; }
 .grid.two .card:hover { background: #17406f; border-color: #17406f; }
 .grid.two .card:hover h3, .grid.two .card:hover p { color: #fff; }
+
+.top-actions { display: flex; justify-content: center; gap: 8px; margin: 4px 0 10px; }
+.top-actions .btn, .top-actions .btn.primary, .top-actions .btn.online { padding: 8px 18px; font-size: 14px; border-radius: 10px; border: 1.5px solid var(--blue-soft); background: var(--blue-soft); color: var(--blue-deep); transition: background .15s, color .15s, border-color .15s; }
+.top-actions .btn:hover, .top-actions .btn:focus-visible, .top-actions .btn:active { background: #12335f; border-color: #12335f; color: #fff; filter: none; }
+.banner .slide { aspect-ratio: 1 / 1; }
+.banner .slider { --sw: 160px; }
+.banner .track { padding-block: 4px; }
+.solo.banner { padding: 12px 0 8px; }
+.banner-head { margin-bottom: 6px; }
+@media (max-width: 800px) { .banner .slider { --sw: 124px; } .solo.banner { padding: 10px 0 6px; } }
+.top-actions .btn { line-height: 1.5; padding: 6px 16px; }
