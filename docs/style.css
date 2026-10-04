@@ -664,3 +664,10 @@ a.vet-tag:hover { filter: brightness(1.12); transform: translateY(-1px); }
 .banner-head .bh-main { order: 0; margin: 0 0 2px; font-size: 22px; font-weight: 800; color: var(--ink); line-height: 1.5; }
 .banner-head .bh-small { margin: 0; font-size: 14px; font-weight: 600; color: var(--blue); }
 @media (max-width: 800px) { .banner-head .sub.bh-main { display: block; font-size: 18px; } .banner-head .bh-small { font-size: 13px; } }
+
+/* consult button: small round icon, expands on hover */
+.fab { left: 16px; right: auto; transform: none; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); padding: 12px; gap: 0; overflow: hidden; border-width: 2px; box-shadow: 0 6px 18px rgba(23,64,111,.3); }
+.fab svg { width: 22px; height: 22px; flex: none; }
+.fab span { max-width: 0; opacity: 0; white-space: nowrap; transition: max-width .25s ease, opacity .2s ease, margin .25s ease; }
+.fab:hover span, .fab:focus-visible span { max-width: 170px; opacity: 1; margin-inline-start: 8px; }
+.fab:hover, .fab:focus-visible { background: #12335f; filter: none; }
