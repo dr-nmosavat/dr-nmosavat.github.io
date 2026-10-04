@@ -938,3 +938,4 @@ ul.plain li::before { content: ""; position: absolute; inset-inline-start: 0; to
   section:has(.grid.five.compact) h2 { font-size: 19px; }
   section:has(.grid.five.compact) .sub { font-size: 13px; margin-bottom: 8px; }
 }
+.credit .by a { color: var(--blue); text-decoration: none; border-bottom: 1px dotted transparent; } .credit .by a:hover { border-bottom-color: var(--blue); }
