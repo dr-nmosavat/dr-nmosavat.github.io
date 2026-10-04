@@ -546,3 +546,31 @@ a.vet-tag:hover { filter: brightness(1.12); transform: translateY(-1px); }
   .m-t b { font-size: 14px; }
   .m-t small { display: none; }
 }
+
+/* header credentials */
+.brandcol { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.cred { margin: 0; font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+@media (max-width: 800px) { .brandcol { width: 100%; align-items: center; text-align: center; } .cred { font-size: 12px; } }
+
+/* compact hero with a scrolling services row */
+.hero2 { display: grid; gap: 12px; padding-block: 8px 4px; }
+.hero2 .h-text { min-width: 0; }
+.hero2 h1 { font-size: clamp(26px, 4.2vw, 38px); margin: 6px 0 4px; line-height: 1.35; }
+.hero2 .lead { margin: 0; font-size: 16px; max-width: 62ch; }
+.svc-row { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 2px 18px 8px; margin-inline: -18px; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
+.svc { position: relative; overflow: hidden; flex: 1 0 190px; scroll-snap-align: start; display: grid; gap: 4px; align-content: start; padding: 12px 14px; border-radius: 20px; background: var(--panel); color: #fff; text-decoration: none; min-width: 0; box-shadow: 0 8px 18px rgba(23,64,111,.18); transition: transform .15s, filter .15s; }
+.svc:hover { transform: translateY(-3px); filter: brightness(1.1); }
+.svc .paw { position: absolute; inset-inline-start: -16px; inset-block-end: -18px; width: 84px; height: 84px; color: rgba(255,255,255,.1); }
+.svc .ic { width: 34px; height: 34px; border-radius: 11px; background: rgba(255,255,255,.16); color: #fff; display: grid; place-items: center; margin: 0; position: relative; }
+.svc .ic svg { width: 20px; height: 20px; }
+.svc b { position: relative; font-size: 16px; line-height: 1.5; }
+.svc p { position: relative; margin: 0; font-size: 13.5px; line-height: 1.65; opacity: .86; }
+.hero2 .actions { margin-top: 2px; }
+@media (max-width: 800px) { .svc { flex: 0 0 66%; } }
+@media (prefers-reduced-motion: reduce) { .svc { transition: none; } .svc:hover { transform: none; } }
+
+/* brand-coloured buttons inside the chooser sheets */
+.sheet .sheet-opt.m-btn { flex-direction: row; justify-content: flex-start; align-items: center; gap: 12px; padding: 10px 14px; border: 0; border-radius: 16px; box-shadow: none; color: #fff; text-align: right; }
+.sheet .sheet-opt.m-btn .m-t { align-items: flex-start; text-align: right; }
+.sheet .sheet-opt.m-btn .m-t small { display: block; }
+.sheet .sheet-opt.m-btn .m-t b { font-size: 17px; }
