@@ -541,3 +541,40 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
     }
   } catch (e) {}
 })();
+
+// حباب کوتاه کنار دکمهٔ مشاوره: چند ثانیه بعد از ورود نشان داده می‌شود و بسته می‌شود
+(function () {
+  var fab = document.querySelector(".fab");
+  if (!fab) return;
+  var seen = false;
+  try { seen = sessionStorage.getItem("bubbleSeen") === "1"; } catch (e) {}
+  if (seen) return;
+  var b = document.createElement("div");
+  b.className = "fab-bubble";
+  b.setAttribute("role", "status");
+  b.hidden = true;
+  b.innerHTML = '<span>سؤال دارید؟ از دکتر بپرسید</span><button type="button" aria-label="بستن">×</button>';
+  document.body.appendChild(b);
+  var timer;
+  function place() {
+    var r = fab.getBoundingClientRect();
+    b.style.left = (r.right + 10) + "px";
+    b.style.bottom = (window.innerHeight - r.bottom + (r.height - 40) / 2) + "px";
+    b.style.maxWidth = Math.max(140, window.innerWidth - r.right - 26) + "px";
+  }
+  function hide(remember) {
+    clearTimeout(timer);
+    b.classList.remove("show");
+    setTimeout(function () { b.hidden = true; }, 300);
+    if (remember) { try { sessionStorage.setItem("bubbleSeen", "1"); } catch (e) {} }
+  }
+  b.querySelector("button").addEventListener("click", function () { hide(true); });
+  fab.addEventListener("click", function () { hide(true); });
+  setTimeout(function () {
+    var sheet = document.querySelector(".sheet:not([hidden])");
+    if (sheet) return;
+    place(); b.hidden = false;
+    requestAnimationFrame(function () { b.classList.add("show"); });
+    timer = setTimeout(function () { hide(true); }, 7000);
+  }, 4000);
+})();
