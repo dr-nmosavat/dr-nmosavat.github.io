@@ -883,3 +883,45 @@ ul.plain li::before { content: ""; position: absolute; inset-inline-start: 0; to
   .rv-head h2 { font-size: 20px; }
 }
 @media (max-width: 800px) { .rv-row { align-items: flex-start; } .rv blockquote { flex: none; } .rv { flex: 0 0 74%; } }
+
+/* phones: compact "how a visit goes" steps and contact page */
+@media (max-width: 800px) {
+  .steps { gap: 6px; }
+  .step { border-top: 0; border-inline-start: 3px solid var(--blue); padding: 4px 12px 4px 0; background: var(--surface); border-radius: 12px; padding-inline-start: 12px; border: 1px solid var(--line); border-inline-start: 3px solid var(--blue); }
+  .step b { font-size: 14.5px; margin-bottom: 0; display: inline; }
+  .step b::after { content: " — "; color: var(--muted); font-weight: 400; }
+  .step span { font-size: 13px; line-height: 1.7; }
+  section:has(.steps) h2 { font-size: 19px; }
+  section:has(.steps) .sub { font-size: 13.5px; margin-bottom: 8px; }
+  .step { padding-block: 7px; }
+
+  .today-card { padding: 10px 12px; border-radius: 16px; }
+  .tc-head { margin-bottom: 6px; gap: 6px; }
+  .tc-title b { font-size: 16px; }
+  .tc-title small { font-size: 12px; }
+  .tc-state { font-size: 12.5px; padding-block: 2px; }
+  .tc-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
+  .tc-box { padding: 7px 10px; border-radius: 12px; }
+  .tc-box small { font-size: 12px; }
+  .tc-box b { font-size: 14px; line-height: 1.5; }
+  .tc-sub { font-size: 11.5px; line-height: 1.5; }
+  .tc-link { font-size: 12.5px; margin-top: 2px; }
+  .tc-week summary { font-size: 13px; padding: 2px 0; }
+  .tc-table { font-size: 12.5px; }
+  .tc-table th, .tc-table td { padding: 4px 6px; }
+
+  .contact { grid-template-columns: 1fr 1fr; gap: 6px; }
+  .contact .row { padding: 8px 12px; border-radius: 12px; }
+  .contact .row:nth-child(2), .contact .row:nth-child(4) { grid-column: 1 / -1; }
+  .row small { font-size: 12px; }
+  .row .val { font-size: 14px; line-height: 1.6; }
+  .m-btn { padding: 7px 4px 6px; }
+}
+@media (max-width: 800px) {
+  .step { line-height: 1.55; padding-block: 6px; }
+  .step span { line-height: 1.55; }
+  .contact .row:nth-child(1) { order: 1; } .contact .row:nth-child(3) { order: 2; }
+  .contact .row:nth-child(2) { order: 3; grid-column: 1 / -1; } .contact .row:nth-child(4) { order: 4; grid-column: auto; } .contact .row:nth-child(5) { order: 5; }
+  .contact .row .val { line-height: 1.5; }
+  .contact .row { justify-content: center; }
+}
