@@ -528,3 +528,16 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
     v.setAttribute("disablepictureinpicture", "");
   });
 })();
+
+// پر کردن خودکار «خدمت» در فرم نوبت از آدرس (مثلاً booking.html?service=واکسیناسیون)
+(function () {
+  try {
+    var sel = document.getElementById("bk-service");
+    var m = /[?&]service=([^&]+)/.exec(location.search);
+    if (!sel || !m) return;
+    var want = decodeURIComponent(m[1]);
+    for (var i = 0; i < sel.options.length; i++) {
+      if (sel.options[i].text === want || sel.options[i].value === want) { sel.selectedIndex = i; sel.dispatchEvent(new Event("change", { bubbles: true })); break; }
+    }
+  } catch (e) {}
+})();
