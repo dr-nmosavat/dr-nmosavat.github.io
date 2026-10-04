@@ -630,3 +630,10 @@ a.vet-tag:hover { filter: brightness(1.12); transform: translateY(-1px); }
 .banner-head { margin-bottom: 6px; }
 @media (max-width: 800px) { .banner .slider { --sw: 124px; } .solo.banner { padding: 10px 0 6px; } }
 .top-actions .btn { line-height: 1.5; padding: 6px 16px; }
+
+.banner .slider { --sw: 138px; }
+.banner .slide { filter: blur(2px); }
+.solo.banner { padding: 8px 0 4px; }
+.banner-head { margin-bottom: 2px; }
+.banner .dots { margin-top: 2px; }
+@media (max-width: 800px) { .banner .slider { --sw: 104px; } .solo.banner { padding: 8px 0 4px; } .banner-head .sub { display: none; } }
