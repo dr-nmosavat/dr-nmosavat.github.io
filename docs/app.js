@@ -485,3 +485,5 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
   if (k === "instagram" && INFO.instagram) u = "https://instagram.com/" + INFO.instagram;
   if (u) { a.href = u; a.removeAttribute("data-go"); } else { a.hidden = true; }
 });
+
+(function(){try{var y=new Intl.DateTimeFormat("fa-IR-u-ca-persian",{year:"numeric",timeZone:"Asia/Tehran"}).format(new Date());document.querySelectorAll("[data-year]").forEach(function(e){e.textContent=y;});}catch(e){}})();
