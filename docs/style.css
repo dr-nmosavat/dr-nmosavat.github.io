@@ -864,3 +864,22 @@ ul.plain li::before { content: ""; position: absolute; inset-inline-start: 0; to
 }
 
 @media (min-width: 801px) { .rv-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* reviews: compact on phones */
+@media (max-width: 800px) {
+  .rv-row { gap: 8px; padding-bottom: 6px; }
+  .rv { flex: 0 0 78%; padding: 12px 14px 10px; border-radius: 16px; gap: 6px; }
+  .rv .qm { width: 24px; height: 24px; inset-block-start: 10px; }
+  .rv .stars svg { width: 15px; height: 15px; }
+  .rv blockquote { font-size: 13.5px; line-height: 1.75; }
+  .rv figcaption { padding-top: 7px; gap: 8px; }
+  .rv .av { width: 30px; height: 30px; }
+  .rv .av svg { width: 17px; height: 17px; }
+  .rv figcaption b { font-size: 13.5px; }
+  .rv figcaption small { font-size: 12px; }
+  .rv-cta { margin-top: 10px; padding: 9px 14px; border-radius: 14px; }
+  .rv-cta p { font-size: 14px; }
+  .rv-cta .btn { padding: 6px 14px; font-size: 13.5px; }
+  .rv-head h2 { font-size: 20px; }
+}
+@media (max-width: 800px) { .rv-row { align-items: flex-start; } .rv blockquote { flex: none; } .rv { flex: 0 0 74%; } }
