@@ -654,3 +654,9 @@ a.vet-tag:hover { filter: brightness(1.12); transform: translateY(-1px); }
   .grid.five.compact .card:hover p { max-height: 180px; opacity: 1; margin-top: 8px; color: #fff; font-size: 15px; }
   .grid.five.compact .card:hover .ic { background: rgba(255,255,255,.18); color: #fff; }
 }
+
+/* gentle zoom-out on the active home slide */
+@keyframes kb-out { from { transform: scale(1.22); } to { transform: scale(1); } }
+.banner .slide.is-active img { animation: kb-out 7s ease-out both; transform-origin: 50% 40%; }
+.banner .slide:hover img { transform: none; }
+@media (prefers-reduced-motion: reduce) { .banner .slide.is-active img { animation: none; } }
