@@ -446,3 +446,19 @@ var DAY_NAME = { sat: "شنبه", sun: "یکشنبه", mon: "دوشنبه", tue:
   render();
   setInterval(render, 30000);
 })();
+
+// تاریخ و روز امروز در نوار زیر منو
+(function () {
+  var els = document.querySelectorAll(".db-date");
+  if (!els.length) return;
+  var df;
+  try { df = new Intl.DateTimeFormat("fa-IR-u-ca-persian", { timeZone: "Asia/Tehran", weekday: "long", day: "numeric", month: "long", year: "numeric" }); }
+  catch (e) { [].forEach.call(document.querySelectorAll(".datebar"), function (b) { b.hidden = true; }); return; }
+  function tick() {
+    var p = {}; df.formatToParts(new Date()).forEach(function (x) { p[x.type] = x.value; });
+    var t = [p.weekday, p.day, p.month, p.year].filter(Boolean).join(" ");
+    [].forEach.call(els, function (e) { e.textContent = t; });
+  }
+  tick();
+  setInterval(tick, 60000);
+})();
