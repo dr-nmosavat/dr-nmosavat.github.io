@@ -381,3 +381,68 @@ document.querySelectorAll("[data-bale]").forEach(function (a) {
   });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !sh.hidden) close(); });
 })();
+
+// برنامهٔ ساعت ویزیت. ساعت‌ها به‌صورت [شروع، پایان] و ۲۴ ساعته نوشته می‌شود (مثلاً [15, 21] یا [16.5, 20]).
+// هر روز می‌تواند چند بازه داشته باشد: [[9, 12], [16, 20]]. مقدار null یعنی آن روز تعطیل است.
+// ساعت‌های فعلی نمونه است و باید با شیفت واقعی دکتر عوض شود.
+var SCHEDULE = {
+  inperson: { sat: [[15, 21]], sun: [[15, 21]], mon: [[15, 21]], tue: [[15, 21]], wed: [[15, 21]], thu: [[15, 21]], fri: [[15, 21]] },
+  online:   { sat: "auto", sun: "auto", mon: "auto", tue: "auto", wed: "auto", thu: "auto", fri: "auto" } // "auto" یعنی با هماهنگی
+};
+var DAY_ORDER = ["sat", "sun", "mon", "tue", "wed", "thu", "fri"];
+var DAY_NAME = { sat: "شنبه", sun: "یکشنبه", mon: "دوشنبه", tue: "سه‌شنبه", wed: "چهارشنبه", thu: "پنجشنبه", fri: "جمعه" };
+
+(function () {
+  var cards = document.querySelectorAll(".today-card");
+  if (!cards.length) return;
+  var tz = "Asia/Tehran", df, nf;
+  try {
+    df = new Intl.DateTimeFormat("fa-IR-u-ca-persian", { timeZone: tz, weekday: "long", day: "numeric", month: "long", year: "numeric" });
+    nf = new Intl.NumberFormat("fa-IR", { useGrouping: false, minimumIntegerDigits: 2 });
+  } catch (e) { return; }
+  var wdFmt = new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "short" });
+  var hmFmt = new Intl.DateTimeFormat("en-US", { timeZone: tz, hour: "numeric", minute: "numeric", hour12: false });
+  var KEY = { Sat: "sat", Sun: "sun", Mon: "mon", Tue: "tue", Wed: "wed", Thu: "thu", Fri: "fri" };
+
+  function t(h) { var hh = Math.floor(h), mm = Math.round((h - hh) * 60); return nf.format(hh) + ":" + nf.format(mm); }
+  function rangesText(r) {
+    if (!r) return null;
+    return r.map(function (x) { return "از " + t(x[0]) + " تا " + t(x[1]); }).join(" و ");
+  }
+  function now() {
+    var d = new Date(), p = {};
+    hmFmt.formatToParts(d).forEach(function (x) { p[x.type] = x.value; });
+    return { date: d, key: KEY[wdFmt.format(d)], h: (parseInt(p.hour, 10) % 24) + parseInt(p.minute, 10) / 60 };
+  }
+  function isOpen(r, h) { return !!r && r.some(function (x) { return h >= x[0] && h < x[1]; }); }
+
+  function render() {
+    var n = now();
+    var inR = SCHEDULE.inperson[n.key], onR = SCHEDULE.online[n.key];
+    var parts = {}; df.formatToParts(n.date).forEach(function (x) { parts[x.type] = x.value; });
+    var dateText = [parts.weekday, parts.day, parts.month, parts.year].filter(Boolean).join(" ");
+    cards.forEach(function (c) {
+      c.querySelector(".tc-date").textContent = dateText;
+      var inEl = c.querySelector(".tc-in"), onEl = c.querySelector(".tc-on");
+      inEl.textContent = inR ? "امروز " + rangesText(inR) : "امروز ویزیت حضوری ندارد";
+      onEl.textContent = onR === "auto" ? "با هماهنگی در پیام" : (onR ? "امروز " + rangesText(onR) : "امروز ویزیت آنلاین ندارد");
+      var open = isOpen(inR, n.h);
+      var st = c.querySelector(".tc-state");
+      st.textContent = open ? "اکنون در کلینیک هستند" : (inR ? "اکنون خارج از شیفت" : "امروز تعطیل");
+      c.classList.toggle("is-open", open);
+      var tb = c.querySelector(".tc-table tbody");
+      if (tb && !tb.children.length) {
+        DAY_ORDER.forEach(function (k) {
+          var tr = document.createElement("tr"); tr.setAttribute("data-day", k);
+          var a = document.createElement("td"); a.textContent = DAY_NAME[k];
+          var b = document.createElement("td"); b.textContent = SCHEDULE.inperson[k] ? rangesText(SCHEDULE.inperson[k]) : "تعطیل";
+          var o = document.createElement("td"); o.textContent = SCHEDULE.online[k] === "auto" ? "با هماهنگی" : (SCHEDULE.online[k] ? rangesText(SCHEDULE.online[k]) : "—");
+          tr.appendChild(a); tr.appendChild(b); tr.appendChild(o); tb.appendChild(tr);
+        });
+      }
+      if (tb) [].forEach.call(tb.children, function (tr) { tr.classList.toggle("is-today", tr.getAttribute("data-day") === n.key); });
+    });
+  }
+  render();
+  setInterval(render, 30000);
+})();
