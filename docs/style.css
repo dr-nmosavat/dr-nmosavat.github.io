@@ -710,3 +710,7 @@ a.vet-tag:hover { filter: brightness(1.12); transform: translateY(-1px); }
 @media (min-width: 801px) { .about p { font-size: 15px; line-height: 1.8; } }
 
 @media (min-width: 801px) { .about { grid-template-columns: minmax(200px, 250px) 1fr; } .about p { font-size: 14.5px; } }
+
+/* photos: no drag / long-press save menu */
+.ph img, .ph video, .photo, #lb img, #lb video, .slider img, .gallery img { -webkit-user-drag: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.ph img, .ph video, .photo { pointer-events: none; }

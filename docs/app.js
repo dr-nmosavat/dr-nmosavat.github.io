@@ -487,3 +487,18 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
 });
 
 (function(){try{var y=new Intl.DateTimeFormat("fa-IR-u-ca-persian",{year:"numeric",timeZone:"Asia/Tehran"}).format(new Date());document.querySelectorAll("[data-year]").forEach(function(e){e.textContent=y;});}catch(e){}})();
+
+// جلوگیری از ذخیرهٔ ساده و اتفاقی عکس‌ها (فقط روی عکس‌ها)
+(function () {
+  var sel = ".ph, .photo, .slider, .gallery, #lb, .vid";
+  document.addEventListener("contextmenu", function (e) {
+    if (e.target.closest && e.target.closest(sel)) e.preventDefault();
+  });
+  document.addEventListener("dragstart", function (e) {
+    if (e.target.tagName === "IMG" || e.target.tagName === "VIDEO" || (e.target.closest && e.target.closest(sel))) e.preventDefault();
+  });
+  document.querySelectorAll("video").forEach(function (v) {
+    v.setAttribute("controlslist", "nodownload noplaybackrate");
+    v.setAttribute("disablepictureinpicture", "");
+  });
+})();
