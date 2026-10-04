@@ -638,3 +638,4 @@ a.vet-tag:hover { filter: brightness(1.12); transform: translateY(-1px); }
 .banner .dots { margin-top: 2px; }
 @media (max-width: 800px) { .banner .slider { --sw: 104px; } .solo.banner { padding: 8px 0 4px; } .banner-head .sub { display: none; } }
 .seo-text h2 { font-size: 20px; } .seo-text p { color: var(--muted); font-size: 15px; line-height: 2; max-width: 80ch; margin: 0 0 8px; }
+.table th { white-space: nowrap; width: 1%; padding-inline-end: 14px; } .table td { line-height: 1.8; }
