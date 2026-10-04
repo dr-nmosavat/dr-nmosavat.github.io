@@ -315,3 +315,20 @@ body.lb-open { overflow: hidden; }
   .slider { width: 100%; max-width: 300px; margin-inline: auto; }
 }
 @media (prefers-reduced-motion: reduce) { .slider .track { transition: none; } }
+
+/* compact top banner slider */
+.solo { gap: 18px; padding: 14px 18px 14px 14px; border-radius: 22px; margin-top: 4px; }
+.solo-text h2 { font-size: 24px; margin-bottom: 2px; }
+.solo-text .sub { margin-bottom: 6px; font-size: 15px; }
+.slider { width: 200px; }
+.slider .slide { aspect-ratio: 1 / 1; }
+.slider .dots { margin-top: 8px; }
+@media (max-width: 800px) {
+  .solo { flex-direction: row; align-items: center; gap: 12px; padding: 12px; }
+  .solo-text h2 { font-size: 20px; }
+  .solo-text .sub { font-size: 13.5px; line-height: 1.7; }
+  .slider { width: 140px; max-width: 140px; margin-inline: 0; flex: none; }
+  .slider .s-prev, .slider .s-next { width: 28px; height: 28px; font-size: 20px; }
+  .slider .dot { width: 7px; height: 7px; }
+  .slider .dot[aria-current="true"] { width: 16px; }
+}
