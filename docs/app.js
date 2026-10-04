@@ -354,3 +354,30 @@ document.querySelectorAll("[data-bale]").forEach(function (a) {
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !sh.hidden) close(); });
   paint();
 })();
+
+// نیاز به مشاوره: انتخاب پیام‌رسان
+(function () {
+  var sh = document.getElementById("csheet");
+  if (!sh) return;
+  var list = sh.querySelector(".sheet-list");
+  var opts = [];
+  if (INFO.whatsapp) opts.push({ t: "واتساپ", u: "https://wa.me/" + INFO.whatsapp + "?text=" + encodeURIComponent("سلام، نیاز به مشاوره دارم."), n: "پیام آماده می‌شود" });
+  if (INFO.bale) opts.push({ t: "بله", u: "https://ble.ir/" + INFO.bale, n: "پیام را خودتان بنویسید", alt: true });
+  if (INFO.instagram) opts.push({ t: "اینستاگرام", u: "https://ig.me/m/" + INFO.instagram, n: "پیام مستقیم", alt: true });
+  opts.forEach(function (o) {
+    var a = document.createElement("a");
+    a.className = "sheet-opt" + (o.alt ? " alt" : "");
+    a.href = o.u; a.target = "_blank"; a.rel = "noopener";
+    var b = document.createElement("span"); b.textContent = o.t;
+    var sm = document.createElement("small"); sm.textContent = o.n;
+    a.appendChild(b); a.appendChild(sm); list.appendChild(a);
+  });
+  function open() { sh.hidden = false; document.body.classList.add("lb-open"); }
+  function close() { sh.hidden = true; document.body.classList.remove("lb-open"); }
+  document.addEventListener("click", function (e) {
+    var t = e.target;
+    if (t.closest && t.closest("[data-consult]")) { e.preventDefault(); open(); return; }
+    if (!sh.hidden && (t === sh || (t.closest && t.closest(".sheet-x") && sh.contains(t)))) close();
+  });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !sh.hidden) close(); });
+})();
