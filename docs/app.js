@@ -5,7 +5,7 @@ var INFO = {
   whatsapp: "989057392125",
   instagram: "Dr.niloofarmosavat",
   bale: "dr_niloofar_mosavat",
-  hours: "یکشنبه ۱۱ تا ۲۱ · سه‌شنبه و جمعه ۱۵ تا ۲۱ · سایر روزها با وقت قبلی",
+  hours: "۱۱:۰۰ تا ۲۱:۰۰",
   address: "ونک، شیخ بهایی شمالی، برج مرمر، طبقه اول",
   neshan: "",
   balad: ""
@@ -22,12 +22,9 @@ document.querySelectorAll("[data-book]").forEach(function (a) {
 var host = document.getElementById("contact-rows");
 if (host) {
   var rows = [
-    { label: "واتساپ", key: "whatsapp", link: function () { return waLink; }, text: function () { return "پیام در واتساپ"; } },
-    { label: "اینستاگرام", key: "instagram", link: function (v) { return "https://instagram.com/" + v; }, text: function (v) { return "@" + v; }, ltr: true },
-    { label: "بله", key: "bale", link: function (v) { return "https://ble.ir/" + v; }, text: function (v) { return "@" + v; }, ltr: true },
     { label: "کلینیک", key: "clinic" },
     { label: "نشانی", key: "address" },
-    { label: "ساعت کاری", key: "hours" },
+    { label: "ساعت کاری کلینیک", key: "hours" },
     { label: "مسیریابی", key: "gmaps", value: gmaps, link: function (v) { return v; }, text: function () { return "باز کردن در گوگل مپ"; } },
     { label: "نشان", key: "neshan", link: function (v) { return v; }, text: function () { return "مسیریابی در نشان"; } },
     { label: "بلد", key: "balad", link: function (v) { return v; }, text: function () { return "مسیریابی در بلد"; } },
@@ -406,3 +403,12 @@ var DAY_NAME = { sat: "شنبه", sun: "یکشنبه", mon: "دوشنبه", tue:
   tick();
   setInterval(tick, 60000);
 })();
+
+// دکمه‌های پیام‌رسان در صفحهٔ تماس
+document.querySelectorAll("[data-msg]").forEach(function (a) {
+  var k = a.getAttribute("data-msg"), u = "";
+  if (k === "whatsapp" && INFO.whatsapp) u = "https://wa.me/" + INFO.whatsapp + "?text=" + encodeURIComponent("سلام دکتر مساوات، می‌خوام نوبت بگیرم.");
+  if (k === "bale" && INFO.bale) u = "https://ble.ir/" + INFO.bale;
+  if (k === "instagram" && INFO.instagram) u = "https://instagram.com/" + INFO.instagram;
+  if (u) { a.href = u; a.removeAttribute("data-go"); } else { a.hidden = true; }
+});
