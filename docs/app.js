@@ -168,3 +168,35 @@ document.querySelectorAll("[data-bale]").forEach(function (a) {
   if (INFO.bale) { a.href = "https://ble.ir/" + INFO.bale; a.target = "_blank"; a.rel = "noopener"; a.removeAttribute("data-go"); }
   else { a.hidden = true; }
 });
+
+// اسلایدر عکس‌ها
+(function () {
+  var s = document.getElementById("slider");
+  if (!s) return;
+  var track = s.querySelector(".track"), slides = [].slice.call(s.querySelectorAll(".slide")), dots = [].slice.call(s.querySelectorAll(".dot"));
+  var i = 0, timer = null, startX = null, dx = 0, moved = false, reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function go(n) {
+    i = (n + slides.length) % slides.length;
+    track.style.transform = "translateX(" + (-i * 100) + "%)";
+    dots.forEach(function (d, k) { d.setAttribute("aria-current", k === i ? "true" : "false"); });
+    slides.forEach(function (sl, k) { var v = sl.querySelector("video"); if (v) { if (k === i) { var p = v.play(); if (p && p.catch) p.catch(function () {}); } else { try { v.pause(); } catch (e) {} } } });
+  }
+  function stop() { if (timer) { clearInterval(timer); timer = null; } }
+  function start() { stop(); if (!reduce) timer = setInterval(function () { var lb = document.getElementById("lb"); if (lb && !lb.hidden) return; go(i + 1); }, 4500); }
+  s.querySelector(".s-prev").addEventListener("click", function () { go(i - 1); start(); });
+  s.querySelector(".s-next").addEventListener("click", function () { go(i + 1); start(); });
+  dots.forEach(function (d, k) { d.addEventListener("click", function () { go(k); start(); }); });
+  var vp = s.querySelector(".viewport");
+  vp.addEventListener("pointerdown", function (e) { startX = e.clientX; dx = 0; moved = false; stop(); });
+  vp.addEventListener("pointermove", function (e) { if (startX === null) return; dx = e.clientX - startX; if (Math.abs(dx) > 8) moved = true; });
+  function end() { if (startX === null) return; if (Math.abs(dx) > 40) go(dx < 0 ? i + 1 : i - 1); startX = null; start(); }
+  vp.addEventListener("pointerup", end);
+  vp.addEventListener("pointercancel", end);
+  vp.addEventListener("pointerleave", function () { if (startX !== null) end(); });
+  vp.addEventListener("click", function (e) { if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
+  s.addEventListener("mouseenter", stop);
+  s.addEventListener("mouseleave", start);
+  s.addEventListener("focusin", stop);
+  s.addEventListener("focusout", start);
+  go(0); start();
+})();
