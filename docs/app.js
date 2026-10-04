@@ -4,6 +4,7 @@ var INFO = {
   phone: "",
   whatsapp: "989057392125",
   instagram: "Dr.niloofarmosavat",
+  bale: "dr_niloofar_mosavat",
   hours: "۱۵:۰۰ تا ۲۱:۰۰",
   address: "ونک، شیخ بهایی شمالی، برج مرمر، طبقه اول",
   neshan: "",
@@ -23,6 +24,7 @@ if (host) {
   var rows = [
     { label: "واتساپ", key: "whatsapp", link: function () { return waLink; }, text: function () { return "پیام در واتساپ"; } },
     { label: "اینستاگرام", key: "instagram", link: function (v) { return "https://instagram.com/" + v; }, text: function (v) { return "@" + v; }, ltr: true },
+    { label: "بله", key: "bale", link: function (v) { return "https://ble.ir/" + v; }, text: function (v) { return "@" + v; }, ltr: true },
     { label: "کلینیک", key: "clinic" },
     { label: "نشانی", key: "address" },
     { label: "ساعت کاری", key: "hours" },
@@ -160,4 +162,9 @@ document.querySelectorAll("[data-ig]").forEach(function (a) {
 });
 document.querySelectorAll("[data-map]").forEach(function (a) {
   a.href = gmaps; a.target = "_blank"; a.rel = "noopener"; a.removeAttribute("data-go");
+});
+
+document.querySelectorAll("[data-bale]").forEach(function (a) {
+  if (INFO.bale) { a.href = "https://ble.ir/" + INFO.bale; a.target = "_blank"; a.rel = "noopener"; a.removeAttribute("data-go"); }
+  else { a.hidden = true; }
 });
