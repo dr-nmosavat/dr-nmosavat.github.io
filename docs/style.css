@@ -639,3 +639,18 @@ a.vet-tag:hover { filter: brightness(1.12); transform: translateY(-1px); }
 @media (max-width: 800px) { .banner .slider { --sw: 104px; } .solo.banner { padding: 8px 0 4px; } .banner-head .sub { display: none; } }
 .seo-text h2 { font-size: 20px; } .seo-text p { color: var(--muted); font-size: 15px; line-height: 2; max-width: 80ch; margin: 0 0 8px; }
 .table th { white-space: nowrap; width: 1%; padding-inline-end: 14px; } .table td { line-height: 1.8; }
+
+.hero2 h1 { font-size: clamp(21px, 3.2vw, 30px); }
+@media (min-width: 801px) and (hover: hover) {
+  .grid.five.compact { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; align-items: start; }
+  .grid.five.compact > .card, .grid.five.compact > .card:nth-child(n+4) { grid-column: auto; }
+  .grid.five.compact .card { padding: 9px 12px; border-radius: 14px; grid-template-columns: 34px 1fr; column-gap: 9px; align-items: center; transition: background .2s, border-color .2s, transform .2s, box-shadow .2s; }
+  .grid.five.compact .card .ic { width: 34px; height: 34px; border-radius: 10px; grid-row: 1; }
+  .grid.five.compact .card .ic svg { width: 18px; height: 18px; }
+  .grid.five.compact .card h3 { font-size: 14px; line-height: 1.5; transition: font-size .2s, color .2s; }
+  .grid.five.compact .card p { grid-column: 1 / -1; max-height: 0; opacity: 0; overflow: hidden; margin: 0; font-size: 14px; line-height: 1.8; transition: max-height .3s ease, opacity .2s ease, margin .2s; }
+  .grid.five.compact .card:hover { background: #17406f; border-color: #17406f; transform: translateY(-2px) scale(1.04); box-shadow: 0 12px 26px rgba(23,64,111,.28); position: relative; z-index: 2; }
+  .grid.five.compact .card:hover h3 { font-size: 16px; color: #fff; }
+  .grid.five.compact .card:hover p { max-height: 180px; opacity: 1; margin-top: 8px; color: #fff; font-size: 15px; }
+  .grid.five.compact .card:hover .ic { background: rgba(255,255,255,.18); color: #fff; }
+}
