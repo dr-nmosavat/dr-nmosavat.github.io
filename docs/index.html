@@ -9,21 +9,24 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=202610041037">
+<link rel="stylesheet" href="style.css?v=202610041048">
     </head>
     <body>
     <div class="wrap">
   <header class="top">
-    <a class="brand" href="index.html"><svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true"><ellipse cx="13" cy="21" rx="5" ry="6.5"/><ellipse cx="22" cy="12" rx="5" ry="6.5"/><ellipse cx="34" cy="12" rx="5" ry="6.5"/><ellipse cx="43" cy="21" rx="4.5" ry="6"/><path d="M28 24c-7 0-14 7-14 13 0 4 3 6 7 6 3 0 4-1 7-1s4 1 7 1c4 0 7-2 7-6 0-6-7-13-14-13z"/></svg><span>دکتر نیلوفر مساوات</span></a>
+    <a class="brand" href="index.html"><svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true"><ellipse cx="13" cy="21" rx="5" ry="6.5"/><ellipse cx="22" cy="12" rx="5" ry="6.5"/><ellipse cx="34" cy="12" rx="5" ry="6.5"/><ellipse cx="43" cy="21" rx="4.5" ry="6"/><path d="M28 24c-7 0-14 7-14 13 0 4 3 6 7 6 3 0 4-1 7-1s4 1 7 1c4 0 7-2 7-6 0-6-7-13-14-13z"/></svg><span>دکتر نیلوفر مساوات</span><span class="vet-tag">دامپزشک</span></a>
     <nav aria-label="منوی سایت"><a href="index.html" aria-current="page">صفحه اول</a><a href="services.html">خدمات</a><a href="learn.html">بیشتر بدانید</a><a href="about.html">درباره دکتر</a><a href="contact.html">تماس</a></nav>
   </header>
   <main>
     
     <section>
-      <div class="solo">
-        <div class="solo-text">
-          <h2>همراهان کوچک شما</h2>
-          <p class="sub" style="margin-bottom:8px">هر پت یک شخصیت دارد، و مراقبتش هم همین‌طور.</p>
+      <div class="solo banner">
+        <svg class="deco d1" viewBox="0 0 48 48" fill="currentColor" aria-hidden="true"><ellipse cx="13" cy="21" rx="5" ry="6.5"/><ellipse cx="22" cy="12" rx="5" ry="6.5"/><ellipse cx="34" cy="12" rx="5" ry="6.5"/><ellipse cx="43" cy="21" rx="4.5" ry="6"/><path d="M28 24c-7 0-14 7-14 13 0 4 3 6 7 6 3 0 4-1 7-1s4 1 7 1c4 0 7-2 7-6 0-6-7-13-14-13z"/></svg><svg class="deco d2" viewBox="0 0 48 48" fill="currentColor" aria-hidden="true"><ellipse cx="13" cy="21" rx="5" ry="6.5"/><ellipse cx="22" cy="12" rx="5" ry="6.5"/><ellipse cx="34" cy="12" rx="5" ry="6.5"/><ellipse cx="43" cy="21" rx="4.5" ry="6"/><path d="M28 24c-7 0-14 7-14 13 0 4 3 6 7 6 3 0 4-1 7-1s4 1 7 1c4 0 7-2 7-6 0-6-7-13-14-13z"/></svg><svg class="deco d3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.6-7 10-7 10z"/></svg><svg class="deco d4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.6-7 10-7 10z"/></svg>
+        <div class="banner-head">
+          <div>
+            <h2>همراهان کوچک شما</h2>
+            <p class="sub">هر پت یک شخصیت دارد، و مراقبتش هم همین‌طور.</p>
+          </div>
           <a class="link" href="about.html">لحظات زیبا با کوچولوهای شما</a>
         </div>
         <div class="slider" id="slider" aria-roledescription="اسلاید" aria-label="تصویرهایی از پت‌ها">
@@ -42,6 +45,7 @@
         <p class="lead">دکتر نیلوفر مساوات، دامپزشک با ۵ سال سابقهٔ فعالیت بالینی. از ویزیت و چکاپ دوره‌ای تا درمان‌های تخصصی، با تشخیص درست، درمان صحیح و توضیح روشن برای شما.</p>
         <div class="actions">
           <a class="btn primary" href="booking.html">گرفتن نوبت</a>
+          <button class="btn online" type="button" data-online>ویزیت آنلاین</button>
           <a class="btn ghost" href="services.html">دیدن خدمات</a>
         </div>
         <ul class="facts">
@@ -78,7 +82,7 @@
       <h2>خدمات در یک نگاه</h2>
       <p class="sub">دو گروه خدمت، با جزئیات در صفحهٔ خدمات.</p>
       <div class="grid">
-        <article class="card"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h4l2-5 4 10 2-5h4"/></svg></div><h3>داخلی</h3><p>ویزیت، واکسیناسیون، چکاپ دوره‌ای، تنظیم رژیم غذایی، بررسی سلامت پت و مشاورهٔ تخصصی.</p></article>
+        <article class="card"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h4l2-5 4 10 2-5h4"/></svg></div><h3>داخلی</h3><p>ویزیت، واکسیناسیون، چکاپ دوره‌ای، تنظیم رژیم غذایی، بررسی سلامت پت، مشاورهٔ تخصصی و ویزیت آنلاین.</p></article>
         <article class="card"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.6-7 10-7 10z"/></svg></div><h3>درمان‌های تخصصی</h3><p>پیگیری و درمان بیماری‌هایی که به بررسی و برنامهٔ درمانی دقیق‌تر نیاز دارند.</p><a class="link" href="services.html">همهٔ خدمات</a></article>
               </div>
     </section>
@@ -124,8 +128,16 @@
   <div class="lb-body"></div>
   <button class="lb-next" type="button" aria-label="بعدی">‹</button>
 </div>
+<div class="sheet" id="sheet" hidden role="dialog" aria-modal="true" aria-label="ویزیت آنلاین">
+  <div class="sheet-card">
+    <button class="sheet-x" type="button" aria-label="بستن">×</button>
+    <h2>ویزیت آنلاین</h2>
+    <p>مشاورهٔ آنلاین برای سؤال‌هایی است که به معاینهٔ حضوری نیاز ندارند. اگر لازم باشد، ویزیت حضوری پیشنهاد می‌شود. از کدام پیام‌رسان شروع کنیم؟</p>
+    <div class="sheet-list"></div>
+  </div>
+</div>
 <a class="fab" data-consult href="contact.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4V5z"/></svg><span>نیاز به مشاوره؟</span></a>
-<script src="app.js?v=202610041037"></script>
+<script src="app.js?v=202610041048"></script>
     </body>
     </html>
     

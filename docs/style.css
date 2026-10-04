@@ -332,3 +332,51 @@ body.lb-open { overflow: hidden; }
   .slider .dot { width: 7px; height: 7px; }
   .slider .dot[aria-current="true"] { width: 16px; }
 }
+
+/* banner coverflow slider */
+.solo.banner { display: block; position: relative; overflow: hidden; padding: 16px 0 12px; border-radius: 24px; background: linear-gradient(180deg, var(--surface), var(--blue-soft)); }
+.banner .deco { position: absolute; pointer-events: none; color: var(--blue); opacity: .09; }
+.banner .deco.d1 { width: 120px; height: 120px; inset-block-start: -22px; inset-inline-start: -16px; transform: rotate(-14deg); }
+.banner .deco.d2 { width: 90px; height: 90px; inset-block-end: -18px; inset-inline-end: 4%; transform: rotate(16deg); }
+.banner .deco.d3 { width: 42px; height: 42px; inset-block-start: 14px; inset-inline-end: 38%; opacity: .12; color: #d8526b; }
+.banner .deco.d4 { width: 30px; height: 30px; inset-block-end: 20px; inset-inline-start: 30%; opacity: .12; color: #d8526b; }
+.banner-head { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 10px 18px; flex-wrap: wrap; padding-inline: 22px; margin-bottom: 12px; }
+.banner-head h2 { margin: 0; font-size: 24px; }
+.banner-head .sub { margin: 0; font-size: 15px; }
+.banner-head .link { margin: 0; }
+.banner .slider { position: relative; width: 100%; max-width: none; margin: 0; flex: none; --sw: 190px; }
+.banner .viewport { border-radius: 0; direction: ltr; }
+.banner .track { display: flex; gap: 14px; direction: ltr; transition: transform .5s ease; padding-block: 8px; }
+.banner .slide { flex: 0 0 var(--sw); width: var(--sw); aspect-ratio: 4 / 5; border-radius: 18px; border: 2px solid var(--surface); box-shadow: 0 8px 22px rgba(23,64,111,.18); filter: blur(2.5px); opacity: .6; transform: scale(.92); transition: filter .4s, opacity .4s, transform .4s; cursor: pointer; }
+.banner .slide.is-active { filter: none; opacity: 1; transform: scale(1); cursor: zoom-in; z-index: 1; }
+.banner .slide .zoom { opacity: 0; }
+.banner .slide.is-active .zoom { opacity: 1; }
+.banner .dots { margin-top: 6px; }
+@media (max-width: 800px) {
+  .solo.banner { flex-direction: initial; padding: 14px 0 10px; }
+  .banner .slider { --sw: 148px; max-width: none; margin: 0; }
+  .banner .track { gap: 10px; }
+  .banner-head { padding-inline: 16px; }
+  .banner-head h2 { font-size: 21px; }
+  .banner-head .sub { font-size: 13.5px; }
+  .banner .s-prev, .banner .s-next { width: 30px; height: 30px; font-size: 20px; }
+}
+@media (prefers-reduced-motion: reduce) { .banner .track, .banner .slide { transition: none; } }
+
+/* vet tag in header */
+.vet-tag { display: inline-block; margin-inline-start: 2px; padding: 3px 14px; border-radius: 999px; font-size: 13px; font-weight: 700; color: #fff; background: linear-gradient(135deg, #1f5ea6, #17406f); box-shadow: 0 4px 10px rgba(23,64,111,.25); white-space: nowrap; }
+@media (max-width: 800px) { .brand { flex-wrap: wrap; justify-content: center; row-gap: 4px; } }
+
+/* online visit sheet */
+.sheet { position: fixed; inset: 0; z-index: 70; background: rgba(8,16,26,.62); display: flex; align-items: flex-end; justify-content: center; padding: 12px; }
+.sheet[hidden] { display: none; }
+.sheet-card { position: relative; width: 100%; max-width: 460px; background: var(--surface); border-radius: 26px; padding: 26px 22px 22px; box-shadow: 0 20px 50px rgba(0,0,0,.3); }
+.sheet-card h2 { margin: 0 0 6px; font-size: 24px; }
+.sheet-card p { margin: 0 0 16px; color: var(--muted); font-size: 15px; }
+.sheet-x { position: absolute; inset-block-start: 12px; inset-inline-start: 12px; width: 36px; height: 36px; border: 0; border-radius: 50%; background: var(--blue-soft); color: var(--blue-deep); font-size: 22px; cursor: pointer; font-family: inherit; }
+.sheet-list { display: grid; gap: 10px; }
+.sheet-opt { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 18px; border-radius: 16px; border: 2px solid var(--blue); background: var(--blue); color: var(--on-blue); text-decoration: none; font-weight: 700; }
+.sheet-opt small { font-weight: 400; opacity: .85; font-size: 13px; }
+.sheet-opt.alt { background: var(--surface); color: var(--blue-deep); }
+@media (min-width: 700px) { .sheet { align-items: center; } }
+.btn.online { background: var(--blue-soft); color: var(--blue-deep); border-color: var(--blue-soft); }

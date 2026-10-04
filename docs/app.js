@@ -169,34 +169,81 @@ document.querySelectorAll("[data-bale]").forEach(function (a) {
   else { a.hidden = true; }
 });
 
-// اسلایدر عکس‌ها
+// اسلایدر عکس‌ها (عکس وسط واضح، بقیه محو)
 (function () {
   var s = document.getElementById("slider");
   if (!s) return;
-  var track = s.querySelector(".track"), slides = [].slice.call(s.querySelectorAll(".slide")), dots = [].slice.call(s.querySelectorAll(".dot"));
-  var i = 0, timer = null, startX = null, dx = 0, moved = false, reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var vp = s.querySelector(".viewport"), track = s.querySelector(".track");
+  var slides = [].slice.call(s.querySelectorAll(".slide")), dots = [].slice.call(s.querySelectorAll(".dot"));
+  var i = 0, timer = null, startX = null, dx = 0, moved = false;
+  var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function layout() {
+    var sw = slides[0].offsetWidth, gap = parseFloat(getComputedStyle(track).columnGap) || 12;
+    var total = slides.length * sw + (slides.length - 1) * gap, vw = vp.clientWidth;
+    var tx = vw / 2 - (i * (sw + gap) + sw / 2);
+    if (total <= vw) tx = (vw - total) / 2;
+    else tx = Math.min(0, Math.max(vw - total, tx));
+    track.style.transform = "translateX(" + tx + "px)";
+  }
   function go(n) {
     i = (n + slides.length) % slides.length;
-    track.style.transform = "translateX(" + (-i * 100) + "%)";
+    slides.forEach(function (sl, k) {
+      sl.classList.toggle("is-active", k === i);
+      var v = sl.querySelector("video");
+      if (v) { if (k === i) { var p = v.play(); if (p && p.catch) p.catch(function () {}); } else { try { v.pause(); } catch (e) {} } }
+    });
     dots.forEach(function (d, k) { d.setAttribute("aria-current", k === i ? "true" : "false"); });
-    slides.forEach(function (sl, k) { var v = sl.querySelector("video"); if (v) { if (k === i) { var p = v.play(); if (p && p.catch) p.catch(function () {}); } else { try { v.pause(); } catch (e) {} } } });
+    layout();
   }
   function stop() { if (timer) { clearInterval(timer); timer = null; } }
   function start() { stop(); if (!reduce) timer = setInterval(function () { var lb = document.getElementById("lb"); if (lb && !lb.hidden) return; go(i + 1); }, 4500); }
   s.querySelector(".s-prev").addEventListener("click", function () { go(i - 1); start(); });
   s.querySelector(".s-next").addEventListener("click", function () { go(i + 1); start(); });
   dots.forEach(function (d, k) { d.addEventListener("click", function () { go(k); start(); }); });
-  var vp = s.querySelector(".viewport");
   vp.addEventListener("pointerdown", function (e) { startX = e.clientX; dx = 0; moved = false; stop(); });
   vp.addEventListener("pointermove", function (e) { if (startX === null) return; dx = e.clientX - startX; if (Math.abs(dx) > 8) moved = true; });
   function end() { if (startX === null) return; if (Math.abs(dx) > 40) go(dx < 0 ? i + 1 : i - 1); startX = null; start(); }
   vp.addEventListener("pointerup", end);
   vp.addEventListener("pointercancel", end);
   vp.addEventListener("pointerleave", function () { if (startX !== null) end(); });
-  vp.addEventListener("click", function (e) { if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
+  vp.addEventListener("click", function (e) {
+    var sl = e.target.closest ? e.target.closest(".slide") : null;
+    if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; return; }
+    if (sl && !sl.classList.contains("is-active")) { e.preventDefault(); e.stopPropagation(); go(slides.indexOf(sl)); start(); }
+  }, true);
   s.addEventListener("mouseenter", stop);
   s.addEventListener("mouseleave", start);
   s.addEventListener("focusin", stop);
   s.addEventListener("focusout", start);
+  window.addEventListener("resize", layout);
+  window.addEventListener("load", layout);
   go(0); start();
+})();
+
+// ویزیت آنلاین: انتخاب پیام‌رسان
+(function () {
+  var sh = document.getElementById("sheet");
+  if (!sh) return;
+  var list = sh.querySelector(".sheet-list");
+  var msg = "سلام دکتر مساوات، می‌خوام ویزیت آنلاین بگیرم.";
+  var opts = [];
+  if (INFO.whatsapp) opts.push({ t: "واتساپ", u: "https://wa.me/" + INFO.whatsapp + "?text=" + encodeURIComponent(msg), n: "پیام آماده می‌شود" });
+  if (INFO.bale) opts.push({ t: "بله", u: "https://ble.ir/" + INFO.bale, n: "پیام را خودتان بنویسید", alt: true });
+  if (INFO.instagram) opts.push({ t: "اینستاگرام", u: "https://ig.me/m/" + INFO.instagram, n: "پیام مستقیم", alt: true });
+  opts.forEach(function (o) {
+    var a = document.createElement("a");
+    a.className = "sheet-opt" + (o.alt ? " alt" : "");
+    a.href = o.u; a.target = "_blank"; a.rel = "noopener";
+    var b = document.createElement("span"); b.textContent = o.t;
+    var sm = document.createElement("small"); sm.textContent = o.n;
+    a.appendChild(b); a.appendChild(sm); list.appendChild(a);
+  });
+  function open() { sh.hidden = false; document.body.classList.add("lb-open"); }
+  function close() { sh.hidden = true; document.body.classList.remove("lb-open"); }
+  document.addEventListener("click", function (e) {
+    var t = e.target;
+    if (t.closest && t.closest("[data-online]")) { e.preventDefault(); open(); return; }
+    if (!sh.hidden && (t === sh || (t.closest && t.closest(".sheet-x")))) close();
+  });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !sh.hidden) close(); });
 })();
