@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=202610041057">
+<link rel="stylesheet" href="style.css?v=202610041102">
     </head>
     <body>
     <div class="wrap">
@@ -100,8 +100,25 @@
     <div class="sheet-list"></div>
   </div>
 </div>
+<div class="sheet" id="rsheet" hidden role="dialog" aria-modal="true" aria-label="نظر شما">
+  <div class="sheet-card">
+    <button class="sheet-x" type="button" aria-label="بستن">×</button>
+    <h2>نظر شما</h2>
+    <p>تجربهٔ خودتان را کوتاه بنویسید. با زدن دکمهٔ آخر، واتساپ با پیام آماده باز می‌شود و فقط «ارسال» را می‌زنید.</p>
+    <div class="rstars" id="rv-stars" role="radiogroup" aria-label="امتیاز">
+      <button type="button" data-v="1" aria-label="۱ ستاره">★</button><button type="button" data-v="2" aria-label="۲ ستاره">★</button><button type="button" data-v="3" aria-label="۳ ستاره">★</button><button type="button" data-v="4" aria-label="۴ ستاره">★</button><button type="button" data-v="5" aria-label="۵ ستاره" class="on">★</button>
+    </div>
+    <div class="rform">
+      <input id="rv-name" type="text" placeholder="نام (اختیاری، اسم کوچک کافی است)" autocomplete="given-name">
+      <select id="rv-who" aria-label="نوع پت"><option value="">نوع پت (اختیاری)</option><option>گربه</option><option>سگ</option><option>سایر</option></select>
+      <textarea id="rv-text" rows="4" placeholder="تجربهٔ شما چطور بود؟"></textarea>
+      <label class="chk"><input type="checkbox" id="rv-ok" checked> اجازه می‌دهم نظرم (فقط با اسم کوچک) در سایت نمایش داده شود.</label>
+    </div>
+    <a class="sheet-opt" id="rv-send" href="#" target="_blank" rel="noopener"><span>ارسال در واتساپ</span><small>پیام آماده می‌شود</small></a>
+  </div>
+</div>
 <a class="fab" data-consult href="contact.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4V5z"/></svg><span>نیاز به مشاوره؟</span></a>
-<script src="app.js?v=202610041057"></script>
+<script src="app.js?v=202610041102"></script>
     </body>
     </html>
     

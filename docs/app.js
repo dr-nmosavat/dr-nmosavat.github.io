@@ -320,9 +320,37 @@ document.querySelectorAll("[data-bale]").forEach(function (a) {
   setInterval(tick, 20000);
 })();
 
-// دکمهٔ «نظر خود را بنویسید»
-document.querySelectorAll("[data-review]").forEach(function (a) {
-  if (!INFO.whatsapp) return;
-  a.href = "https://wa.me/" + INFO.whatsapp + "?text=" + encodeURIComponent("سلام، می‌خوام نظرم رو دربارهٔ ویزیت بنویسم.");
-  a.target = "_blank"; a.rel = "noopener"; a.removeAttribute("data-go");
-});
+// فرم نظر: ساخت پیام آماده برای واتساپ
+(function () {
+  var sh = document.getElementById("rsheet");
+  if (!sh) return;
+  var stars = [].slice.call(sh.querySelectorAll("#rv-stars button"));
+  var rating = 5;
+  var fa = ["۱", "۲", "۳", "۴", "۵"];
+  function paint() { stars.forEach(function (b) { b.classList.toggle("on", parseInt(b.getAttribute("data-v"), 10) <= rating); }); }
+  function build() {
+    var name = document.getElementById("rv-name").value.trim();
+    var who = document.getElementById("rv-who").value;
+    var text = document.getElementById("rv-text").value.trim();
+    var ok = document.getElementById("rv-ok").checked;
+    var lines = ["سلام، می‌خوام نظرم رو دربارهٔ دکتر مساوات بنویسم."];
+    lines.push("امتیاز: " + fa[rating - 1] + " از ۵");
+    if (name) lines.push("نام: " + name);
+    if (who) lines.push("پت: " + who);
+    if (text) lines.push("نظر: " + text);
+    lines.push(ok ? "اجازه می‌دهم نظرم با اسم کوچک در سایت نمایش داده شود." : "لطفاً نظرم در سایت نمایش داده نشود.");
+    if (INFO.whatsapp) document.getElementById("rv-send").href = "https://wa.me/" + INFO.whatsapp + "?text=" + encodeURIComponent(lines.join("\n"));
+  }
+  function open() { sh.hidden = false; document.body.classList.add("lb-open"); build(); }
+  function close() { sh.hidden = true; document.body.classList.remove("lb-open"); }
+  stars.forEach(function (b) { b.addEventListener("click", function () { rating = parseInt(b.getAttribute("data-v"), 10); paint(); build(); }); });
+  sh.addEventListener("input", build);
+  sh.addEventListener("change", build);
+  document.addEventListener("click", function (e) {
+    var t = e.target;
+    if (t.closest && t.closest("[data-review]")) { e.preventDefault(); open(); return; }
+    if (!sh.hidden && (t === sh || (t.closest && t.closest(".sheet-x") && sh.contains(t)))) close();
+  });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !sh.hidden) close(); });
+  paint();
+})();
