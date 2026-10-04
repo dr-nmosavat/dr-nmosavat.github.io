@@ -3,7 +3,7 @@ var INFO = {
   clinic: "مرکز تخصصی دامپزشکی ونک",
   phone: "",
   whatsapp: "989057392125",
-  instagram: "Dr.niloofarmosavat",
+  instagram: "dr.niloofarmosavat",
   bale: "dr_niloofar_mosavat",
   hours: "۱۱:۰۰ تا ۲۱:۰۰",
   address: "ونک، شیخ بهایی شمالی، برج مرمر، طبقه اول",
