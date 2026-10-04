@@ -575,6 +575,6 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
     if (sheet) return;
     place(); b.hidden = false;
     requestAnimationFrame(function () { b.classList.add("show"); });
-    timer = setTimeout(function () { hide(true); }, 7000);
-  }, 4000);
+    timer = setTimeout(function () { hide(true); }, 3000);
+  }, 2000);
 })();

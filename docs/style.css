@@ -848,3 +848,6 @@ ul.plain li::before { content: ""; position: absolute; inset-inline-start: 0; to
 .banner-head { justify-content: center; margin-bottom: 4px; }
 .banner-head .link { font-size: 18px; font-weight: 800; }
 @media (max-width: 800px) { .banner-head .link { font-size: 16px; } }
+
+.fab { animation: fab-pulse 1.5s ease-out 2s 2; }
+@media (prefers-reduced-motion: reduce) { .fab { animation: none; } }
