@@ -602,3 +602,20 @@ a.vet-tag:hover { filter: brightness(1.12); transform: translateY(-1px); }
 @media (max-width: 900px) { .group .items { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 520px) { .group .items { grid-template-columns: 1fr; } }
 .items li, .items span { line-height: 1.55; } .items b { margin-bottom: 2px; } .items li { display: flex; flex-direction: column; justify-content: flex-start; }
+
+.page-head { text-align: center; }
+.page-head .sub { margin-inline: auto; }
+.expl { gap: 7px; }
+.expl details { border-radius: 12px; transition: background .15s, border-color .15s; }
+.expl summary { padding: 8px 14px; font-size: 15px; transition: color .15s; }
+.expl summary::after { width: 22px; height: 22px; font-size: 16px; }
+.expl details p { padding: 0 14px 10px; font-size: 14px; line-height: 1.8; }
+.expl details:hover { background: #17406f; border-color: #17406f; }
+.expl details:hover summary, .expl details:hover p { color: #fff; }
+.expl details:hover summary::after { background: rgba(255,255,255,.2); color: #fff; }
+.grid.two { gap: 10px; }
+.grid.two .card { padding: 12px 16px; border-radius: 14px; transition: background .15s, border-color .15s; }
+.grid.two .card h3 { margin: 0 0 3px; font-size: 16px; transition: color .15s; }
+.grid.two .card p { font-size: 14px; line-height: 1.7; transition: color .15s; }
+.grid.two .card:hover { background: #17406f; border-color: #17406f; }
+.grid.two .card:hover h3, .grid.two .card:hover p { color: #fff; }
