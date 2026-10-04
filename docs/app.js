@@ -130,6 +130,22 @@ WHEN.link(document.getElementById("sh-date"), document.getElementById("sh-hour")
 var bk = document.getElementById("bk-form");
 if (bk) {
   var send = document.getElementById("bk-send");
+  var bkText = "";
+  var baleBtn = document.getElementById("bk-bale");
+  var copied = document.getElementById("bk-copied");
+  document.querySelectorAll("#bk-form [data-logo]").forEach(function (s) { var br = BRAND[s.getAttribute("data-logo")]; if (br) s.innerHTML = br.logo(); });
+  if (baleBtn) {
+    if (!INFO.bale) baleBtn.hidden = true;
+    baleBtn.addEventListener("click", function () {
+      build();
+      var done = function () { if (copied) copied.hidden = false; };
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(bkText).then(done, done);
+        else { var t = document.createElement("textarea"); t.value = bkText; t.style.position = "fixed"; t.style.opacity = "0"; document.body.appendChild(t); t.select(); try { document.execCommand("copy"); } catch (e) {} document.body.removeChild(t); done(); }
+      } catch (e) { done(); }
+      window.open("https://ble.ir/" + INFO.bale, "_blank", "noopener");
+    });
+  }
   var val = function (id) { return (document.getElementById(id).value || "").trim(); };
   var build = function () {
     var lines = ["سلام دکتر مساوات، می‌خوام نوبت بگیرم."];
@@ -140,7 +156,8 @@ if (bk) {
     if (val("bk-date")) lines.push("تاریخ پیشنهادی: " + val("bk-date") + (val("bk-hour") ? "، ساعت " + val("bk-hour") : ""));
     else if (val("bk-hour")) lines.push("ساعت پیشنهادی: " + val("bk-hour"));
     if (val("bk-note")) lines.push("توضیح: " + val("bk-note"));
-    if (INFO.whatsapp) send.href = "https://wa.me/" + INFO.whatsapp + "?text=" + encodeURIComponent(lines.join("\n"));
+    bkText = lines.join("\n");
+    if (INFO.whatsapp) send.href = "https://wa.me/" + INFO.whatsapp + "?text=" + encodeURIComponent(bkText);
   };
   bk.addEventListener("input", build);
   bk.addEventListener("change", build);
