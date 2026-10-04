@@ -319,3 +319,10 @@ document.querySelectorAll("[data-bale]").forEach(function (a) {
   tick();
   setInterval(tick, 20000);
 })();
+
+// دکمهٔ «نظر خود را بنویسید»
+document.querySelectorAll("[data-review]").forEach(function (a) {
+  if (!INFO.whatsapp) return;
+  a.href = "https://wa.me/" + INFO.whatsapp + "?text=" + encodeURIComponent("سلام، می‌خوام نظرم رو دربارهٔ ویزیت بنویسم.");
+  a.target = "_blank"; a.rel = "noopener"; a.removeAttribute("data-go");
+});
