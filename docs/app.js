@@ -511,6 +511,15 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
   document.addEventListener("contextmenu", function (e) {
     if (e.target.closest && e.target.closest(sel)) e.preventDefault();
   });
+  document.addEventListener("copy", function (e) {
+    var n = window.getSelection && window.getSelection().anchorNode;
+    n = n && (n.nodeType === 1 ? n : n.parentElement);
+    if (n && n.closest && n.closest(sel)) e.preventDefault();
+  });
+  document.addEventListener("selectstart", function (e) {
+    var n = e.target && (e.target.nodeType === 1 ? e.target : e.target.parentElement);
+    if (n && n.closest && n.closest(sel)) e.preventDefault();
+  });
   document.addEventListener("dragstart", function (e) {
     if (e.target.tagName === "IMG" || e.target.tagName === "VIDEO" || (e.target.closest && e.target.closest(sel))) e.preventDefault();
   });
