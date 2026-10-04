@@ -384,3 +384,13 @@ body.lb-open { overflow: hidden; }
 .sheet-when { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
 .sheet-when select { width: 100%; font: inherit; color: var(--ink); background: var(--bg); border: 1.5px solid var(--line); border-radius: 12px; padding: 10px 12px; min-width: 0; }
 .sheet-when select:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-soft); }
+
+/* today strip */
+.today { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 4px 14px; margin-top: 10px; padding: 6px 16px; border-radius: 999px; background: var(--panel); color: #fff; font-size: 13.5px; line-height: 1.7; }
+.today[hidden] { display: none; }
+.today .t-time { font-weight: 800; font-variant-numeric: tabular-nums; background: rgba(255,255,255,.16); padding: 0 10px; border-radius: 999px; }
+.today .t-state { position: relative; padding-inline-start: 16px; opacity: .92; }
+.today .t-state::before { content: ""; position: absolute; inset-inline-start: 0; inset-block-start: 50%; width: 8px; height: 8px; margin-top: -4px; border-radius: 50%; background: #9fb4cc; }
+.today.is-open .t-state::before { background: #4ade80; box-shadow: 0 0 0 4px rgba(74,222,128,.25); }
+header.top { margin-block-start: 8px; }
+@media (max-width: 800px) { .today { font-size: 12.5px; gap: 2px 10px; padding: 5px 12px; border-radius: 18px; } }

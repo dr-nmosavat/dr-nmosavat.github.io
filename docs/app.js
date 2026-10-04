@@ -68,7 +68,11 @@ var WHEN = (function () {
   function days() {
     var out = [], d = new Date();
     if (d.getHours() >= 20) d.setDate(d.getDate() + 1);
-    for (var k = 0; k < 14; k++) { var x = new Date(d.getTime()); x.setDate(d.getDate() + k); out.push(fmt.format(x)); }
+    for (var k = 0; k < 14; k++) {
+      var x = new Date(d.getTime()); x.setDate(d.getDate() + k);
+      var pp = {}; fmt.formatToParts(x).forEach(function (q) { pp[q.type] = q.value; });
+      out.push([pp.weekday, pp.day, pp.month].filter(Boolean).join(" "));
+    }
     return out;
   }
   function hours() {
@@ -288,4 +292,30 @@ document.querySelectorAll("[data-bale]").forEach(function (a) {
     if (!sh.hidden && (t === sh || (t.closest && t.closest(".sheet-x")))) close();
   });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !sh.hidden) close(); });
+})();
+
+// تاریخ و ساعت امروز (به وقت تهران)
+(function () {
+  var el = document.getElementById("today");
+  if (!el) return;
+  var tz = "Asia/Tehran", df, tf;
+  try {
+    df = new Intl.DateTimeFormat("fa-IR-u-ca-persian", { timeZone: tz, weekday: "long", day: "numeric", month: "long", year: "numeric" });
+    tf = new Intl.DateTimeFormat("fa-IR", { timeZone: tz, hour: "2-digit", minute: "2-digit", hour12: false });
+  } catch (e) { el.hidden = true; return; }
+  var hourFmt = new Intl.DateTimeFormat("en-US", { timeZone: tz, hour: "numeric", hour12: false });
+  var dEl = el.querySelector(".t-date"), tEl = el.querySelector(".t-time"), sEl = el.querySelector(".t-state");
+  function tick() {
+    var now = new Date();
+    var parts = {};
+    df.formatToParts(now).forEach(function (p) { parts[p.type] = p.value; });
+    dEl.textContent = [parts.weekday, parts.day, parts.month, parts.year].filter(Boolean).join(" ");
+    tEl.textContent = tf.format(now);
+    var h = parseInt(hourFmt.format(now), 10) % 24;
+    var open = h >= 15 && h < 21;
+    sEl.textContent = open ? "اکنون در ساعت کاری" : "ساعت کاری ۱۵ تا ۲۱";
+    el.classList.toggle("is-open", open);
+  }
+  tick();
+  setInterval(tick, 20000);
 })();
