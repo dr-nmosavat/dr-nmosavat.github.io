@@ -144,3 +144,20 @@ document.querySelectorAll("[data-consult]").forEach(function (a) {
     else if (e.key === "ArrowLeft") step(1);
   });
 })();
+
+// پرسیدن سؤال دربارهٔ یک موضوع در واتساپ
+document.querySelectorAll("[data-ask]").forEach(function (a) {
+  if (!INFO.whatsapp) return;
+  var topic = a.getAttribute("data-ask");
+  var text = "سلام دکتر مساوات، دربارهٔ «" + topic + "» سؤال دارم.";
+  a.href = "https://wa.me/" + INFO.whatsapp + "?text=" + encodeURIComponent(text);
+  a.target = "_blank"; a.rel = "noopener"; a.removeAttribute("data-go");
+});
+
+// لینک‌های پایین صفحه
+document.querySelectorAll("[data-ig]").forEach(function (a) {
+  if (INFO.instagram) { a.href = "https://instagram.com/" + INFO.instagram; a.target = "_blank"; a.rel = "noopener"; a.removeAttribute("data-go"); }
+});
+document.querySelectorAll("[data-map]").forEach(function (a) {
+  a.href = gmaps; a.target = "_blank"; a.rel = "noopener"; a.removeAttribute("data-go");
+});

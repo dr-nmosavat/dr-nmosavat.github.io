@@ -263,3 +263,24 @@ body.lb-open { overflow: hidden; }
 .acard .tag { background: rgba(255,255,255,.16); color: #fff; }
 .acard .meta { color: rgba(255,255,255,.72); }
 .acard:hover { border-color: transparent; filter: brightness(1.12); }
+
+/* quick tips, ask box, footer links */
+.tips { display: grid; gap: 10px; }
+.tip { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; }
+.tip summary { cursor: pointer; padding: 14px 18px; font-weight: 700; font-size: 17px; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.tip summary::-webkit-details-marker { display: none; }
+.tip summary::after { content: "+"; flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--blue-soft); color: var(--blue-deep); display: grid; place-items: center; font-size: 20px; line-height: 1; }
+.tip[open] summary::after { content: "−"; background: var(--blue); color: var(--on-blue); }
+.tip[open] { border-color: var(--blue); }
+.tip-body { padding: 0 18px 18px; }
+.tip-body ul { margin: 0 0 10px; padding-inline-start: 22px; padding-inline-end: 0; }
+.tip-body li { margin: 4px 0; }
+.tip-body .depends { margin: 10px 0 14px; color: var(--muted); font-size: 15px; }
+.btn.small { padding: 8px 18px; font-size: 15px; border-radius: 10px; background: var(--blue); color: var(--on-blue); }
+.askbox { background: var(--panel); color: #fff; border-radius: 24px; padding: 24px 26px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; max-width: 720px; }
+.askbox h2 { margin: 0 0 2px; font-size: 22px; }
+.askbox p { margin: 0; opacity: .86; }
+.askbox .btn { background: #fff; color: #17406f; border-color: #fff; }
+.flinks { display: flex; gap: 14px; flex-wrap: wrap; }
+.flinks a { color: var(--blue-deep); font-weight: 700; text-decoration: none; }
+.flinks a:hover { text-decoration: underline; }
