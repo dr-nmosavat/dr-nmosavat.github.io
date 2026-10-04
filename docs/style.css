@@ -380,3 +380,7 @@ body.lb-open { overflow: hidden; }
 .sheet-opt.alt { background: var(--surface); color: var(--blue-deep); }
 @media (min-width: 700px) { .sheet { align-items: center; } }
 .btn.online { background: var(--blue-soft); color: var(--blue-deep); border-color: var(--blue-soft); }
+
+.sheet-when { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.sheet-when select { width: 100%; font: inherit; color: var(--ink); background: var(--bg); border: 1.5px solid var(--line); border-radius: 12px; padding: 10px 12px; min-width: 0; }
+.sheet-when select:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-soft); }

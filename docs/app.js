@@ -59,6 +59,36 @@ if (host) {
   });
 }
 
+// تاریخ و ساعت (تاریخ شمسی، ۱۴ روز آینده؛ ساعت ۱۵ تا ۲۰:۳۰)
+var WHEN = (function () {
+  var fmt;
+  try { fmt = new Intl.DateTimeFormat("fa-IR-u-ca-persian", { weekday: "long", day: "numeric", month: "long" }); }
+  catch (e) { fmt = new Intl.DateTimeFormat("fa-IR", { weekday: "long", day: "numeric", month: "long" }); }
+  var nf = new Intl.NumberFormat("fa-IR", { useGrouping: false, minimumIntegerDigits: 2 });
+  function days() {
+    var out = [], d = new Date();
+    if (d.getHours() >= 20) d.setDate(d.getDate() + 1);
+    for (var k = 0; k < 14; k++) { var x = new Date(d.getTime()); x.setDate(d.getDate() + k); out.push(fmt.format(x)); }
+    return out;
+  }
+  function hours() {
+    var out = [];
+    for (var h = 15; h <= 20; h++) { out.push(nf.format(h) + ":" + nf.format(0)); if (h < 21) out.push(nf.format(h) + ":" + nf.format(30)); }
+    return out;
+  }
+  function fill(sel, list, first) {
+    if (!sel) return;
+    sel.innerHTML = "";
+    var o0 = document.createElement("option"); o0.value = ""; o0.textContent = first; sel.appendChild(o0);
+    list.forEach(function (t) { var o = document.createElement("option"); o.value = t; o.textContent = t; sel.appendChild(o); });
+  }
+  return { fill: fill, days: days, hours: hours };
+})();
+WHEN.fill(document.getElementById("bk-date"), WHEN.days(), "انتخاب تاریخ");
+WHEN.fill(document.getElementById("bk-hour"), WHEN.hours(), "انتخاب ساعت");
+WHEN.fill(document.getElementById("sh-date"), WHEN.days(), "تاریخ (اختیاری)");
+WHEN.fill(document.getElementById("sh-hour"), WHEN.hours(), "ساعت (اختیاری)");
+
 // فرم نوبت: ساخت پیام آماده برای واتساپ
 var bk = document.getElementById("bk-form");
 if (bk) {
@@ -70,7 +100,8 @@ if (bk) {
     var pet = [val("bk-type"), val("bk-pet")].filter(Boolean).join(" - ");
     if (pet) lines.push("پت: " + pet);
     if (val("bk-service")) lines.push("خدمت: " + val("bk-service"));
-    if (val("bk-time")) lines.push("زمان مناسب: " + val("bk-time"));
+    if (val("bk-date")) lines.push("تاریخ پیشنهادی: " + val("bk-date") + (val("bk-hour") ? "، ساعت " + val("bk-hour") : ""));
+    else if (val("bk-hour")) lines.push("ساعت پیشنهادی: " + val("bk-hour"));
     if (val("bk-note")) lines.push("توضیح: " + val("bk-note"));
     if (INFO.whatsapp) send.href = "https://wa.me/" + INFO.whatsapp + "?text=" + encodeURIComponent(lines.join("\n"));
   };
@@ -225,9 +256,15 @@ document.querySelectorAll("[data-bale]").forEach(function (a) {
   var sh = document.getElementById("sheet");
   if (!sh) return;
   var list = sh.querySelector(".sheet-list");
-  var msg = "سلام دکتر مساوات، می‌خوام ویزیت آنلاین بگیرم.";
+  var baseMsg = "سلام دکتر مساوات، می‌خوام ویزیت آنلاین بگیرم.";
+  function msgNow() {
+    var d = (document.getElementById("sh-date") || {}).value, h = (document.getElementById("sh-hour") || {}).value;
+    if (!d && !h) return baseMsg;
+    return baseMsg + "\nزمان پیشنهادی: " + (d || "") + (h ? "، ساعت " + h : "");
+  }
+  var msg = baseMsg;
   var opts = [];
-  if (INFO.whatsapp) opts.push({ t: "واتساپ", u: "https://wa.me/" + INFO.whatsapp + "?text=" + encodeURIComponent(msg), n: "پیام آماده می‌شود" });
+  if (INFO.whatsapp) opts.push({ t: "واتساپ", wa: true, u: "https://wa.me/" + INFO.whatsapp + "?text=" + encodeURIComponent(msg), n: "پیام آماده می‌شود" });
   if (INFO.bale) opts.push({ t: "بله", u: "https://ble.ir/" + INFO.bale, n: "پیام را خودتان بنویسید", alt: true });
   if (INFO.instagram) opts.push({ t: "اینستاگرام", u: "https://ig.me/m/" + INFO.instagram, n: "پیام مستقیم", alt: true });
   opts.forEach(function (o) {
@@ -237,7 +274,12 @@ document.querySelectorAll("[data-bale]").forEach(function (a) {
     var b = document.createElement("span"); b.textContent = o.t;
     var sm = document.createElement("small"); sm.textContent = o.n;
     a.appendChild(b); a.appendChild(sm); list.appendChild(a);
+    if (o.wa) o.el = a;
   });
+  function refreshWa() {
+    opts.forEach(function (o) { if (o.wa && o.el) o.el.href = "https://wa.me/" + INFO.whatsapp + "?text=" + encodeURIComponent(msgNow()); });
+  }
+  ["sh-date", "sh-hour"].forEach(function (id) { var el = document.getElementById(id); if (el) el.addEventListener("change", refreshWa); });
   function open() { sh.hidden = false; document.body.classList.add("lb-open"); }
   function close() { sh.hidden = true; document.body.classList.remove("lb-open"); }
   document.addEventListener("click", function (e) {

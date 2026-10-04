@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=202610041048">
+<link rel="stylesheet" href="style.css?v=202610041051">
     </head>
     <body>
     <div class="wrap">
@@ -60,8 +60,12 @@
             <option>مطمئن نیستم، مشاوره می‌خواهم</option>
           </select>
 
-          <label for="bk-time">زمان مناسب برای شما</label>
-          <input id="bk-time" type="text" placeholder="مثلاً شنبه عصر">
+          <label for="bk-date">تاریخ و ساعت مناسب برای شما</label>
+          <div class="two">
+            <select id="bk-date" aria-label="تاریخ"></select>
+            <select id="bk-hour" aria-label="ساعت"></select>
+          </div>
+          <p class="hint" style="margin-top:6px">ساعت کاری ۱۵ تا ۲۱ است. زمان نهایی را دکتر در پیام تأیید می‌کند.</p>
 
           <label for="bk-note">توضیح کوتاه (اختیاری)</label>
           <textarea id="bk-note" rows="3" placeholder="مشکل یا سؤال شما"></textarea>
@@ -99,11 +103,15 @@
     <button class="sheet-x" type="button" aria-label="بستن">×</button>
     <h2>ویزیت آنلاین</h2>
     <p>مشاورهٔ آنلاین برای سؤال‌هایی است که به معاینهٔ حضوری نیاز ندارند. اگر لازم باشد، ویزیت حضوری پیشنهاد می‌شود. از کدام پیام‌رسان شروع کنیم؟</p>
+    <div class="sheet-when">
+      <select id="sh-date" aria-label="تاریخ"></select>
+      <select id="sh-hour" aria-label="ساعت"></select>
+    </div>
     <div class="sheet-list"></div>
   </div>
 </div>
 <a class="fab" data-consult href="contact.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4V5z"/></svg><span>نیاز به مشاوره؟</span></a>
-<script src="app.js?v=202610041048"></script>
+<script src="app.js?v=202610041051"></script>
     </body>
     </html>
     
