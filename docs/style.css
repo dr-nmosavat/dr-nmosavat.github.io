@@ -947,3 +947,8 @@ ul.plain li::before { content: ""; position: absolute; inset-inline-start: 0; to
 .rv-on .solo.banner.reveal.in, .rv-on .gallery .ph.reveal.in { transform: none; }
 @media (max-width: 800px) { .rv-on .reveal { transform: translateY(16px); } }
 @media (prefers-reduced-motion: reduce) { .rv-on .reveal { opacity: 1; transform: none; transition: none; } }
+
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.album, .moments { padding-block: 0 !important; }
+.album .gallery, .moments .gallery { margin-top: 4px; }
+.datebar { margin-bottom: 2px; }
