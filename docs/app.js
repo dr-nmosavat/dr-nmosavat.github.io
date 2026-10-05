@@ -578,3 +578,38 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
     timer = setTimeout(function () { hide(true); }, 3000);
   }, 2000);
 })();
+
+// ظاهر شدن آرام بخش‌ها با اسکرول (فقط وقتی مرورگر پشتیبانی کند و کاربر «کاهش حرکت» را نخواسته باشد)
+(function () {
+  try {
+    if (!("IntersectionObserver" in window)) return;
+    if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    var sel = ".page-head, section > h2, section > .sub, .solo.banner, .svc-row, .rv-row, .grid.five, .grid.two, .agrid, .group, .today-card, .about, .expl, .cta, .note, .msgr, .book-grid, .article h2, .acard, .step, .gallery .ph, .contact .row, .rv-cta, .askbox, .tip";
+    var els = [].slice.call(document.querySelectorAll(sel)).filter(function (e) {
+      // عناصر تو در تو یا داخل ردیف‌های اسکرول افقی جدا انیمیشن نگیرند
+      var p = e.parentElement;
+      while (p) { if (p.classList && p.classList.contains("reveal")) return false; p = p.parentElement; }
+      return true;
+    });
+    if (!els.length) return;
+    document.documentElement.classList.add("rv-on");
+    var io = new IntersectionObserver(function (list) {
+      list.forEach(function (en) {
+        if (!en.isIntersecting) return;
+        var e = en.target; io.unobserve(e);
+        e.classList.add("in");
+        setTimeout(function () { e.classList.remove("reveal", "in"); e.style.removeProperty("--d"); }, 900);
+      });
+    }, { rootMargin: "0px 0px -8% 0px", threshold: 0.06 });
+    var groups = new Map();
+    els.forEach(function (e) {
+      e.classList.add("reveal");
+      var k = e.parentElement, n = groups.get(k) || 0;
+      if (/(^|\s)(acard|step|ph|row)(\s|$)/.test(e.className)) e.style.setProperty("--d", Math.min(n, 5) * 0.08 + "s");
+      groups.set(k, n + 1);
+      io.observe(e);
+    });
+    // اگر به هر دلیل چیزی دیده نشد (مثلاً ابزار بدون اسکرول)، بعد از چند ثانیه همه را نشان بده
+    setTimeout(function () { els.forEach(function (e) { e.classList.add("in"); }); }, 6000);
+  } catch (e) {}
+})();
