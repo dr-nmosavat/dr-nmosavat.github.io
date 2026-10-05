@@ -26,7 +26,7 @@ if (host) {
     { label: "کلینیک", key: "clinic" },
     { label: "نشانی", key: "address" },
     { label: "ساعت کاری کلینیک", key: "hours" },
-    { label: "ویزیت در محل", key: "homeVisit" },
+    { label: "ویزیت تخصصی در منزل یا محل", key: "homeVisit" },
     { label: "مسیریابی", key: "gmaps", value: gmaps, link: function (v) { return v; }, text: function () { return "باز کردن در گوگل مپ"; } },
     { label: "نشان", key: "neshan", link: function (v) { return v; }, text: function () { return "مسیریابی در نشان"; } },
     { label: "بلد", key: "balad", link: function (v) { return v; }, text: function () { return "مسیریابی در بلد"; } },
