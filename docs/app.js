@@ -156,9 +156,12 @@ if (bk) {
     if (val("bk-date")) lines.push("تاریخ پیشنهادی: " + val("bk-date") + (val("bk-hour") ? "، ساعت " + val("bk-hour") : ""));
     else if (val("bk-hour")) lines.push("ساعت پیشنهادی: " + val("bk-hour"));
     if (val("bk-note")) lines.push("توضیح: " + val("bk-note"));
+    if (window.__promo) lines.push("🎁 تخفیف روز دامپزشک (۲۰٪ ویزیت و مشاورهٔ رایگان)");
     bkText = lines.join("\n");
     if (INFO.whatsapp) send.href = "https://wa.me/" + INFO.whatsapp + "?text=" + encodeURIComponent(bkText);
   };
+  window.__bkBuild = build;
+  if (/[?&]promo=/.test(location.search)) { window.__promo = true; }
   bk.addEventListener("input", build);
   bk.addEventListener("change", build);
   build();
@@ -542,10 +545,56 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
   } catch (e) {}
 })();
 
+// پوستر ویژهٔ روز دامپزشک: فقط در روز مشخص‌شده (به وقت تهران)، یک بار در هر بازدید، چند ثانیه می‌ماند
+(function () {
+  var PROMO = { date: "2026-10-06", showAt: 900, stay: 9000 };
+  try {
+    var today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Tehran" }).format(new Date());
+    var force = window.PROMO_FORCE || /[?&]promo=test/.test(location.search);
+    if (!force && today !== PROMO.date) return;
+    var seen = false;
+    try { seen = sessionStorage.getItem("promoSeen") === "1"; } catch (e) {}
+    if (seen && !force) return;
+    window.__promoActive = true;
+    var spa = !!document.getElementById("pg-booking");
+    var el = document.createElement("div");
+    el.className = "promo-poster";
+    el.setAttribute("role", "dialog");
+    el.setAttribute("aria-label", "تبریک روز دامپزشک");
+    el.hidden = true;
+    el.innerHTML =
+      '<button type="button" class="pp-x" aria-label="بستن">×</button>' +
+      '<svg class="pp-paw" viewBox="0 0 48 48" fill="currentColor" aria-hidden="true"><ellipse cx="13" cy="21" rx="5" ry="6.5"/><ellipse cx="22" cy="12" rx="5" ry="6.5"/><ellipse cx="34" cy="12" rx="5" ry="6.5"/><ellipse cx="43" cy="21" rx="4.5" ry="6"/><path d="M28 24c-7 0-14 7-14 13 0 4 3 6 7 6 3 0 4-1 7-1s4 1 7 1c4 0 7-2 7-6 0-6-7-13-14-13z"/></svg>' +
+      '<b class="pp-title">روز دامپزشک مبارک 🐾</b>' +
+      '<p class="pp-msg">دامپزشکی یعنی عشق؛ یعنی نجات یک جان کوچک. این روز را به همهٔ همکاران دامپزشک تبریک می‌گوییم.</p>' +
+      '<div class="pp-offer"><span>هدیه به پت‌های شما</span><strong>۲۰٪ تخفیف ویزیت + مشاورهٔ رایگان</strong><small>فقط امروز</small></div>' +
+      '<a class="pp-btn" data-promo href="' + (spa ? "#booking" : "booking.html?promo=1") + '"' + (spa ? ' data-go="booking"' : "") + '>گرفتن نوبت با تخفیف</a>';
+    document.body.appendChild(el);
+    var timer;
+    function hide() {
+      clearTimeout(timer);
+      el.classList.remove("show");
+      setTimeout(function () { el.hidden = true; }, 500);
+      try { sessionStorage.setItem("promoSeen", "1"); } catch (e) {}
+    }
+    el.querySelector(".pp-x").addEventListener("click", hide);
+    el.querySelector(".pp-btn").addEventListener("click", function () {
+      window.__promo = true;
+      if (window.__bkBuild) window.__bkBuild();
+      hide();
+    }, true);
+    setTimeout(function () {
+      el.hidden = false;
+      requestAnimationFrame(function () { requestAnimationFrame(function () { el.classList.add("show"); }); });
+      timer = setTimeout(hide, PROMO.stay);
+    }, PROMO.showAt);
+  } catch (e) {}
+})();
+
 // حباب کوتاه کنار دکمهٔ مشاوره: چند ثانیه بعد از ورود نشان داده می‌شود و بسته می‌شود
 (function () {
   var fab = document.querySelector(".fab");
-  if (!fab) return;
+  if (!fab || window.__promoActive) return;
   var seen = false;
   try { seen = sessionStorage.getItem("bubbleSeen") === "1"; } catch (e) {}
   if (seen) return;
