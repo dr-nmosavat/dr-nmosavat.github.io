@@ -549,13 +549,14 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
 
 // پوستر ویژهٔ روز دامپزشک: فقط در روز مشخص‌شده (به وقت تهران)، یک بار در هر بازدید، چند ثانیه می‌ماند
 (function () {
-  var PROMO = { date: "2026-10-06", showAt: 900, stay: 9000 };
+  var PROMO = { from: "2026-10-05", to: "2026-10-06", showAt: 900, stay: 9000 };
   try {
     var today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Tehran" }).format(new Date());
     var force = window.PROMO_FORCE || /[?&]promo=test/.test(location.search);
-    if (!force && today !== PROMO.date) return;
+    if (!force && (today < PROMO.from || today > PROMO.to)) return;
+    var lastDay = (today === PROMO.to);
     var seen = false;
-    try { seen = sessionStorage.getItem("promoSeen") === "1"; } catch (e) {}
+    try { seen = sessionStorage.getItem("promoSeen") === today; } catch (e) {}
     if (seen && !force) return;
     window.__promoActive = true;
     var spa = !!document.getElementById("pg-booking");
@@ -569,7 +570,7 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
       '<svg class="pp-paw" viewBox="0 0 48 48" fill="currentColor" aria-hidden="true"><ellipse cx="13" cy="21" rx="5" ry="6.5"/><ellipse cx="22" cy="12" rx="5" ry="6.5"/><ellipse cx="34" cy="12" rx="5" ry="6.5"/><ellipse cx="43" cy="21" rx="4.5" ry="6"/><path d="M28 24c-7 0-14 7-14 13 0 4 3 6 7 6 3 0 4-1 7-1s4 1 7 1c4 0 7-2 7-6 0-6-7-13-14-13z"/></svg>' +
       '<b class="pp-title">روز دامپزشک مبارک 🐾</b>' +
       '<p class="pp-msg">دامپزشکی یعنی عشق؛ یعنی نجات یک جان کوچک. این روز را به همهٔ همکاران دامپزشک تبریک می‌گوییم.</p>' +
-      '<div class="pp-offer"><span>هدیه به پت‌های شما</span><strong>۲۰٪ تخفیف ویزیت + مشاورهٔ رایگان</strong><small>فقط امروز</small></div>' +
+      '<div class="pp-offer"><span>هدیه به پت‌های شما</span><strong>۲۰٪ تخفیف ویزیت + مشاورهٔ رایگان</strong><small>' + (lastDay ? "فقط امروز، تا پایان شب" : "تا فردا شب") + '</small></div>' +
       '<a class="pp-btn" data-promo href="' + (spa ? "#booking" : "booking.html?promo=1") + '"' + (spa ? ' data-go="booking"' : "") + '>گرفتن نوبت با تخفیف</a>';
     document.body.appendChild(el);
     var timer;
@@ -577,7 +578,7 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
       clearTimeout(timer);
       el.classList.remove("show");
       setTimeout(function () { el.hidden = true; }, 500);
-      try { sessionStorage.setItem("promoSeen", "1"); } catch (e) {}
+      try { sessionStorage.setItem("promoSeen", today); } catch (e) {}
     }
     el.querySelector(".pp-x").addEventListener("click", hide);
     el.querySelector(".pp-btn").addEventListener("click", function () {
