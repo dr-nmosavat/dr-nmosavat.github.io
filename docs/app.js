@@ -7,6 +7,7 @@ var INFO = {
   bale: "dr_niloofar_mosavat",
   hours: "۱۱:۰۰ تا ۲۱:۰۰",
   address: "ونک، شیخ بهایی شمالی، برج مرمر، طبقه اول",
+  homeVisit: "منظریه، اختیاریه، پاسداران، بلوار کاوه، قیطریه (با هماهنگی قبلی)",
   neshan: "https://nshn.ir/d6sbvrTDWxOVnZ",
   balad: ""
 };
@@ -25,6 +26,7 @@ if (host) {
     { label: "کلینیک", key: "clinic" },
     { label: "نشانی", key: "address" },
     { label: "ساعت کاری کلینیک", key: "hours" },
+    { label: "ویزیت در محل", key: "homeVisit" },
     { label: "مسیریابی", key: "gmaps", value: gmaps, link: function (v) { return v; }, text: function () { return "باز کردن در گوگل مپ"; } },
     { label: "نشان", key: "neshan", link: function (v) { return v; }, text: function () { return "مسیریابی در نشان"; } },
     { label: "بلد", key: "balad", link: function (v) { return v; }, text: function () { return "مسیریابی در بلد"; } },
@@ -661,4 +663,29 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
     // اگر به هر دلیل چیزی دیده نشد (مثلاً ابزار بدون اسکرول)، بعد از چند ثانیه همه را نشان بده
     setTimeout(function () { els.forEach(function (e) { e.classList.add("in"); }); }, 6000);
   } catch (e) {}
+})();
+
+// شمارندهٔ کلیک روی دکمه‌های مهم (با GoatCounter؛ اگر بارگذاری نشده باشد هیچ اتفاقی نمی‌افتد)
+(function () {
+  function count(name) {
+    try { if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: name, title: name, event: true }); } catch (e) {}
+  }
+  document.addEventListener("click", function (e) {
+    var a = e.target && e.target.closest ? e.target.closest("a, button") : null;
+    if (!a) return;
+    var h = a.getAttribute("href") || "", n = null;
+    if (a.hasAttribute("data-promo")) n = "click-promo";
+    else if (a.id === "bk-bale") n = "click-bale-from-booking";
+    else if (a.hasAttribute("data-consult")) n = "click-consult-button";
+    else if (a.hasAttribute("data-online")) n = "click-online-visit-button";
+    else if (/wa\.me/.test(h)) n = "click-whatsapp";
+    else if (/ble\.ir/.test(h)) n = "click-bale";
+    else if (/hossein\.tallachiyan/.test(h)) n = "click-designer";
+    else if (/ig\.me|instagram\.com/.test(h)) n = "click-instagram";
+    else if (/^tel:/.test(h)) n = "click-phone";
+    else if (/nshn\.ir/.test(h)) n = "click-neshan";
+    else if (/google\.com\/maps/.test(h)) n = "click-google-maps";
+    else if (/booking\.html|#booking/.test(h)) n = "click-booking-page";
+    if (n) count(n);
+  }, true);
 })();
