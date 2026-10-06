@@ -483,6 +483,52 @@ var DAY_NAME = { sat: "شنبه", sun: "یکشنبه", mon: "دوشنبه", tue:
   setInterval(render, 30000);
 })();
 
+// نوار متحرک تاریخ و ساعت (فقط صفحهٔ اصلی). از چپ به راست حرکت می‌کند و با لمس یا موس می‌ایستد.
+(function () {
+  var bars = document.querySelectorAll(".datebar[data-mq]");
+  if (!bars.length) return;
+  var tz = "Asia/Tehran", df, nf, wd, hm;
+  try {
+    df = new Intl.DateTimeFormat("fa-IR-u-ca-persian", { timeZone: tz, weekday: "long", day: "numeric", month: "long", year: "numeric" });
+    nf = new Intl.NumberFormat("fa-IR", { useGrouping: false, minimumIntegerDigits: 2 });
+    wd = new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "short" });
+    hm = new Intl.DateTimeFormat("en-US", { timeZone: tz, hour: "numeric", minute: "numeric", hour12: false });
+  } catch (e) { return; }
+  var KEY = { Sat: "sat", Sun: "sun", Mon: "mon", Tue: "tue", Wed: "wed", Thu: "thu", Fri: "fri" };
+  function t(h) { var hh = Math.floor(h), mm = Math.round((h - hh) * 60); return nf.format(hh) + ":" + nf.format(mm); }
+  function items() {
+    var d = new Date(), p = {}, q = {};
+    df.formatToParts(d).forEach(function (x) { p[x.type] = x.value; });
+    hm.formatToParts(d).forEach(function (x) { q[x.type] = x.value; });
+    var h = (parseInt(q.hour, 10) % 24) + parseInt(q.minute, 10) / 60;
+    var key = KEY[wd.format(d)];
+    var v = (typeof SCHEDULE !== "undefined" && SCHEDULE.inperson) ? SCHEDULE.inperson[key] : null;
+    var clinic;
+    if (Array.isArray(v)) {
+      var open = v.some(function (x) { return h >= x[0] && h < x[1]; });
+      var span = v.map(function (x) { return "از " + t(x[0]) + " تا " + t(x[1]); }).join(" و ");
+      clinic = (open ? "اکنون در کلینیک هستند · " : "ویزیت حضوری امروز ") + span;
+    } else clinic = "امروز ویزیت حضوری فقط با وقت قبلی";
+    return [
+      "امروز " + [p.weekday, p.day, p.month, p.year].filter(Boolean).join(" "),
+      "ساعت " + nf.format(parseInt(q.hour, 10) % 24) + ":" + nf.format(parseInt(q.minute, 10)),
+      clinic
+    ];
+  }
+  function group(list) {
+    return '<span class="mq-g">' + list.map(function (x) { return '<span class="mq-i">' + x + "</span>"; }).join('<span class="mq-sep" aria-hidden="true">•</span>') + '<span class="mq-sep" aria-hidden="true">•</span></span>';
+  }
+  function render() {
+    var g = group(items());
+    [].forEach.call(bars, function (bar) {
+      var tr = bar.querySelector(".mq-track");
+      if (tr) tr.innerHTML = g + g + g + g;
+    });
+  }
+  render();
+  setInterval(render, 30000);
+})();
+
 // تاریخ و روز امروز در نوار زیر منو
 (function () {
   var els = document.querySelectorAll(".db-date");
