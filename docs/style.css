@@ -1064,3 +1064,7 @@ section > .chips + .agrid, section > .chips + .cgrid { margin-top: 14px; }
 .case-page .gallery .ph { position: relative; }
 .ccard-tag { white-space: nowrap; }
 @media (max-width: 800px) { .album + .album { padding-block-start: 48px; } }
+section.album#cases { padding-block-start: 48px; }
+@media (max-width: 800px) { section.album#cases { padding-block-start: 56px; } }
+section.album#cases { margin-top: 44px; }
+@media (max-width: 800px) { section.album#cases { margin-top: 56px; } }
