@@ -987,3 +987,5 @@ ul.plain li::before { content: ""; position: absolute; inset-inline-start: 0; to
 }
 @media (max-width: 800px) { .datebar.mq-home .mq { font-size: 12.5px; padding: 2px 0; } .mq-track { animation-duration: 32s; } }
 .datebar .mq { direction: ltr; }
+
+.datebar:not(.mq-home) { display: none; }

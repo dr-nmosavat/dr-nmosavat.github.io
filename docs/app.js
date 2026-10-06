@@ -510,8 +510,7 @@ var DAY_NAME = { sat: "شنبه", sun: "یکشنبه", mon: "دوشنبه", tue:
       clinic = (open ? "اکنون در کلینیک هستند · " : "ویزیت حضوری امروز ") + span;
     } else clinic = "امروز ویزیت حضوری فقط با وقت قبلی";
     return [
-      "امروز " + [p.weekday, p.day, p.month, p.year].filter(Boolean).join(" "),
-      "ساعت " + nf.format(parseInt(q.hour, 10) % 24) + ":" + nf.format(parseInt(q.minute, 10)),
+      "امروز " + [p.weekday, p.day, p.month, p.year].filter(Boolean).join(" ") + " ساعت " + nf.format(parseInt(q.hour, 10) % 24) + ":" + nf.format(parseInt(q.minute, 10)),
       clinic
     ];
   }
