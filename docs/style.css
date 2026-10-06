@@ -1006,3 +1006,14 @@ ul.plain li::before { content: ""; position: absolute; inset-inline-start: 0; to
   .rv-row::-webkit-scrollbar-thumb { background: #b9cde6; border-radius: 6px; }
 }
 @media (min-width: 801px) and (max-width: 1000px) { .rv { flex-basis: calc((100% - 16px) / 2.15); } }
+
+.album-h { font-size: 22px; margin: 0 0 10px; }
+.album + .album { padding-block-start: 28px; }
+.album .sub { margin: 0 0 12px; color: var(--muted); }
+.album #cases .gallery, #cases .gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 640px; }
+#cases .gallery .ph { aspect-ratio: 4 / 3; }
+.case { margin-top: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 16px 18px; max-width: 640px; }
+.case h3 { margin: 0 0 6px; font-size: 17px; }
+.case p { margin: 0; line-height: 1.95; }
+@media (max-width: 800px) { .album-h { font-size: 19px; } .case { padding: 12px 14px; } .case p { font-size: 14px; } }
+.album-h { margin-top: 14px; } .album + .album .album-h { margin-top: 0; }
