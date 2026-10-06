@@ -782,3 +782,15 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
     }
   });
 })();
+
+// تصویر حساس: تار تا وقتی بیننده «نمایش» را بزند
+(function () {
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest ? e.target.closest(".sens-btn") : null;
+    if (!b) return;
+    var w = b.parentNode, ph = w.querySelector(".ph");
+    w.classList.add("on");
+    if (ph && ph.getAttribute("data-g")) ph.setAttribute("data-group", ph.getAttribute("data-g"));
+    b.parentNode.removeChild(b);
+  });
+})();

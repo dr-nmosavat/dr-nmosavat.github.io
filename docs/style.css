@@ -1068,3 +1068,11 @@ section.album#cases { padding-block-start: 48px; }
 @media (max-width: 800px) { section.album#cases { padding-block-start: 56px; } }
 section.album#cases { margin-top: 44px; }
 @media (max-width: 800px) { section.album#cases { margin-top: 56px; } }
+
+.sens { position: relative; border-radius: 18px; overflow: hidden; }
+.sens:not(.on) .ph { pointer-events: none; }
+.sens:not(.on) .ph img { filter: blur(26px); transform: scale(1.12); }
+.sens:not(.on) .zoom, .sens:not(.on) .ph-label { display: none; }
+.sens-btn { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 12px; border: 0; background: rgba(23,64,111,.38); color: #fff; font: inherit; cursor: pointer; text-align: center; }
+.sens-btn b { background: #fff; color: #17406f; padding: 6px 18px; border-radius: 999px; font-size: 14px; }
+.sens-btn small { font-size: 12px; opacity: .95; }
