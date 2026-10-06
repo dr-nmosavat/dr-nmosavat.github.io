@@ -1076,3 +1076,4 @@ section.album#cases { margin-top: 44px; }
 .sens-btn { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 12px; border: 0; background: rgba(23,64,111,.38); color: #fff; font: inherit; cursor: pointer; text-align: center; }
 .sens-btn b { background: #fff; color: #17406f; padding: 6px 18px; border-radius: 999px; font-size: 14px; }
 .sens-btn small { font-size: 12px; opacity: .95; }
+.case-page .gallery.one { grid-template-columns: 1fr; max-width: 520px; }
