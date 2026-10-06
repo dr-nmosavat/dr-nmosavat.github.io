@@ -1059,3 +1059,8 @@ section > .chips + .agrid, section > .chips + .cgrid { margin-top: 14px; }
   .chips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
   .chip { padding: 8px 4px; font-size: 13px; line-height: 1.4; text-align: center; }
 }
+.ph-label { position: absolute; inset-block-start: 8px; inset-inline-end: 8px; z-index: 2; padding: 2px 12px; border-radius: 999px; background: rgba(23,64,111,.88); color: #fff; font-size: 13px; font-weight: 700; }
+.case-page.tall .gallery .ph { aspect-ratio: 3 / 4; }
+.case-page .gallery .ph { position: relative; }
+.ccard-tag { white-space: nowrap; }
+@media (max-width: 800px) { .album + .album { padding-block-start: 48px; } }
