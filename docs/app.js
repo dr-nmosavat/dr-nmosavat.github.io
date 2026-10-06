@@ -555,9 +555,11 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
     var force = window.PROMO_FORCE || /[?&]promo=test/.test(location.search);
     if (!force && (today < PROMO.from || today > PROMO.to)) return;
     var lastDay = (today === PROMO.to);
-    var seen = false;
+    var seen = false, claimed = false;
     try { seen = sessionStorage.getItem("promoSeen") === today; } catch (e) {}
-    if (seen && !force) return;
+    try { claimed = localStorage.getItem("promoClaimed") === PROMO.to; } catch (e) {}
+    // اگر کاربر دکمهٔ تخفیف را زده، دیگر نمایش داده نمی‌شود؛ وگرنه در هر بار ورود به سایت دوباره می‌آید
+    if ((claimed || seen) && !force) return;
     window.__promoActive = true;
     var spa = !!document.getElementById("pg-booking");
     var el = document.createElement("div");
@@ -583,6 +585,7 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
     el.querySelector(".pp-x").addEventListener("click", hide);
     el.querySelector(".pp-btn").addEventListener("click", function () {
       window.__promo = true;
+      try { localStorage.setItem("promoClaimed", PROMO.to); } catch (e) {}
       if (window.__bkBuild) window.__bkBuild();
       hide();
     }, true);
