@@ -738,3 +738,47 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
     if (n) count(n);
   }, true);
 })();
+
+// آلبوم: «دیدن بیشتر»، فیلتر بیماری‌ها و پنجرهٔ پروندهٔ بیماری
+(function () {
+  var cs = document.getElementById("casheet");
+  document.addEventListener("click", function (e) {
+    var t = e.target, el;
+    if (!t.closest) return;
+    if ((el = t.closest("[data-more]"))) {
+      var wrap = el.previousElementSibling;
+      if (wrap) wrap.classList.add("open");
+      el.hidden = true;
+      return;
+    }
+    if ((el = t.closest(".chip"))) {
+      var tag = el.getAttribute("data-tag"), chips = el.parentNode;
+      [].forEach.call(chips.querySelectorAll(".chip"), function (c) { c.classList.toggle("on", c === el); });
+      var grid = chips.nextElementSibling;
+      if (grid) {
+        grid.classList.toggle("filtered", !!tag);
+        [].forEach.call(grid.querySelectorAll(".ccard"), function (c) { c.classList.toggle("tag-h", !!tag && c.getAttribute("data-tag") !== tag); });
+      }
+      return;
+    }
+    if (cs && (el = t.closest("[data-case]"))) {
+      var d = el.parentNode.querySelector(".case-detail");
+      var body = cs.querySelector(".cs-body");
+      body.innerHTML = d.innerHTML;
+      [].forEach.call(body.querySelectorAll(".dph"), function (p) { p.classList.add("ph"); });
+      cs.hidden = false; document.body.classList.add("lb-open");
+      return;
+    }
+    if (cs && !cs.hidden && (t === cs || (t.closest(".sheet-x") && cs.contains(t)))) {
+      cs.hidden = true; document.body.classList.remove("lb-open");
+      cs.querySelector(".cs-body").innerHTML = "";
+    }
+  });
+  document.addEventListener("keydown", function (e) {
+    var lb = document.getElementById("lb");
+    if (e.key === "Escape" && cs && !cs.hidden && (!lb || lb.hidden)) {
+      cs.hidden = true; document.body.classList.remove("lb-open");
+      cs.querySelector(".cs-body").innerHTML = "";
+    }
+  });
+})();
