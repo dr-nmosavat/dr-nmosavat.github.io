@@ -1041,3 +1041,7 @@ ul.plain li::before { content: ""; position: absolute; inset-inline-start: 0; to
 .cd-photos img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .case-sheet p { color: var(--ink); line-height: 1.95; }
 @media (max-width: 800px) { .cgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } .ccard-b b { font-size: 13.5px; } }
+.case-page .gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 640px; }
+.case-page .gallery .ph { aspect-ratio: 4 / 3; }
+.case-text { max-width: 640px; line-height: 2; margin: 14px 0; }
+.ccard-b { text-decoration: none; }
