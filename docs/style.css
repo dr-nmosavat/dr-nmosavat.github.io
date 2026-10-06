@@ -989,3 +989,5 @@ ul.plain li::before { content: ""; position: absolute; inset-inline-start: 0; to
 .datebar .mq { direction: ltr; }
 
 .datebar:not(.mq-home) { display: none; }
+
+@media (min-width: 801px) { .rv-row > .rv:last-child:nth-child(odd) { grid-column: 1 / -1; } }
