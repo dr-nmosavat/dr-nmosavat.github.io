@@ -1054,3 +1054,8 @@ ul.plain li::before { content: ""; position: absolute; inset-inline-start: 0; to
 .filtered ~ .more-btn, .more-btn[hidden] { display: none; }
 .chips + .agrid, .chips + .cgrid { margin-top: 0; }
 section > .chips + .agrid, section > .chips + .cgrid { margin-top: 14px; }
+/* mobile: filter chips in a symmetric 3-column grid */
+@media (max-width: 800px) {
+  .chips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .chip { padding: 8px 4px; font-size: 13px; line-height: 1.4; text-align: center; }
+}
