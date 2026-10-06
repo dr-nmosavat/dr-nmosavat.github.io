@@ -995,3 +995,14 @@ ul.plain li::before { content: ""; position: absolute; inset-inline-start: 0; to
 .mq-g { padding-inline-end: 70vw; }
 @media (min-width: 900px) { .mq-g { padding-inline-end: 40vw; } }
 .mq-track { animation-duration: 45s; }
+
+/* reviews: one horizontal strip at every width; newest first, the rest by scrolling */
+.rv-row, .rv-row > .rv:last-child:nth-child(odd) { grid-column: auto; }
+@media (min-width: 801px) {
+  .rv-row { display: flex; grid-template-columns: none; overflow-x: auto; scroll-snap-type: x proximity; gap: 16px; padding: 4px 2px 14px; align-items: flex-start; scrollbar-width: thin; scrollbar-color: #b9cde6 transparent; }
+  .rv { flex: 0 0 calc((100% - 32px) / 3.15); scroll-snap-align: start; }
+  .rv blockquote { flex: none; }
+  .rv-row::-webkit-scrollbar { height: 6px; }
+  .rv-row::-webkit-scrollbar-thumb { background: #b9cde6; border-radius: 6px; }
+}
+@media (min-width: 801px) and (max-width: 1000px) { .rv { flex-basis: calc((100% - 16px) / 2.15); } }
