@@ -515,7 +515,7 @@ var DAY_NAME = { sat: "شنبه", sun: "یکشنبه", mon: "دوشنبه", tue:
     ];
   }
   function group(list) {
-    return '<span class="mq-g">' + list.map(function (x) { return '<span class="mq-i">' + x + "</span>"; }).join('<span class="mq-sep" aria-hidden="true">•</span>') + '<span class="mq-sep" aria-hidden="true">•</span></span>';
+    return '<span class="mq-g">' + list.map(function (x) { return '<span class="mq-i">' + x + "</span>"; }).join('<span class="mq-sep" aria-hidden="true">•</span>') + '</span>';
   }
   function render() {
     var g = group(items());
