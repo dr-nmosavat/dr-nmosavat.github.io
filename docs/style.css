@@ -1077,3 +1077,4 @@ section.album#cases { margin-top: 44px; }
 .sens-btn b { background: #fff; color: #17406f; padding: 6px 18px; border-radius: 999px; font-size: 14px; }
 .sens-btn small { font-size: 12px; opacity: .95; }
 .case-page .gallery.one { grid-template-columns: 1fr; max-width: 520px; }
+.ccard-img.blurred img { filter: blur(18px); transform: scale(1.15); }
