@@ -757,7 +757,7 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
       var grid = chips.nextElementSibling;
       if (grid) {
         grid.classList.toggle("filtered", !!tag);
-        [].forEach.call(grid.querySelectorAll(".ccard"), function (c) { c.classList.toggle("tag-h", !!tag && c.getAttribute("data-tag") !== tag); });
+        [].forEach.call(grid.querySelectorAll(".ccard, .acard"), function (c) { c.classList.toggle("tag-h", !!tag && c.getAttribute("data-tag") !== tag); });
       }
       return;
     }

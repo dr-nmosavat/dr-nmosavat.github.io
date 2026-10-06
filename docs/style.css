@@ -1045,3 +1045,12 @@ ul.plain li::before { content: ""; position: absolute; inset-inline-start: 0; to
 .case-page .gallery .ph { aspect-ratio: 4 / 3; }
 .case-text { max-width: 640px; line-height: 2; margin: 14px 0; }
 .ccard-b { text-decoration: none; }
+
+/* articles: filter + limit */
+.agrid .more-h { display: none; }
+.agrid.open .more-h, .agrid.filtered .more-h { display: flex; }
+.cgrid.filtered .more-h { display: flex; }
+.acard.tag-h { display: none !important; }
+.filtered ~ .more-btn, .more-btn[hidden] { display: none; }
+.chips + .agrid, .chips + .cgrid { margin-top: 0; }
+section > .chips + .agrid, section > .chips + .cgrid { margin-top: 14px; }
