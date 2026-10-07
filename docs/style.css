@@ -1104,3 +1104,8 @@ section.album#cases { margin-top: 44px; }
   .chips2 .chips:first-child .chip { flex: 0 0 calc((100% - 24px) / 4); }
 }
 .chips2 .chip { line-height: 1.4; }
+
+.acard.grp-h { display: none !important; }
+.grp-chips { display: flex; gap: 8px; margin-bottom: 14px; }
+.grp-chips .chip { flex: 1 1 0; text-align: center; padding: 9px 4px; font-size: 14px; }
+@media (max-width: 800px) { .grp-chips .chip { flex: 1 1 0 !important; } }

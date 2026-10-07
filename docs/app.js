@@ -806,30 +806,26 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
   });
 })();
 
-// فیلتر دولایهٔ مقاله‌ها: گونه + موضوع
+// دسته‌بندی مقاله‌ها: عمومی / سگ / گربه / پرنده
 (function () {
-  var box = document.querySelector("[data-articles-filter]");
   document.addEventListener("click", function (e) {
-    var el = e.target.closest ? e.target.closest(".chips2 .chip") : null;
+    var el = e.target.closest ? e.target.closest(".grp-chips .chip") : null;
     if (!el) return;
-    var wrap = el.closest(".chips2");
-    var row = el.parentNode;
+    var row = el.parentNode, g = el.getAttribute("data-grp");
     [].forEach.call(row.querySelectorAll(".chip"), function (c) { c.classList.toggle("on", c === el); });
-    var sp = (wrap.querySelector(".chip.on[data-sp]") || {}).getAttribute ? wrap.querySelector(".chip.on[data-sp]").getAttribute("data-sp") : "";
-    var tp = (wrap.querySelector(".chip.on[data-tp]") || {}).getAttribute ? wrap.querySelector(".chip.on[data-tp]").getAttribute("data-tp") : "";
-    var grid = wrap.nextElementSibling;
+    var grid = row.nextElementSibling;
     if (!grid) return;
-    var any = !!(sp || tp);
-    grid.classList.toggle("filtered", any);
-    var n = 0;
+    grid.classList.remove("open");
+    var total = 0;
     [].forEach.call(grid.querySelectorAll(".acard"), function (c) {
-      var okSp = !sp || (" " + c.getAttribute("data-species") + " ").indexOf(" " + sp + " ") > -1;
-      var okTp = !tp || c.getAttribute("data-topic") === tp;
-      var hide = !(okSp && okTp);
-      c.classList.toggle("tag-h", hide);
-      if (!hide) n++;
+      var inG = c.getAttribute("data-group") === g;
+      c.classList.toggle("grp-h", !inG);
+      if (inG) total++;
     });
-    var none = wrap.parentNode.querySelector(".no-match");
-    if (none) none.hidden = n > 0;
+    var more = grid.nextElementSibling;
+    if (more && more.classList.contains("more-btn")) {
+      var hiddenExtra = grid.querySelectorAll('.acard[data-group="' + g + '"].more-h').length;
+      more.hidden = hiddenExtra === 0;
+    }
   });
 })();
