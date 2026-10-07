@@ -818,12 +818,15 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
     var chips = root.querySelector(".grp-chips"), head = root.querySelector(".list-head"), list = root.querySelector(".agrid[data-list]");
     var panels = root.querySelectorAll(".cat-panel");
     function curGrp() { return chips.querySelector(".chip.on").getAttribute("data-grp"); }
+    function homeList() { if (head.nextSibling !== list) head.parentNode.insertBefore(list, head.nextSibling); }
     function showPanel(g) {
+      homeList();
       [].forEach.call(panels, function (p) { p.hidden = p.getAttribute("data-grp-panel") !== g; });
       head.hidden = true; list.hidden = true;
       [].forEach.call(root.querySelectorAll("button.cat-tile.open"), function (x) { x.classList.remove("open"); });
     }
     if (chip && chip.classList.contains("on")) {
+      homeList();
       chip.classList.remove("on");
       [].forEach.call(panels, function (p) { p.hidden = true; });
       head.hidden = true; list.hidden = true;
@@ -840,7 +843,7 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
       var wasOpen = tile.classList.contains("open");
       [].forEach.call(root.querySelectorAll("button.cat-tile"), function (x) { x.classList.remove("open"); });
       head.hidden = true;
-      if (wasOpen) { list.hidden = true; return; }
+      if (wasOpen) { list.hidden = true; homeList(); return; }
       tile.classList.add("open");
       [].forEach.call(list.querySelectorAll(".acard"), function (c) {
         var ok = c.getAttribute("data-group") === g && c.getAttribute("data-topic") === cat;
@@ -848,7 +851,7 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
       });
       list.hidden = false;
       list.setAttribute("data-n", String(list.querySelectorAll(".acard:not(.grp-h)").length));
-      var pn = tile.closest(".cat-panel"); if (pn && pn.nextSibling !== list) pn.parentNode.insertBefore(list, pn.nextSibling);
+      tile.parentNode.insertBefore(list, tile.nextSibling);
       try { tile.scrollIntoView({ behavior: "smooth", block: "nearest" }); } catch (err) {}
     }
   });
