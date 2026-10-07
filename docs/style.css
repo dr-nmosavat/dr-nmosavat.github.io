@@ -1176,3 +1176,12 @@ a.cat-tile { text-decoration: none; }
 .bc-av img { width: 100%; height: 100%; object-fit: cover; display: block; -webkit-user-drag: none; }
 .bc-av svg { width: 70%; height: 70%; }
 @media (max-width: 800px) { .breed-cards { grid-template-columns: 1fr; } }
+/* breed/species articles: use the full width on desktop */
+@media (min-width: 900px) {
+  .article:has(.breed-cards), .article:has(.breed-list) { max-width: 100%; }
+  .article:has(.breed-cards) > p, .article:has(.breed-cards) > ul, .article:has(.breed-cards) > h2, .article:has(.breed-cards) > .note { max-width: 760px; }
+  .breed-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .breed-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .breed-cards .bc { height: 100%; }
+}
+@media (min-width: 801px) and (max-width: 899px) { .breed-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
