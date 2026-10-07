@@ -1187,3 +1187,8 @@ a.cat-tile { text-decoration: none; }
 @media (min-width: 801px) and (max-width: 899px) { .breed-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .bc-av { width: 76px; height: 76px; } .bc-av.bc-ic { width: 76px; height: 76px; }
 .bc-av.ph { border: 0; border-radius: 16px; } .bc-av.ph:hover img { transform: scale(1.06); }
+/* breed/species articles: text uses the full width too (no empty side on desktop) */
+@media (min-width: 900px) {
+  .article:has(.breed-cards) > p, .article:has(.breed-cards) > ul, .article:has(.breed-cards) > h2, .article:has(.breed-cards) > .note, .article:has(.breed-cards) > .keypoints { max-width: none; }
+  .article:has(.breed-cards) .lead2 { max-width: none; }
+}
