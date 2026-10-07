@@ -822,6 +822,12 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
       [].forEach.call(panels, function (p) { p.hidden = p.getAttribute("data-grp-panel") !== g; });
       head.hidden = true; list.hidden = true;
     }
+    if (chip && chip.classList.contains("on")) {
+      chip.classList.remove("on");
+      [].forEach.call(panels, function (p) { p.hidden = true; });
+      head.hidden = true; list.hidden = true;
+      return;
+    }
     if (chip) {
       var gb = chips.closest(".grp-box"); if (gb) gb.classList.add("used");
       [].forEach.call(chips.querySelectorAll(".chip"), function (c) { c.classList.toggle("on", c === chip); });

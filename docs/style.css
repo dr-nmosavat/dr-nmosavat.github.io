@@ -1232,3 +1232,10 @@ a.cat-tile { text-decoration: none; }
   .cat-tile .ct-desc { font-size: 12.5px; line-height: 1.55; -webkit-line-clamp: 1; }
   .cat-hint { margin-bottom: 6px; }
 }
+
+@media (max-width: 800px) {
+  .glance { padding: 9px 12px; margin-bottom: 10px; border-radius: 14px; }
+  .glance b { font-size: 14px; margin-bottom: 2px; }
+  .glance p { font-size: 13.5px; line-height: 1.7; margin-bottom: 4px; }
+  .toc summary { font-size: 13px; }
+}
