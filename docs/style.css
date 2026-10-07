@@ -1251,3 +1251,21 @@ a.cat-tile { text-decoration: none; }
 .cat-tile .ct-dn { width: 30px; height: 30px; border-radius: 50%; background: var(--blue-soft); color: var(--blue-deep); display: grid; place-items: center; opacity: 1; font-size: 0; }
 .cat-tile .ct-dn svg { width: 18px; height: 18px; animation: grp-bob 1.8s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .cat-tile .ct-dn svg { animation: none; } }
+/* article cards: light, matches site */
+.acard { background: var(--surface); color: var(--ink); border: 1px solid var(--line); box-shadow: 0 6px 16px rgba(23,64,111,.06); }
+.acard::before { display: none; }
+.acard h3 { color: var(--blue-deep); }
+.acard p { color: var(--muted); }
+.acard .tag { background: var(--blue-soft); color: var(--blue-deep); }
+.acard .meta { color: var(--muted); }
+.acard:hover { border-color: var(--blue); filter: none; }
+.cat-tile.open { border-color: var(--blue); }
+.cat-tile.open .ct-dn svg { transform: rotate(180deg); animation: none; }
+.agrid[data-list] { margin-top: 10px; }
+@media (max-width: 800px) {
+  .agrid[data-list] { gap: 8px; }
+  .agrid[data-list] .acard { padding: 10px 14px; border-radius: 14px; gap: 2px; }
+  .agrid[data-list] .acard h3 { font-size: 15px; line-height: 1.5; }
+  .agrid[data-list] .acard p { font-size: 13px; line-height: 1.6; -webkit-line-clamp: 2; }
+  .agrid[data-list] .acard .meta { font-size: 11.5px; }
+}

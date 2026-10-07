@@ -821,6 +821,7 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
     function showPanel(g) {
       [].forEach.call(panels, function (p) { p.hidden = p.getAttribute("data-grp-panel") !== g; });
       head.hidden = true; list.hidden = true;
+      [].forEach.call(root.querySelectorAll("button.cat-tile.open"), function (x) { x.classList.remove("open"); });
     }
     if (chip && chip.classList.contains("on")) {
       chip.classList.remove("on");
@@ -836,15 +837,19 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
       showPanel(curGrp());
     } else if (tile) {
       var g = curGrp(), cat = tile.getAttribute("data-cat");
-      [].forEach.call(panels, function (p) { p.hidden = true; });
+      var wasOpen = tile.classList.contains("open");
+      [].forEach.call(root.querySelectorAll("button.cat-tile"), function (x) { x.classList.remove("open"); });
+      head.hidden = true;
+      if (wasOpen) { list.hidden = true; return; }
+      tile.classList.add("open");
       [].forEach.call(list.querySelectorAll(".acard"), function (c) {
         var ok = c.getAttribute("data-group") === g && c.getAttribute("data-topic") === cat;
         c.classList.toggle("grp-h", !ok);
       });
-      head.querySelector(".list-title").textContent = chips.querySelector(".chip.on").textContent + " · " + cat;
-      head.hidden = false; list.hidden = false;
+      list.hidden = false;
       list.setAttribute("data-n", String(list.querySelectorAll(".acard:not(.grp-h)").length));
-      try { head.scrollIntoView({ behavior: "smooth", block: "start" }); } catch (err) {}
+      var pn = tile.closest(".cat-panel"); if (pn && pn.nextSibling !== list) pn.parentNode.insertBefore(list, pn.nextSibling);
+      try { tile.scrollIntoView({ behavior: "smooth", block: "nearest" }); } catch (err) {}
     }
   });
 })();
