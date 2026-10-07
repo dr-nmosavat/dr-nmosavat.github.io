@@ -1211,3 +1211,11 @@ a.cat-tile { text-decoration: none; }
   .bc p { font-size: 13px; line-height: 1.75; }
   .bc-av, .bc-av.bc-ic { width: 64px; height: 64px; }
 }
+
+/* glowing "choose a tab" box (like the consult button) */
+.grp-box { position: relative; margin: 0 0 18px; padding: 12px 12px 14px; border-radius: 22px; border: 2px solid var(--blue); background: var(--surface); animation: grp-glow 1.8s ease-in-out infinite; }
+.grp-box .grp-hint { margin-top: 0; }
+.grp-box .grp-chips { margin-bottom: 0; }
+.grp-box.used { animation: none; border-color: var(--line); box-shadow: none; }
+@keyframes grp-glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(31,90,166,.0), 0 0 8px 1px rgba(31,90,166,.25); border-color: rgba(31,90,166,.55); } 50% { box-shadow: 0 0 0 6px rgba(31,90,166,.14), 0 0 22px 5px rgba(31,90,166,.38); border-color: var(--blue); } }
+@media (prefers-reduced-motion: reduce) { .grp-box { animation: none; box-shadow: 0 0 14px 3px rgba(31,90,166,.3); } }

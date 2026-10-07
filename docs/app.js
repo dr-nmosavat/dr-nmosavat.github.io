@@ -823,6 +823,7 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
       head.hidden = true; list.hidden = true;
     }
     if (chip) {
+      var gb = chips.closest(".grp-box"); if (gb) gb.classList.add("used");
       [].forEach.call(chips.querySelectorAll(".chip"), function (c) { c.classList.toggle("on", c === chip); });
       showPanel(chip.getAttribute("data-grp"));
     } else if (back) {
