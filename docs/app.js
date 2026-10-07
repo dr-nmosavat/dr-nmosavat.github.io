@@ -827,6 +827,7 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
     }
     if (chip && chip.classList.contains("on")) {
       homeList();
+      try { sessionStorage.removeItem("learnState"); } catch (err) {}
       chip.classList.remove("on");
       [].forEach.call(panels, function (p) { p.hidden = true; });
       head.hidden = true; list.hidden = true;
@@ -836,6 +837,7 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
       var gb = chips.closest(".grp-box"); if (gb) gb.classList.add("used");
       [].forEach.call(chips.querySelectorAll(".chip"), function (c) { c.classList.toggle("on", c === chip); });
       showPanel(chip.getAttribute("data-grp"));
+      try { sessionStorage.setItem("learnState", JSON.stringify({ g: chip.getAttribute("data-grp") })); } catch (err) {}
     } else if (back) {
       showPanel(curGrp());
     } else if (tile) {
@@ -843,7 +845,7 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
       var wasOpen = tile.classList.contains("open");
       [].forEach.call(root.querySelectorAll("button.cat-tile"), function (x) { x.classList.remove("open"); });
       head.hidden = true;
-      if (wasOpen) { list.hidden = true; homeList(); return; }
+      if (wasOpen) { list.hidden = true; homeList(); try { sessionStorage.setItem("learnState", JSON.stringify({ g: g })); } catch (err) {} return; }
       tile.classList.add("open");
       [].forEach.call(list.querySelectorAll(".acard"), function (c) {
         var ok = c.getAttribute("data-group") === g && c.getAttribute("data-topic") === cat;
@@ -853,6 +855,21 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
       list.setAttribute("data-n", String(list.querySelectorAll(".acard:not(.grp-h)").length));
       tile.parentNode.insertBefore(list, tile.nextSibling);
       try { tile.scrollIntoView({ behavior: "smooth", block: "nearest" }); } catch (err) {}
+      try { sessionStorage.setItem("learnState", JSON.stringify({ g: g, c: cat })); } catch (err) {}
     }
   });
+})();
+
+// برگشت از مقاله: گونه و دسته‌ای که باز بود دوباره باز می‌شود
+(function () {
+  function go() {
+    var sec = document.getElementById("articles-all"); if (!sec || !sec.querySelector(".grp-chips")) return;
+    var st = null; try { st = JSON.parse(sessionStorage.getItem("learnState") || "null"); } catch (err) {}
+    if (!st || !st.g) return;
+    var chip = sec.querySelector('.grp-chips .chip[data-grp="' + st.g + '"]'); if (!chip || chip.classList.contains("on")) return;
+    chip.click();
+    if (st.c) { var t = sec.querySelector('.cat-panel:not([hidden]) button.cat-tile[data-cat="' + st.c + '"]'); if (t) t.click(); }
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", go); else go();
+  window.addEventListener("pageshow", function (e) { if (e.persisted) return; });
 })();
