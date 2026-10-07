@@ -1283,3 +1283,7 @@ a.cat-tile { text-decoration: none; }
 /* article text: full-width justified lines */
 .article p, .article li, .article .note p, .article .lead2 { text-align: justify; text-justify: inter-word; hyphens: manual; overflow-wrap: break-word; }
 .article .sub, .article .meta, .article .bc p { text-align: start; }
+.more-h { margin: 22px 0 8px; font-size: 17px; color: var(--blue-deep); }
+.more-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.more-list li { margin: 0; text-align: start; }
+.more-list a { display: inline-block; padding: 4px 0; }
