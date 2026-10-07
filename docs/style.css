@@ -1192,3 +1192,22 @@ a.cat-tile { text-decoration: none; }
   .article:has(.breed-cards) > p, .article:has(.breed-cards) > ul, .article:has(.breed-cards) > h2, .article:has(.breed-cards) > .note, .article:has(.breed-cards) > .keypoints { max-width: none; }
   .article:has(.breed-cards) .lead2 { max-width: none; }
 }
+
+/* species buttons: obviously clickable */
+.grp-hint { margin: 0 0 8px; font-size: 14px; font-weight: 700; color: var(--muted); text-align: center; }
+.grp-chips .chip { border: 2px solid var(--blue); background: var(--surface); color: var(--blue-deep); font-weight: 700; box-shadow: 0 4px 0 rgba(31,90,166,.22), 0 8px 16px rgba(23,64,111,.08); transition: transform .15s, box-shadow .15s, background .15s; }
+.grp-chips .chip:hover { transform: translateY(-2px); background: var(--blue-soft); }
+.grp-chips .chip:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(31,90,166,.22); }
+.grp-chips .chip.on { background: var(--blue); color: var(--on-blue); box-shadow: 0 4px 0 rgba(23,64,111,.45), 0 8px 16px rgba(23,64,111,.18); }
+/* breed group boxes: compact on phones */
+@media (max-width: 800px) {
+  .note.breed { gap: 10px; padding: 10px 12px; }
+  .note.breed b { font-size: 15px; }
+  .note.breed p { font-size: 13px; line-height: 1.75; margin-top: 2px; }
+  .breed-ic.s1 { width: 30px; height: 30px; } .breed-ic.s2 { width: 34px; height: 34px; } .breed-ic.s3 { width: 38px; height: 38px; } .breed-ic.s4 { width: 42px; height: 42px; }
+  .breed-list { gap: 8px; }
+  .bc { padding: 10px; gap: 10px; }
+  .bc b { font-size: 15px; }
+  .bc p { font-size: 13px; line-height: 1.75; }
+  .bc-av, .bc-av.bc-ic { width: 64px; height: 64px; }
+}
