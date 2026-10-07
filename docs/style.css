@@ -1299,3 +1299,5 @@ a.cat-tile { text-decoration: none; }
 .case-chips .chip { flex: 1 1 28% !important; min-width: 0; }
 .case-chips .chip.on::after { display: none; }
 .grp-box.case-box + .grp-sub { margin-top: -6px; }
+.cempty { margin: 6px 0 0; padding: 18px; text-align: center; color: var(--muted); background: var(--surface); border: 1px dashed var(--line); border-radius: 16px; }
+.cgrid { margin-top: 0; }

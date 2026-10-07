@@ -760,6 +760,8 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
       if (grid) {
         grid.classList.toggle("filtered", !!tag);
         [].forEach.call(grid.querySelectorAll(".ccard, .acard"), function (c) { c.classList.toggle("tag-h", !!tag && c.getAttribute("data-tag") !== tag); });
+        var em = grid.nextElementSibling;
+        if (em && em.classList.contains("cempty")) em.hidden = grid.querySelectorAll(".ccard:not(.tag-h)").length > 0;
       }
       return;
     }
