@@ -836,6 +836,7 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
       });
       head.querySelector(".list-title").textContent = chips.querySelector(".chip.on").textContent + " · " + cat;
       head.hidden = false; list.hidden = false;
+      list.setAttribute("data-n", String(list.querySelectorAll(".acard:not(.grp-h)").length));
       try { head.scrollIntoView({ behavior: "smooth", block: "start" }); } catch (err) {}
     }
   });
