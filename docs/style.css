@@ -1242,3 +1242,9 @@ a.cat-tile { text-decoration: none; }
 
 .grp-sub { margin: -8px 0 14px; text-align: center; font-size: 14px; font-weight: 700; color: var(--blue-deep); }
 .grp-box.used + .grp-sub { display: none; }
+
+.grp-arrow { display: flex; justify-content: center; margin-top: 4px; color: var(--blue); pointer-events: none; }
+.grp-arrow svg { width: 26px; height: 26px; transition: transform .25s; animation: grp-bob 1.4s ease-in-out infinite; }
+.grp-box:has(.chip.on) .grp-arrow svg { transform: rotate(180deg); animation: none; }
+@keyframes grp-bob { 0%, 100% { transform: translateY(-2px); } 50% { transform: translateY(3px); } }
+@media (prefers-reduced-motion: reduce) { .grp-arrow svg { animation: none; } }
