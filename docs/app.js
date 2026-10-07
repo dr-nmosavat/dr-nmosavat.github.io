@@ -751,7 +751,7 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
       el.hidden = true;
       return;
     }
-    if ((el = t.closest(".chip"))) {
+    if ((el = t.closest(".chip[data-tag]"))) {
       var tag = el.getAttribute("data-tag"), chips = el.parentNode;
       [].forEach.call(chips.querySelectorAll(".chip"), function (c) { c.classList.toggle("on", c === el); });
       var grid = chips.nextElementSibling;
@@ -803,5 +803,33 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
     var root = b.closest(".pg") || document;
     var t = root.querySelector('[id="' + b.getAttribute("data-scroll") + '"]');
     if (t) t.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+})();
+
+// فیلتر دولایهٔ مقاله‌ها: گونه + موضوع
+(function () {
+  var box = document.querySelector("[data-articles-filter]");
+  document.addEventListener("click", function (e) {
+    var el = e.target.closest ? e.target.closest(".chips2 .chip") : null;
+    if (!el) return;
+    var wrap = el.closest(".chips2");
+    var row = el.parentNode;
+    [].forEach.call(row.querySelectorAll(".chip"), function (c) { c.classList.toggle("on", c === el); });
+    var sp = (wrap.querySelector(".chip.on[data-sp]") || {}).getAttribute ? wrap.querySelector(".chip.on[data-sp]").getAttribute("data-sp") : "";
+    var tp = (wrap.querySelector(".chip.on[data-tp]") || {}).getAttribute ? wrap.querySelector(".chip.on[data-tp]").getAttribute("data-tp") : "";
+    var grid = wrap.nextElementSibling;
+    if (!grid) return;
+    var any = !!(sp || tp);
+    grid.classList.toggle("filtered", any);
+    var n = 0;
+    [].forEach.call(grid.querySelectorAll(".acard"), function (c) {
+      var okSp = !sp || (" " + c.getAttribute("data-species") + " ").indexOf(" " + sp + " ") > -1;
+      var okTp = !tp || c.getAttribute("data-topic") === tp;
+      var hide = !(okSp && okTp);
+      c.classList.toggle("tag-h", hide);
+      if (!hide) n++;
+    });
+    var none = wrap.parentNode.querySelector(".no-match");
+    if (none) none.hidden = n > 0;
   });
 })();
