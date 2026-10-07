@@ -1084,3 +1084,11 @@ section.album#cases { margin-top: 44px; }
   .chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
   .chip { flex: 0 0 calc((100% - 16px) / 3); }
 }
+
+.glance { margin: 0 0 14px; padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; }
+.glance b { display: block; margin-bottom: 4px; color: var(--blue-deep); }
+.glance p { margin: 0 0 8px; line-height: 1.9; }
+.toc summary { cursor: pointer; color: var(--blue-deep); font-weight: 700; font-size: 14px; }
+.toc ol { margin: 8px 0 0; padding-inline-start: 20px; display: grid; gap: 4px; }
+.toc-b { background: none; border: 0; padding: 2px 0; font: inherit; color: var(--blue-deep); text-align: start; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.article h2[id] { scroll-margin-top: 90px; }

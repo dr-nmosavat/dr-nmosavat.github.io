@@ -794,3 +794,14 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
     b.parentNode.removeChild(b);
   });
 })();
+
+// سرفصل‌های مقاله: رفتن به بخش مورد نظر (بدون تغییر آدرس صفحه)
+(function () {
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest ? e.target.closest(".toc-b") : null;
+    if (!b) return;
+    var root = b.closest(".pg") || document;
+    var t = root.querySelector('[id="' + b.getAttribute("data-scroll") + '"]');
+    if (t) t.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+})();
