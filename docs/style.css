@@ -1078,3 +1078,9 @@ section.album#cases { margin-top: 44px; }
 .sens-btn small { font-size: 12px; opacity: .95; }
 .case-page .gallery.one { grid-template-columns: 1fr; max-width: 520px; }
 .ccard-img.blurred img { filter: blur(18px); transform: scale(1.15); }
+
+/* mobile chips: equal widths, last row centred (works for any count) */
+@media (max-width: 800px) {
+  .chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+  .chip { flex: 0 0 calc((100% - 16px) / 3); }
+}
