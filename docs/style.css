@@ -1239,3 +1239,6 @@ a.cat-tile { text-decoration: none; }
   .glance p { font-size: 13.5px; line-height: 1.7; margin-bottom: 4px; }
   .toc summary { font-size: 13px; }
 }
+
+.grp-sub { margin: -8px 0 14px; text-align: center; font-size: 14px; font-weight: 700; color: var(--blue-deep); }
+.grp-box.used + .grp-sub { display: none; }
