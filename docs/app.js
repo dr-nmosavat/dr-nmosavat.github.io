@@ -806,26 +806,37 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
   });
 })();
 
-// دسته‌بندی مقاله‌ها: عمومی / سگ / گربه / پرنده
+// دسته‌بندی مقاله‌ها: گونه ← دسته ← مقاله‌ها
 (function () {
+  var sec = document.getElementById("articles-all");
   document.addEventListener("click", function (e) {
-    var el = e.target.closest ? e.target.closest(".grp-chips .chip") : null;
-    if (!el) return;
-    var row = el.parentNode, g = el.getAttribute("data-grp");
-    [].forEach.call(row.querySelectorAll(".chip"), function (c) { c.classList.toggle("on", c === el); });
-    var grid = row.nextElementSibling;
-    if (!grid) return;
-    grid.classList.remove("open");
-    var total = 0;
-    [].forEach.call(grid.querySelectorAll(".acard"), function (c) {
-      var inG = c.getAttribute("data-group") === g;
-      c.classList.toggle("grp-h", !inG);
-      if (inG) total++;
-    });
-    var more = grid.nextElementSibling;
-    if (more && more.classList.contains("more-btn")) {
-      var hiddenExtra = grid.querySelectorAll('.acard[data-group="' + g + '"].more-h').length;
-      more.hidden = hiddenExtra === 0;
+    var t = e.target;
+    if (!t.closest) return;
+    var chip = t.closest(".grp-chips .chip"), tile = t.closest(".cat-tile"), back = t.closest(".back-cats");
+    if (!chip && !tile && !back) return;
+    var root = (chip || tile || back).closest("section") || document;
+    var chips = root.querySelector(".grp-chips"), head = root.querySelector(".list-head"), list = root.querySelector(".agrid[data-list]");
+    var panels = root.querySelectorAll(".cat-panel");
+    function curGrp() { return chips.querySelector(".chip.on").getAttribute("data-grp"); }
+    function showPanel(g) {
+      [].forEach.call(panels, function (p) { p.hidden = p.getAttribute("data-grp-panel") !== g; });
+      head.hidden = true; list.hidden = true;
+    }
+    if (chip) {
+      [].forEach.call(chips.querySelectorAll(".chip"), function (c) { c.classList.toggle("on", c === chip); });
+      showPanel(chip.getAttribute("data-grp"));
+    } else if (back) {
+      showPanel(curGrp());
+    } else if (tile) {
+      var g = curGrp(), cat = tile.getAttribute("data-cat");
+      [].forEach.call(panels, function (p) { p.hidden = true; });
+      [].forEach.call(list.querySelectorAll(".acard"), function (c) {
+        var ok = c.getAttribute("data-group") === g && c.getAttribute("data-topic") === cat;
+        c.classList.toggle("grp-h", !ok);
+      });
+      head.querySelector(".list-title").textContent = chips.querySelector(".chip.on").textContent + " · " + cat;
+      head.hidden = false; list.hidden = false;
+      try { head.scrollIntoView({ behavior: "smooth", block: "start" }); } catch (err) {}
     }
   });
 })();
