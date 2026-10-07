@@ -753,8 +753,10 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
     }
     if ((el = t.closest(".chip[data-tag]"))) {
       var tag = el.getAttribute("data-tag"), chips = el.parentNode;
+      var cb = el.closest(".grp-box"); if (cb) cb.classList.add("used");
       [].forEach.call(chips.querySelectorAll(".chip"), function (c) { c.classList.toggle("on", c === el); });
-      var grid = chips.nextElementSibling;
+      var grid = (cb || chips).nextElementSibling;
+      if (grid && grid.classList.contains("grp-sub")) grid = grid.nextElementSibling;
       if (grid) {
         grid.classList.toggle("filtered", !!tag);
         [].forEach.call(grid.querySelectorAll(".ccard, .acard"), function (c) { c.classList.toggle("tag-h", !!tag && c.getAttribute("data-tag") !== tag); });
@@ -812,7 +814,7 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
   document.addEventListener("click", function (e) {
     var t = e.target;
     if (!t.closest) return;
-    var chip = t.closest(".grp-chips .chip"), tile = t.closest("button.cat-tile"), back = t.closest(".back-cats");
+    var chip = t.closest(".grp-chips:not(.case-chips) .chip"), tile = t.closest("button.cat-tile"), back = t.closest(".back-cats");
     if (!chip && !tile && !back) return;
     var root = (chip || tile || back).closest("section") || document;
     var chips = root.querySelector(".grp-chips"), head = root.querySelector(".list-head"), list = root.querySelector(".agrid[data-list]");
@@ -872,4 +874,24 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", go); else go();
   window.addEventListener("pageshow", function (e) { if (e.persisted) return; });
+})();
+
+// نوار عکس‌ها: کشیدن با موس (با انگشت خودش اسکرول می‌شود)
+(function () {
+  document.querySelectorAll("[data-strip]").forEach(function (el) {
+    var down = false, sx = 0, ss = 0, moved = false;
+    el.addEventListener("pointerdown", function (e) {
+      if (e.pointerType !== "mouse" || e.button !== 0) return;
+      down = true; moved = false; sx = e.clientX; ss = el.scrollLeft; el.classList.add("drag");
+    });
+    window.addEventListener("pointermove", function (e) {
+      if (!down) return;
+      var dx = e.clientX - sx;
+      if (Math.abs(dx) > 4) moved = true;
+      el.scrollLeft = ss - dx;
+    });
+    window.addEventListener("pointerup", function () { if (!down) return; down = false; el.classList.remove("drag"); });
+    el.addEventListener("click", function (e) { if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
+    el.addEventListener("dragstart", function (e) { e.preventDefault(); });
+  });
 })();

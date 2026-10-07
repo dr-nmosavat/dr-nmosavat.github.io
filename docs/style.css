@@ -1287,3 +1287,15 @@ a.cat-tile { text-decoration: none; }
 .more-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
 .more-list li { margin: 0; text-align: start; }
 .more-list a { display: inline-block; padding: 4px 0; }
+/* album: swipe strip + case filter */
+.strip { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; padding: 2px 2px 10px; cursor: grab; scrollbar-width: thin; overscroll-behavior-x: contain; }
+.strip.drag { cursor: grabbing; scroll-snap-type: none; user-select: none; }
+.strip .ph { flex: 0 0 58%; max-width: 280px; aspect-ratio: 3 / 4; scroll-snap-align: start; }
+@media (min-width: 801px) { .strip .ph { flex-basis: 240px; } }
+.strip-hint { margin: 2px 0 0; text-align: center; font-size: 13px; color: var(--muted); }
+.album .strip { margin-top: 4px; }
+.case-box { margin-bottom: 18px; }
+.case-chips { flex-wrap: wrap; gap: 8px; }
+.case-chips .chip { flex: 1 1 28% !important; min-width: 0; }
+.case-chips .chip.on::after { display: none; }
+.grp-box.case-box + .grp-sub { margin-top: -6px; }
