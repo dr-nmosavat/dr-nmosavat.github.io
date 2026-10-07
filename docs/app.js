@@ -812,7 +812,7 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
   document.addEventListener("click", function (e) {
     var t = e.target;
     if (!t.closest) return;
-    var chip = t.closest(".grp-chips .chip"), tile = t.closest(".cat-tile"), back = t.closest(".back-cats");
+    var chip = t.closest(".grp-chips .chip"), tile = t.closest("button.cat-tile"), back = t.closest(".back-cats");
     if (!chip && !tile && !back) return;
     var root = (chip || tile || back).closest("section") || document;
     var chips = root.querySelector(".grp-chips"), head = root.querySelector(".list-head"), list = root.querySelector(".agrid[data-list]");
