@@ -1280,3 +1280,6 @@ a.cat-tile { text-decoration: none; }
   .agrid > .note.soft p { font-size: 13.5px; line-height: 1.7; }
   .article .agrid[style*="1fr"] { gap: 8px; }
 }
+/* article text: full-width justified lines */
+.article p, .article li, .article .note p, .article .lead2 { text-align: justify; text-justify: inter-word; hyphens: manual; overflow-wrap: break-word; }
+.article .sub, .article .meta, .article .bc p { text-align: start; }
