@@ -235,7 +235,8 @@ if (bk) {
 document.querySelectorAll("[data-ask]").forEach(function (a) {
   if (!INFO.whatsapp) return;
   var topic = a.getAttribute("data-ask");
-  var text = "سلام دکتر مساوات، دربارهٔ «" + topic + "» سؤال دارم.";
+  var short = topic.split(/[:؟?]/)[0].trim();
+  var text = topic.indexOf("سؤال عمومی") === 0 ? "سلام دکتر مساوات، یک سؤال دربارهٔ پتم دارم." : "سلام دکتر مساوات، دربارهٔ «" + short + "» سؤال دارم.";
   a.href = "https://wa.me/" + INFO.whatsapp + "?text=" + encodeURIComponent(text);
   a.target = "_blank"; a.rel = "noopener"; a.removeAttribute("data-go");
 });
