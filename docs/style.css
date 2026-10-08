@@ -1301,3 +1301,9 @@ a.cat-tile { text-decoration: none; }
 .grp-box.case-box + .grp-sub { margin-top: -6px; }
 .cempty { margin: 6px 0 0; padding: 18px; text-align: center; color: var(--muted); background: var(--surface); border: 1px dashed var(--line); border-radius: 16px; }
 .cgrid { margin-top: 0; }
+/* large monitors: scale the whole page column up instead of leaving empty sides */
+@media (min-width: 1360px) { .wrap { zoom: 1.08; } }
+@media (min-width: 1600px) { .wrap { zoom: 1.18; } }
+@media (min-width: 1800px) { .wrap { zoom: 1.28; } }
+@media (min-width: 2300px) { .wrap { zoom: 1.55; } }
+@media (min-width: 3000px) { .wrap { zoom: 2; } }
