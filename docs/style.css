@@ -1312,17 +1312,31 @@ a.cat-tile { text-decoration: none; }
 .cat-tile .ct-act { color: var(--blue); font-weight: 700; font-size: 13.5px; line-height: 1.5; margin-top: 2px; text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1.5px; }
 .cat-tile:hover .ct-act { color: var(--blue-deep); }
 @media (max-width: 800px) { .cat-tile .ct-act { font-size: 12.5px; } }
-/* چرخ شانس */
-.wheel-sec { padding-block: 18px; }
-.wheel-card { display: grid; grid-template-columns: 1fr; gap: 18px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 24px; padding: 20px 18px; box-shadow: 0 8px 20px rgba(23,64,111,.06); }
-.wheel-box { position: relative; width: min(74vw, 290px); margin-inline: auto; aspect-ratio: 1; }
+/* هدیه به کوچولوها: اعلان + پنجرهٔ چرخ */
+.gift-root[hidden], .gift-toast[hidden], .gift-fab[hidden], .wheel-modal[hidden] { display: none !important; }
+.gift-toast { position: fixed; z-index: 31; left: 50%; bottom: calc(86px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: min(92vw, 380px); display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; box-shadow: 0 14px 34px rgba(23,64,111,.22); animation: gift-up .5s cubic-bezier(.2,.8,.2,1); }
+@keyframes gift-up { from { opacity: 0; transform: translate(-50%, 24px); } to { opacity: 1; transform: translate(-50%, 0); } }
+.gift-ic { flex: none; width: 42px; height: 42px; display: grid; place-items: center; border-radius: 14px; background: #e3f4ec; color: #1a8f63; }
+.gift-ic svg { width: 24px; height: 24px; }
+.gift-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.5; }
+.gift-tx b { color: var(--blue-deep); font-size: 15px; }
+.gift-tx small { color: var(--muted); font-size: 12.5px; }
+.btn.gift-go { background: #1a8f63; border-color: #1a8f63; color: #fff; padding: 8px 16px; justify-content: center; }
+.gift-x, .wheel-x { flex: none; width: 30px; height: 30px; border-radius: 50%; border: 0; background: var(--blue-soft); color: var(--blue-deep); font-size: 20px; line-height: 1; cursor: pointer; }
+.gift-fab { position: fixed; z-index: 29; right: 14px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); width: 50px; height: 50px; border-radius: 50%; border: 0; background: #1a8f63; color: #fff; display: grid; place-items: center; cursor: pointer; box-shadow: 0 8px 20px rgba(26,143,99,.4); }
+.gift-fab svg { width: 26px; height: 26px; }
+.wheel-modal { position: fixed; inset: 0; z-index: 75; background: rgba(8,16,26,.62); display: flex; align-items: center; justify-content: center; padding: 16px; overflow-y: auto; }
+.wheel-pop { position: relative; width: 100%; max-width: 440px; max-height: 94vh; overflow-y: auto; background: var(--surface); border-radius: 26px; padding: 30px 20px 22px; box-shadow: 0 20px 50px rgba(0,0,0,.3); display: grid; gap: 16px; }
+.wheel-x { position: absolute; top: 12px; inset-inline-start: 12px; z-index: 3; }
+html.gift-open { overflow: hidden; }
+.wheel-box { position: relative; width: min(66vw, 270px); margin-inline: auto; aspect-ratio: 1; margin-top: 10px; }
 .wheel-rot { width: 100%; height: 100%; border-radius: 50%; box-shadow: 0 10px 26px rgba(23,64,111,.22), 0 0 0 5px var(--blue-deep); will-change: transform; }
 .wheel-svg { width: 100%; height: 100%; display: block; }
 .wheel-ptr { position: absolute; z-index: 2; top: -12px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-inline: 13px solid transparent; border-top: 24px solid #e5a23a; filter: drop-shadow(0 2px 2px rgba(0,0,0,.25)); }
 .wheel-info { text-align: center; }
 .wheel-info h2 { margin: 0 0 4px; font-size: 21px; }
 .wheel-info .sub { margin: 0 0 12px; text-align: center; }
-.wheel-btn { min-width: 160px; }
+.wheel-btn { min-width: 180px; }
 .wheel-btn[disabled] { opacity: .65; cursor: default; }
 .wheel-res { margin: 14px auto 0; max-width: 420px; padding: 14px 16px; border-radius: 18px; background: var(--blue-soft); display: grid; gap: 6px; justify-items: center; }
 .wheel-res b { color: var(--blue-deep); font-size: 17px; }
@@ -1331,14 +1345,10 @@ a.cat-tile { text-decoration: none; }
 .wheel-terms { margin: 12px auto 0; max-width: 460px; text-align: start; font-size: 13.5px; color: var(--muted); }
 .wheel-terms summary { cursor: pointer; text-align: center; color: var(--blue); font-weight: 700; }
 .wheel-terms ul { margin: 8px 0 0; padding-inline-start: 20px; }
-@media (min-width: 801px) { .wheel-card { grid-template-columns: auto 1fr; gap: 36px; padding: 26px 34px; } .wheel-box { margin: 0; width: 280px; } .wheel-info { text-align: start; } .wheel-info .sub { text-align: start; } .wheel-res, .wheel-terms { margin-inline: 0; } .wheel-terms summary { text-align: start; } }
-@media (prefers-reduced-motion: reduce) { .wheel-rot { transition: none !important; } }
+@media (prefers-reduced-motion: reduce) { .wheel-rot { transition: none !important; } .gift-toast { animation: none; } }
 .wheel-res[hidden], .wheel-terms[hidden] { display: none; }
-.wheel-btn { justify-content: center; text-align: center; min-width: 180px; background: #1a8f63; border-color: #1a8f63; color: #fff; font-size: 17px; }
-.wheel-btn:hover { filter: none; background: #157650; border-color: #157650; }
-.wheel-btn[disabled] { background: #7fbfa5; border-color: #7fbfa5; }
-.wheel-res .btn.small { justify-content: center; background: #1a8f63; border-color: #1a8f63; }
-@media (min-width: 801px) { .wheel-info { text-align: center; } .wheel-info .sub { text-align: center; } .wheel-res, .wheel-terms { margin-inline: auto; } .wheel-terms summary { text-align: center; } }
+.wheel-btn { justify-content: center; text-align: center; font-size: 17px; }
 .btn.primary.wheel-btn { background: #1a8f63; border-color: #1a8f63; color: #fff; }
-.btn.primary.wheel-btn:hover { background: #157650; border-color: #157650; }
+.btn.primary.wheel-btn:hover { background: #157650; border-color: #157650; filter: none; }
 .btn.primary.wheel-btn[disabled] { background: #7fbfa5; border-color: #7fbfa5; }
+.wheel-res .btn.small { justify-content: center; background: #1a8f63; border-color: #1a8f63; }

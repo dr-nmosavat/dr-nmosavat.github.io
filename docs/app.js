@@ -899,21 +899,24 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
   });
 })();
 
-// چرخ شانس
+// هدیه به کوچولوها: اعلان کوچک ← پنجرهٔ چرخ
 (function () {
-  var box = document.querySelector("[data-wheel]"); if (!box) return;
-  var rot = box.querySelector("[data-wheel-rot]"), btn = box.querySelector("[data-wheel-spin]"), res = box.querySelector("[data-wheel-res]");
-  // برش‌ها (باید با wheel.py یکی باشد)
+  var root = document.querySelector("[data-gift]"); if (!root) return;
+  document.body.appendChild(root); root.hidden = false;
+  var toast = root.querySelector("[data-gift-toast]"), fab = root.querySelector("[data-gift-fab]"), modal = root.querySelector("[data-wheel-modal]");
+  var box = root.querySelector("[data-wheel]"), rot = box.querySelector("[data-wheel-rot]"), btn = box.querySelector("[data-wheel-spin]"), res = box.querySelector("[data-wheel-res]");
   var SEGS = ["free", "d10", "consult", "d20", "retry", "d30"];
   var WEIGHTS = { free: 2, consult: 10, d10: 28, d20: 15, d30: 5, retry: 40 };
   var NAMES = { free: "ویزیت رایگان", consult: "مشاورهٔ آنلاین رایگان", d10: "۱۰٪ تخفیف ویزیت", d20: "۲۰٪ تخفیف ویزیت", d30: "۳۰٪ تخفیف ویزیت" };
-  var KEY = "dm_wheel", DAY = 86400000, VALID = 7 * DAY;
-  var cur = 0, busy = false;
+  var KEY = "dm_wheel", DKEY = "dm_gift_dismiss", DAY = 86400000, VALID = 7 * DAY, SNOOZE = 7 * DAY, DELAY = 10000;
+  var cur = 0, busy = false, timer = null;
   function load() { try { return JSON.parse(localStorage.getItem(KEY) || "null") || {}; } catch (e) { return {}; } }
   function save(o) { try { localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) {} }
   function today() { var d = new Date(); return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate(); }
   function fa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱۲۳۴۵۶۷۸۹"[d]; }); }
   function faDate(t) { try { return new Date(t).toLocaleDateString("fa-IR"); } catch (e) { return ""; } }
+  function snoozed() { try { return Number(localStorage.getItem(DKEY) || 0) > Date.now(); } catch (e) { return false; } }
+  function snooze() { try { localStorage.setItem(DKEY, String(Date.now() + SNOOZE)); } catch (e) {} }
   function pick(noRetry) {
     var ids = Object.keys(WEIGHTS).filter(function (k) { return !(noRetry && k === "retry"); });
     var sum = ids.reduce(function (a, k) { return a + WEIGHTS[k]; }, 0), r = Math.random() * sum;
@@ -923,20 +926,36 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
   function show(p) {
     res.hidden = false;
     if (p.id === "retry") { res.innerHTML = "<b>این بار نشد!</b><span>یک شانس دیگر دارید. دوباره بچرخانید.</span>"; return; }
-    var html = "<b>تبریک! برندهٔ " + NAMES[p.id] + " شدید 🎉</b>";
-    {
-      html += "<span>کد جایزه: <bdi class=\"wheel-code\">" + p.code + "</bdi> · اعتبار تا " + faDate(p.exp) + "</span>";
-      if (INFO.whatsapp) {
-        var t = "سلام دکتر مساوات، در چرخ شانس سایت برندهٔ «" + NAMES[p.id] + "» شدم. کد جایزه: " + p.code + " (اعتبار تا " + faDate(p.exp) + ").";
-        html += '<a class="btn small" target="_blank" rel="noopener" href="https://wa.me/' + INFO.whatsapp + "?text=" + encodeURIComponent(t) + '">دریافت جایزه از واتساپ</a>';
-      }
+    var html = "<b>تبریک! برندهٔ " + NAMES[p.id] + " شدید 🎉</b><span>کد جایزه: <bdi class=\"wheel-code\">" + p.code + "</bdi> · اعتبار تا " + faDate(p.exp) + "</span>";
+    if (INFO.whatsapp) {
+      var t = "سلام دکتر مساوات، در «هدیه به کوچولوها» سایت برندهٔ «" + NAMES[p.id] + "» شدم. کد جایزه: " + p.code + " (اعتبار تا " + faDate(p.exp) + ").";
+      html += '<a class="btn small" target="_blank" rel="noopener" href="https://wa.me/' + INFO.whatsapp + "?text=" + encodeURIComponent(t) + '">دریافت جایزه از واتساپ</a>';
     }
     res.innerHTML = html;
   }
   function lock(msg) { btn.disabled = true; btn.textContent = msg; }
+  function openModal() {
+    clearTimeout(timer); toast.hidden = true; fab.hidden = true; modal.hidden = false; document.documentElement.classList.add("gift-open");
+    try { btn.focus({ preventScroll: true }); } catch (e) {}
+  }
+  function closeAll() {
+    if (busy) return;
+    modal.hidden = true; toast.hidden = true; fab.hidden = false; document.documentElement.classList.remove("gift-open"); snooze();
+  }
   var st = load(), now = Date.now();
   if (st.prize && st.prize.exp > now && st.prize.id !== "retry") show(st.prize);
-  if (st.day === today() && st.used && !st.retry) lock("فردا دوباره بچرخانید");
+  var usedToday = st.day === today() && st.used && !st.retry;
+  if (usedToday) lock("فردا دوباره بچرخانید");
+  // اعلان خودکار فقط وقتی لازم است
+  if (usedToday || snoozed()) fab.hidden = false;
+  else timer = setTimeout(function () { if (modal.hidden) toast.hidden = false; }, DELAY);
+  root.addEventListener("click", function (e) {
+    var t = e.target;
+    if (t.closest("[data-gift-open]") || t.closest("[data-gift-fab]")) return openModal();
+    if (t.closest("[data-gift-dismiss]")) return closeAll();
+    if (t === modal) return closeAll();
+  });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !modal.hidden) closeAll(); });
   btn.addEventListener("click", function () {
     if (busy) return; var s = load();
     if (s.day === today() && s.used && !s.retry) return lock("فردا دوباره بچرخانید");
@@ -951,8 +970,7 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
     rot.style.transform = "rotate(" + cur + "deg)";
     var done = function () {
       var prize = { id: id, code: "DM-" + fa(Math.floor(1000 + Math.random() * 9000)), exp: Date.now() + VALID };
-      var o = { day: today(), used: 1, retry: id === "retry" ? 1 : 0, prize: prize };
-      save(o); show(prize); busy = false;
+      save({ day: today(), used: 1, retry: id === "retry" ? 1 : 0, prize: prize }); show(prize); busy = false;
       if (id === "retry") { btn.disabled = false; btn.textContent = "دوباره بچرخان"; } else lock("فردا دوباره بچرخانید");
     };
     if (reduce) done(); else setTimeout(done, 4800);
