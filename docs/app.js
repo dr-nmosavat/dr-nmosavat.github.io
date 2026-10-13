@@ -9,7 +9,8 @@ var INFO = {
   address: "ونک، شیخ بهایی شمالی، برج مرمر، طبقه اول",
   homeVisit: "منظریه، اختیاریه، پاسداران، بلوار کاوه، قیطریه (با هماهنگی قبلی)",
   neshan: "https://nshn.ir/d6sbvrTDWxOVnZ",
-  balad: ""
+  balad: "",
+  wheelApi: ""   // آدرس Apps Script چرخ؛ خالی یعنی چرخ محلی
 };
 var mapQuery = "مرکز تخصصی دامپزشکی ونک، شیخ بهایی شمالی، برج مرمر";
 var gmaps = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(mapQuery);
@@ -956,12 +957,11 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
     if (t === modal) return closeAll();
   });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !modal.hidden) closeAll(); });
-  btn.addEventListener("click", function () {
-    if (busy) return; var s = load();
-    if (s.day === today() && s.used && !s.retry) return lock("فردا دوباره بچرخانید");
-    var second = s.day === today() && s.used && s.retry;
-    busy = true; btn.disabled = true; res.hidden = true;
-    var id = pick(second), idxs = []; SEGS.forEach(function (x, i) { if (x === id) idxs.push(i); });
+  function devId() {
+    try { var d = localStorage.getItem("dm_dev"); if (!d) { d = Math.random().toString(36).slice(2, 14) + Date.now().toString(36); localStorage.setItem("dm_dev", d); } return d; } catch (e) { return "x" + Date.now().toString(36); }
+  }
+  function spinTo(id, make, remote) {
+    var idxs = []; SEGS.forEach(function (x, i) { if (x === id) idxs.push(i); });
     var seg = idxs[Math.floor(Math.random() * idxs.length)], center = (seg + 0.5) * (360 / SEGS.length);
     var jitter = (Math.random() - 0.5) * 24;
     cur = cur + 360 * 6 + ((360 - ((cur + center + jitter) % 360)) % 360);
@@ -969,10 +969,34 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
     rot.style.transition = reduce ? "none" : "transform 4.6s cubic-bezier(.12,.6,.1,1)";
     rot.style.transform = "rotate(" + cur + "deg)";
     var done = function () {
-      var prize = { id: id, code: "DM-" + fa(Math.floor(1000 + Math.random() * 9000)), exp: Date.now() + VALID };
+      var prize = make();
       save({ day: today(), used: 1, retry: id === "retry" ? 1 : 0, prize: prize }); show(prize); busy = false;
       if (id === "retry") { btn.disabled = false; btn.textContent = "دوباره بچرخان"; } else lock("فردا دوباره بچرخانید");
     };
     if (reduce) done(); else setTimeout(done, 4800);
+  }
+  function localSpin(second) {
+    var id = pick(second);
+    spinTo(id, function () { return { id: id, code: "DL-" + fa(Math.floor(1000 + Math.random() * 9000)), exp: Date.now() + VALID }; });
+  }
+  function callApi(second) {
+    var ctl = window.AbortController ? new AbortController() : null, to = setTimeout(function () { if (ctl) ctl.abort(); }, 9000);
+    return fetch(INFO.wheelApi + (INFO.wheelApi.indexOf("?") > -1 ? "&" : "?") + "action=spin&dev=" + encodeURIComponent(devId()), ctl ? { signal: ctl.signal } : {})
+      .then(function (r) { clearTimeout(to); return r.json(); });
+  }
+  btn.addEventListener("click", function () {
+    if (busy) return; var s = load();
+    if (s.day === today() && s.used && !s.retry) return lock("فردا دوباره بچرخانید");
+    var second = s.day === today() && s.used && s.retry;
+    busy = true; btn.disabled = true; res.hidden = true;
+    if (!INFO.wheelApi || !window.fetch) return localSpin(second);
+    var label = btn.textContent; btn.textContent = "لحظه‌ای صبر کنید…";
+    callApi(second).then(function (d) {
+      btn.textContent = label;
+      if (d && d.ok) return spinTo(d.id, function () { return { id: d.id, code: d.code, exp: d.exp }; });
+      if (d && d.reason === "done") { busy = false; if (d.id && d.code) { save({ day: today(), used: 1, retry: 0, prize: { id: d.id, code: d.code, exp: d.exp } }); show({ id: d.id, code: d.code, exp: d.exp }); } return lock("فردا دوباره بچرخانید"); }
+      if (d && d.reason === "busy") { busy = false; btn.disabled = false; res.hidden = false; res.innerHTML = "<b>امروز ظرفیت چرخ پر شد</b><span>فردا دوباره امتحان کنید.</span>"; return; }
+      localSpin(second);
+    }).catch(function () { btn.textContent = label; localSpin(second); });
   });
 })();
