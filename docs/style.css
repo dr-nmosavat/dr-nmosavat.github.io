@@ -1309,3 +1309,6 @@ a.cat-tile { text-decoration: none; }
 /* body texts: lines run to both edges */
 .seo-text p, .rv blockquote, .about p, .case-text, .case p, .step span, .svc-sec p, .lead2 { text-align: justify; text-justify: inter-word; overflow-wrap: break-word; }
 .seo-text p { max-width: none; }
+.cat-tile .ct-act { color: var(--blue); font-weight: 700; font-size: 13.5px; line-height: 1.5; margin-top: 2px; text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1.5px; }
+.cat-tile:hover .ct-act { color: var(--blue-deep); }
+@media (max-width: 800px) { .cat-tile .ct-act { font-size: 12.5px; } }
