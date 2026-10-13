@@ -1334,3 +1334,11 @@ a.cat-tile { text-decoration: none; }
 @media (min-width: 801px) { .wheel-card { grid-template-columns: auto 1fr; gap: 36px; padding: 26px 34px; } .wheel-box { margin: 0; width: 280px; } .wheel-info { text-align: start; } .wheel-info .sub { text-align: start; } .wheel-res, .wheel-terms { margin-inline: 0; } .wheel-terms summary { text-align: start; } }
 @media (prefers-reduced-motion: reduce) { .wheel-rot { transition: none !important; } }
 .wheel-res[hidden], .wheel-terms[hidden] { display: none; }
+.wheel-btn { justify-content: center; text-align: center; min-width: 180px; background: #1a8f63; border-color: #1a8f63; color: #fff; font-size: 17px; }
+.wheel-btn:hover { filter: none; background: #157650; border-color: #157650; }
+.wheel-btn[disabled] { background: #7fbfa5; border-color: #7fbfa5; }
+.wheel-res .btn.small { justify-content: center; background: #1a8f63; border-color: #1a8f63; }
+@media (min-width: 801px) { .wheel-info { text-align: center; } .wheel-info .sub { text-align: center; } .wheel-res, .wheel-terms { margin-inline: auto; } .wheel-terms summary { text-align: center; } }
+.btn.primary.wheel-btn { background: #1a8f63; border-color: #1a8f63; color: #fff; }
+.btn.primary.wheel-btn:hover { background: #157650; border-color: #157650; }
+.btn.primary.wheel-btn[disabled] { background: #7fbfa5; border-color: #7fbfa5; }

@@ -904,9 +904,9 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
   var box = document.querySelector("[data-wheel]"); if (!box) return;
   var rot = box.querySelector("[data-wheel-rot]"), btn = box.querySelector("[data-wheel-spin]"), res = box.querySelector("[data-wheel-res]");
   // برش‌ها (باید با wheel.py یکی باشد)
-  var SEGS = ["free", "disc", "consult", "guide", "retry", "disc", "guide", "consult"];
-  var WEIGHTS = { free: 2, disc: 18, consult: 15, guide: 30, retry: 35 };
-  var NAMES = { free: "یک ویزیت رایگان", disc: "۱۰٪ تخفیف ویزیت", consult: "مشاورهٔ آنلاین ۵ دقیقه‌ای رایگان", guide: "راهنمای نگهداری پت" };
+  var SEGS = ["free", "d10", "consult", "d20", "retry", "d30"];
+  var WEIGHTS = { free: 2, consult: 10, d10: 28, d20: 15, d30: 5, retry: 40 };
+  var NAMES = { free: "ویزیت رایگان", consult: "مشاورهٔ آنلاین رایگان", d10: "۱۰٪ تخفیف ویزیت", d20: "۲۰٪ تخفیف ویزیت", d30: "۳۰٪ تخفیف ویزیت" };
   var KEY = "dm_wheel", DAY = 86400000, VALID = 7 * DAY;
   var cur = 0, busy = false;
   function load() { try { return JSON.parse(localStorage.getItem(KEY) || "null") || {}; } catch (e) { return {}; } }
@@ -924,9 +924,7 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
     res.hidden = false;
     if (p.id === "retry") { res.innerHTML = "<b>این بار نشد!</b><span>یک شانس دیگر دارید. دوباره بچرخانید.</span>"; return; }
     var html = "<b>تبریک! برندهٔ " + NAMES[p.id] + " شدید 🎉</b>";
-    if (p.id === "guide") {
-      html += '<span>راهنمای نگهداری را همین حالا ببینید.</span><a class="btn small" href="learn.html" data-go="learn">مشاهدهٔ مطالب</a>';
-    } else {
+    {
       html += "<span>کد جایزه: <bdi class=\"wheel-code\">" + p.code + "</bdi> · اعتبار تا " + faDate(p.exp) + "</span>";
       if (INFO.whatsapp) {
         var t = "سلام دکتر مساوات، در چرخ شانس سایت برندهٔ «" + NAMES[p.id] + "» شدم. کد جایزه: " + p.code + " (اعتبار تا " + faDate(p.exp) + ").";
@@ -945,7 +943,7 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
     var second = s.day === today() && s.used && s.retry;
     busy = true; btn.disabled = true; res.hidden = true;
     var id = pick(second), idxs = []; SEGS.forEach(function (x, i) { if (x === id) idxs.push(i); });
-    var seg = idxs[Math.floor(Math.random() * idxs.length)], center = (seg + 0.5) * 45;
+    var seg = idxs[Math.floor(Math.random() * idxs.length)], center = (seg + 0.5) * (360 / SEGS.length);
     var jitter = (Math.random() - 0.5) * 24;
     cur = cur + 360 * 6 + ((360 - ((cur + center + jitter) % 360)) % 360);
     var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
