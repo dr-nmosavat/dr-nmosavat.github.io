@@ -898,3 +898,65 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
     el.addEventListener("dragstart", function (e) { e.preventDefault(); });
   });
 })();
+
+// چرخ شانس
+(function () {
+  var box = document.querySelector("[data-wheel]"); if (!box) return;
+  var rot = box.querySelector("[data-wheel-rot]"), btn = box.querySelector("[data-wheel-spin]"), res = box.querySelector("[data-wheel-res]");
+  // برش‌ها (باید با wheel.py یکی باشد)
+  var SEGS = ["free", "disc", "consult", "guide", "retry", "disc", "guide", "consult"];
+  var WEIGHTS = { free: 2, disc: 18, consult: 15, guide: 30, retry: 35 };
+  var NAMES = { free: "یک ویزیت رایگان", disc: "۱۰٪ تخفیف ویزیت", consult: "مشاورهٔ آنلاین ۵ دقیقه‌ای رایگان", guide: "راهنمای نگهداری پت" };
+  var KEY = "dm_wheel", DAY = 86400000, VALID = 7 * DAY;
+  var cur = 0, busy = false;
+  function load() { try { return JSON.parse(localStorage.getItem(KEY) || "null") || {}; } catch (e) { return {}; } }
+  function save(o) { try { localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) {} }
+  function today() { var d = new Date(); return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate(); }
+  function fa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱۲۳۴۵۶۷۸۹"[d]; }); }
+  function faDate(t) { try { return new Date(t).toLocaleDateString("fa-IR"); } catch (e) { return ""; } }
+  function pick(noRetry) {
+    var ids = Object.keys(WEIGHTS).filter(function (k) { return !(noRetry && k === "retry"); });
+    var sum = ids.reduce(function (a, k) { return a + WEIGHTS[k]; }, 0), r = Math.random() * sum;
+    for (var i = 0; i < ids.length; i++) { r -= WEIGHTS[ids[i]]; if (r < 0) return ids[i]; }
+    return ids[ids.length - 1];
+  }
+  function show(p) {
+    res.hidden = false;
+    if (p.id === "retry") { res.innerHTML = "<b>این بار نشد!</b><span>یک شانس دیگر دارید. دوباره بچرخانید.</span>"; return; }
+    var html = "<b>تبریک! برندهٔ " + NAMES[p.id] + " شدید 🎉</b>";
+    if (p.id === "guide") {
+      html += '<span>راهنمای نگهداری را همین حالا ببینید.</span><a class="btn small" href="learn.html" data-go="learn">مشاهدهٔ مطالب</a>';
+    } else {
+      html += "<span>کد جایزه: <bdi class=\"wheel-code\">" + p.code + "</bdi> · اعتبار تا " + faDate(p.exp) + "</span>";
+      if (INFO.whatsapp) {
+        var t = "سلام دکتر مساوات، در چرخ شانس سایت برندهٔ «" + NAMES[p.id] + "» شدم. کد جایزه: " + p.code + " (اعتبار تا " + faDate(p.exp) + ").";
+        html += '<a class="btn small" target="_blank" rel="noopener" href="https://wa.me/' + INFO.whatsapp + "?text=" + encodeURIComponent(t) + '">دریافت جایزه از واتساپ</a>';
+      }
+    }
+    res.innerHTML = html;
+  }
+  function lock(msg) { btn.disabled = true; btn.textContent = msg; }
+  var st = load(), now = Date.now();
+  if (st.prize && st.prize.exp > now && st.prize.id !== "retry") show(st.prize);
+  if (st.day === today() && st.used && !st.retry) lock("فردا دوباره بچرخانید");
+  btn.addEventListener("click", function () {
+    if (busy) return; var s = load();
+    if (s.day === today() && s.used && !s.retry) return lock("فردا دوباره بچرخانید");
+    var second = s.day === today() && s.used && s.retry;
+    busy = true; btn.disabled = true; res.hidden = true;
+    var id = pick(second), idxs = []; SEGS.forEach(function (x, i) { if (x === id) idxs.push(i); });
+    var seg = idxs[Math.floor(Math.random() * idxs.length)], center = (seg + 0.5) * 45;
+    var jitter = (Math.random() - 0.5) * 24;
+    cur = cur + 360 * 6 + ((360 - ((cur + center + jitter) % 360)) % 360);
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    rot.style.transition = reduce ? "none" : "transform 4.6s cubic-bezier(.12,.6,.1,1)";
+    rot.style.transform = "rotate(" + cur + "deg)";
+    var done = function () {
+      var prize = { id: id, code: "DM-" + fa(Math.floor(1000 + Math.random() * 9000)), exp: Date.now() + VALID };
+      var o = { day: today(), used: 1, retry: id === "retry" ? 1 : 0, prize: prize };
+      save(o); show(prize); busy = false;
+      if (id === "retry") { btn.disabled = false; btn.textContent = "دوباره بچرخان"; } else lock("فردا دوباره بچرخانید");
+    };
+    if (reduce) done(); else setTimeout(done, 4800);
+  });
+})();
