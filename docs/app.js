@@ -247,7 +247,7 @@ document.querySelectorAll("[data-ig]").forEach(function (a) {
   if (INFO.instagram) { a.href = "https://instagram.com/" + INFO.instagram; a.target = "_blank"; a.rel = "noopener"; a.removeAttribute("data-go"); }
 });
 document.querySelectorAll("[data-map]").forEach(function (a) {
-  a.href = gmaps; a.target = "_blank"; a.rel = "noopener"; a.removeAttribute("data-go");
+  a.href = INFO.neshan || gmaps; a.target = "_blank"; a.rel = "noopener"; a.removeAttribute("data-go");
 });
 
 document.querySelectorAll("[data-bale]").forEach(function (a) {
