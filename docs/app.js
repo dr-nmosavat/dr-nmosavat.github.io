@@ -1000,3 +1000,145 @@ document.querySelectorAll("[data-msg]").forEach(function (a) {
     }).catch(function () { btn.textContent = label; localSpin(second); });
   });
 })();
+
+// ابزارها: دکمه‌های انتخابی
+document.addEventListener("click", function (e) {
+  var b = e.target.closest ? e.target.closest(".seg button") : null; if (!b) return;
+  [].forEach.call(b.parentNode.children, function (x) { x.classList.toggle("on", x === b); });
+});
+function toolNum(s) {
+  return parseFloat(String(s || "").replace(/[۰-۹]/g, function (d) { return "۰۱۲۳۴۵۶۷۸۹".indexOf(d); }).replace(/[٠-٩]/g, function (d) { return "٠١٢٣٤٥٦٧٨٩".indexOf(d); }).replace(/[٫,،]/g, "."));
+}
+function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱۲۳۴۵۶۷۸۹"[d]; }).replace(".", "٫"); }
+
+// ماشین‌حساب جیرهٔ غذایی
+(function () {
+  var root = document.querySelector("[data-diet]"); if (!root) return;
+  var res = root.querySelector("[data-diet-res]"), ft = root.querySelector("#d-ft"), kcBox = root.querySelector("[data-kc]");
+  function seg(name) { var b = root.querySelector('[data-seg="' + name + '"] .on'); return b ? b.getAttribute("data-v") : ""; }
+  function v(id) { return root.querySelector("#" + id).value; }
+  ft.addEventListener("change", function () { kcBox.hidden = ft.value !== "custom"; });
+  root.querySelector("[data-diet-go]").addEventListener("click", function () {
+    var sp = seg("sp"), neu = seg("neu") === "1", age = v("d-age"), act = v("d-act"), bc = v("d-bc"), w = toolNum(v("d-w"));
+    res.hidden = false;
+    if (!(w > 0)) { res.innerHTML = "<b>وزن را وارد کنید</b><span>وزن پت را به کیلوگرم بنویسید.</span>"; return; }
+    var kc = ft.value === "custom" ? toolNum(v("d-kc")) : Number(ft.value);
+    if (!(kc >= 30)) { res.innerHTML = "<b>انرژی غذا را وارد کنید</b><span>عدد کیلوکالری در ۱۰۰ گرم را از روی بستهٔ غذا بنویسید.</span>"; return; }
+    var over = bc === "over" || bc === "obese";
+    var bw = bc === "over" ? w * 0.9 : bc === "obese" ? w * 0.8 : w;
+    var rer = bw < 2 ? 30 * bw + 70 : 70 * Math.pow(bw, 0.75), f;
+    if (sp === "dog") f = age === "p4" ? 3.0 : age === "grow" ? 2.0 : age === "adult" ? (neu ? 1.6 : 1.8) : (neu ? 1.4 : 1.6);
+    else f = age === "p4" ? 2.5 : age === "grow" ? 2.0 : age === "adult" ? (neu ? 1.2 : 1.4) : (neu ? 1.1 : 1.2);
+    if (over) f = sp === "dog" ? 1.0 : 0.8;
+    else if (age === "adult" || age === "senior") { if (act === "low") f *= 0.9; if (act === "high") f *= 1.15; }
+    var kcal = rer * f; if (bc === "thin") kcal *= 1.1;
+    var g = kcal / kc * 100, lo = g * 0.9, hi = g * 1.1;
+    var meals = age === "p4" ? 4 : age === "grow" ? 3 : (sp === "dog" ? 2 : 3);
+    var r = function (x) { return toolFa(Math.round(x / 5) * 5); };
+    var notes = ["وزن پت را هر ۲ تا ۴ هفته بگیرید و اگر بالا یا پایین رفت، مقدار را حدود ۱۰٪ تنظیم کنید.", "اگر تنقلات می‌دهید، حدود ۱۰٪ انرژی روزانه را از غذای اصلی کم کنید."];
+    if (over) notes.unshift("برای کاهش وزن، مقدار بر پایهٔ وزن هدف تقریبی حساب شد. وزن هدف و سرعت کاهش را با دکتر مشخص کنید؛ گرسنگی دادن، به‌ویژه به گربه، خطرناک است.");
+    if (bc === "thin") notes.unshift("پت لاغر ابتدا باید معاینه شود تا بیماری پشت لاغری نباشد.");
+    if (age === "p4") notes.unshift("تولهٔ زیر ۴ ماه را در ۳ تا ۴ وعده غذا بدهید و رشدش را کنترل کنید.");
+    var perMeal = g / meals;
+    res.innerHTML = '<span class="tr-k">مقدار تقریبی غذا در روز</span><b class="tr-n">حدود ' + r(g) + ' گرم</b><span>(بین ' + r(lo) + ' تا ' + r(hi) + ' گرم)</span>' +
+      '<span>انرژی روزانه: حدود ' + toolFa(Math.round(kcal / 10) * 10) + ' کیلوکالری</span>' +
+      '<span>پیشنهاد: ' + toolFa(meals) + ' وعده، هر وعده حدود ' + r(perMeal) + ' گرم</span>' +
+      '<ul class="plain tr-notes">' + notes.map(function (n) { return "<li>" + n + "</li>"; }).join("") + "</ul>";
+    if (INFO.whatsapp) {
+      var t = "سلام دکتر مساوات، با ماشین‌حساب جیرهٔ سایت برای " + (sp === "dog" ? "سگ" : "گربه") + " " + toolFa(w) + " کیلویی حدود " + r(g) + " گرم غذا در روز درآمد. ممکن است نظرتان را بگویید؟";
+      res.innerHTML += '<a class="btn small" target="_blank" rel="noopener" href="https://wa.me/' + INFO.whatsapp + "?text=" + encodeURIComponent(t) + '">پرسیدن از دکتر دربارهٔ این مقدار</a>';
+    }
+  });
+})();
+
+// دفترچهٔ سلامت پت
+(function () {
+  var root = document.querySelector("[data-hb]"); if (!root) return;
+  var KEY = "dm_hb";
+  function q(s) { return root.querySelector(s); }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function load() { try { var d = JSON.parse(localStorage.getItem(KEY) || "null"); if (d && d.pets && d.recs) return d; } catch (e) {} return { pets: [], recs: [], cur: null }; }
+  var db = load();
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) { alert("ذخیره‌سازی در این مرورگر ممکن نیست."); } }
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+  function ymd(d) { var p = function (n) { return (n < 10 ? "0" : "") + n; }; return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()); }
+  function fd(s) { try { return new Date(s + "T12:00:00").toLocaleDateString("fa-IR"); } catch (e) { return s; } }
+  function days(s) { var a = new Date(ymd(new Date()) + "T12:00:00"), b = new Date(s + "T12:00:00"); return Math.round((b - a) / 86400000); }
+  function curPet() { return db.pets.filter(function (p) { return p.id === db.cur; })[0] || db.pets[0]; }
+  function addMonths(s, n) { var d = new Date((s || ymd(new Date())) + "T12:00:00"); d.setMonth(d.getMonth() + n); return ymd(d); }
+  function dl(name, text, type) { var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type: type })); a.download = name; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500); }
+  function when(n) { return n === 0 ? "امروز" : n > 0 ? toolFa(n) + " روز دیگر" : toolFa(-n) + " روز گذشته"; }
+
+  function render() {
+    var pets = q("[data-hb-pets]"), main = q("[data-hb-main]"), pf = q("[data-hb-petform]");
+    if (!db.pets.length) { pets.innerHTML = ""; main.hidden = true; pf.hidden = false; return; }
+    var cp = curPet(); db.cur = cp.id;
+    pets.innerHTML = db.pets.map(function (p) { return '<button type="button" class="chip' + (p.id === cp.id ? " on" : "") + '" data-hb-pet="' + p.id + '">' + esc(p.name) + "</button>"; }).join("") + '<button type="button" class="chip" data-hb-newpet>+ پت جدید</button>';
+    main.hidden = !pf.hidden;
+    if (!pf.hidden) return;
+    // یادآوری‌ها (همهٔ پت‌ها)
+    var rem = db.recs.filter(function (r) { return r.next; }).sort(function (a, b) { return a.next < b.next ? -1 : 1; });
+    q("[data-hb-rem]").innerHTML = rem.length ? "<h2>یادآوری‌ها</h2>" + rem.map(function (r) {
+      var p = db.pets.filter(function (x) { return x.id === r.pet; })[0]; if (!p) return ""; var n = days(r.next);
+      return '<div class="hb-r' + (n < 0 ? " late" : n <= 7 ? " soon" : "") + '"><div><b>' + esc(p.name) + " · " + esc(r.type) + (r.name ? ": " + esc(r.name) : "") + "</b><small>" + fd(r.next) + " · " + when(n) + '</small></div><span><button type="button" data-hb-ics="' + r.id + '">تقویم</button><button type="button" data-hb-done="' + r.id + '">انجام شد</button></span></div>';
+    }).join("") : "";
+    // سابقه
+    var mine = db.recs.filter(function (r) { return r.pet === cp.id; }).sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+    q("[data-hb-list]").innerHTML = mine.length ? mine.map(function (r) {
+      return '<li><div><span class="hb-t">' + esc(r.type) + "</span> <b>" + esc(r.name || "") + "</b>" + (r.weight ? " · " + toolFa(r.weight) + " کیلوگرم" : "") + "<small>" + fd(r.date) + (r.next ? " · نوبت بعدی: " + fd(r.next) : "") + '</small></div><button type="button" class="hb-del" data-hb-del="' + r.id + '" aria-label="حذف">×</button></li>';
+    }).join("") : '<li class="hb-empty">هنوز موردی ثبت نشده است.</li>';
+    // نمودار وزن
+    var ws = mine.filter(function (r) { return r.weight; }).reverse(), wb = q("[data-hb-weight]");
+    if (ws.length >= 2) {
+      var vals = ws.map(function (r) { return r.weight; }), mn = Math.min.apply(null, vals), mx = Math.max.apply(null, vals), rg = (mx - mn) || 1;
+      var pts = ws.map(function (r, i) { return (10 + i * (280 / (ws.length - 1))).toFixed(1) + "," + (60 - ((r.weight - mn) / rg) * 46).toFixed(1); }).join(" ");
+      wb.innerHTML = '<svg viewBox="0 0 300 70" aria-hidden="true"><polyline points="' + pts + '" fill="none" stroke="#1f5ea6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg><small>روند وزن: از ' + toolFa(vals[0]) + " به " + toolFa(vals[vals.length - 1]) + " کیلوگرم</small>";
+    } else wb.innerHTML = "";
+  }
+  function sync() { var t = q("#hb-t").value === "وزن"; q("[data-hb-w]").hidden = !t; }
+  q("#hb-d").value = ymd(new Date()); q("#hb-t").addEventListener("change", sync);
+  root.addEventListener("click", function (e) {
+    var t = e.target, b;
+    if ((b = t.closest("[data-hb-pet]"))) { db.cur = b.getAttribute("data-hb-pet"); q("[data-hb-petform]").hidden = true; save(); return render(); }
+    if (t.closest("[data-hb-newpet]")) { q("[data-hb-petform]").hidden = false; q("[data-hb-main]").hidden = true; return; }
+    if (t.closest("[data-hb-cancel-pet]")) { q("[data-hb-petform]").hidden = true; return render(); }
+    if (t.closest("[data-hb-save-pet]")) {
+      var n = q("#hb-pn").value.trim(); if (!n) { q("#hb-pn").focus(); return; }
+      var sp = q('[data-seg="hbsp"] .on'), p = { id: uid(), name: n, species: sp ? sp.getAttribute("data-v") : "", birth: q("#hb-pb").value };
+      db.pets.push(p); db.cur = p.id; q("#hb-pn").value = ""; q("#hb-pb").value = ""; q("[data-hb-petform]").hidden = true; save(); return render();
+    }
+    if (t.closest("[data-hb-save]")) {
+      var cp = curPet(); if (!cp) return; var d = q("#hb-d").value; if (!d) { q("#hb-d").focus(); return; }
+      var type = q("#hb-t").value, w = type === "وزن" ? toolNum(q("#hb-w").value) : 0;
+      if (type === "وزن" && !(w > 0)) { q("#hb-w").focus(); return; }
+      db.recs.push({ id: uid(), pet: cp.id, type: type, date: d, name: q("#hb-n").value.trim(), weight: w || 0, next: q("#hb-x").value || "" });
+      q("#hb-n").value = ""; q("#hb-w").value = ""; q("#hb-x").value = ""; save(); return render();
+    }
+    if ((b = t.closest("[data-hb-add]"))) { q("#hb-x").value = addMonths(q("#hb-d").value, Number(b.getAttribute("data-hb-add"))); return; }
+    if ((b = t.closest("[data-hb-del]"))) { if (confirm("این مورد حذف شود؟")) { var id = b.getAttribute("data-hb-del"); db.recs = db.recs.filter(function (r) { return r.id !== id; }); save(); render(); } return; }
+    if ((b = t.closest("[data-hb-done]"))) { var i2 = b.getAttribute("data-hb-done"); db.recs.forEach(function (r) { if (r.id === i2) r.next = ""; }); save(); return render(); }
+    if ((b = t.closest("[data-hb-ics]"))) {
+      var rr = db.recs.filter(function (r) { return r.id === b.getAttribute("data-hb-ics"); })[0]; if (!rr) return;
+      var pp = db.pets.filter(function (x) { return x.id === rr.pet; })[0], ds = rr.next.replace(/-/g, ""), now = new Date().toISOString().replace(/[-:]/g, "").slice(0, 15) + "Z";
+      var sm = (pp ? pp.name + " - " : "") + rr.type + (rr.name ? ": " + rr.name : "");
+      return dl("nobat.ics", "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//drniloofarmosavat//hb//FA\r\nBEGIN:VEVENT\r\nUID:" + rr.id + "@drniloofarmosavat.ir\r\nDTSTAMP:" + now + "\r\nDTSTART;VALUE=DATE:" + ds + "\r\nSUMMARY:" + sm.replace(/[,;\\\n]/g, " ") + "\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n", "text/calendar");
+    }
+    if (t.closest("[data-hb-export]")) return dl("daftarche-salamat-pet.json", JSON.stringify(db), "application/json");
+    if (t.closest("[data-hb-print]")) return window.print();
+    if (t.closest("[data-hb-del-pet]")) {
+      var c = curPet(); if (c && confirm("پت «" + c.name + "» و همهٔ سابقه‌اش حذف شود؟")) { db.recs = db.recs.filter(function (r) { return r.pet !== c.id; }); db.pets = db.pets.filter(function (p) { return p.id !== c.id; }); db.cur = db.pets[0] ? db.pets[0].id : null; save(); render(); }
+    }
+  });
+  q("[data-hb-import]").addEventListener("change", function (e) {
+    var f = e.target.files && e.target.files[0]; if (!f) return; var rd = new FileReader();
+    rd.onload = function () { try { var d = JSON.parse(rd.result); if (!d.pets || !d.recs) throw 0; if (confirm("دفترچهٔ فعلی با نسخهٔ پشتیبان جایگزین شود؟")) { db = d; save(); render(); } } catch (x) { alert("فایل پشتیبان معتبر نیست."); } e.target.value = ""; };
+    rd.readAsText(f);
+  });
+  // نصب روی گوشی
+  var dp = null;
+  window.addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); dp = e; q("[data-hb-install]").hidden = false; });
+  q("[data-hb-do-install]").addEventListener("click", function () { if (dp) { dp.prompt(); dp = null; q("[data-hb-install]").hidden = true; } });
+  if (/iphone|ipad/i.test(navigator.userAgent) && !window.navigator.standalone) q("[data-hb-ios]").hidden = false;
+  if ("serviceWorker" in navigator && /^https?:/.test(location.protocol)) { try { navigator.serviceWorker.register("sw.js"); } catch (e) {} }
+  render();
+})();
