@@ -1447,3 +1447,16 @@ html.gift-open { overflow: hidden; }
 .hb-sug[hidden] { display: none; }
 @media print { .hb-sheet, .hb-cover::before { display: none !important; } .hb-cover { background: #17406f !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
 .hb-sug button { border: 1px solid #1a8f63; background: #fff; color: #157650; border-radius: 8px; padding: 2px 10px; font: inherit; font-size: 12px; cursor: pointer; margin-inline-start: 6px; }
+/* ورودی تاریخ شمسی، فهرست قابل‌اسکرول و برنامهٔ واکسن */
+.jd { display: grid; grid-template-columns: 1fr 1.6fr 1.2fr; gap: 6px; direction: rtl; }
+.jd select { width: 100%; font: inherit; font-size: 15.5px; padding: 10px 8px; border: 1.5px solid var(--line); border-radius: 12px; background: #fff; color: var(--ink); }
+.hb-opts { display: grid; gap: 6px; max-height: 172px; overflow-y: auto; padding: 4px; border: 1.5px solid var(--line); border-radius: 14px; background: #fff; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.hb-opts button { text-align: start; padding: 9px 12px; border: 1px solid transparent; border-radius: 10px; background: #f4f7fb; font: inherit; font-size: 14px; color: var(--ink); cursor: pointer; }
+.hb-opts button.on { background: var(--blue); color: #fff; }
+.hb-plan-c { margin-bottom: 12px; padding: 12px 14px; border: 1.5px dashed var(--blue); border-radius: 16px; background: #f3f8fe; text-align: center; display: grid; gap: 6px; justify-items: center; }
+.hb-plan-c b { color: var(--blue-deep); } .hb-plan-c p { margin: 0; font-size: 13.5px; color: var(--muted); }
+.hb-plan-c.ok { grid-auto-flow: column; justify-content: space-between; border-style: solid; border-color: var(--line); background: #fff; font-size: 13.5px; }
+.hb-lnk { border: 0; background: transparent; color: var(--blue); font: inherit; font-size: 13px; cursor: pointer; text-decoration: underline; }
+.hb-more { text-align: center; margin-bottom: 8px; }
+.hb-sf { display: grid; gap: 12px; }
+@media (min-width: 801px) { .hb-sf .fld, .hb-sf { grid-template-columns: 1fr; } }
