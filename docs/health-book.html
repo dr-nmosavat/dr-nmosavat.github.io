@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=202610172237">
+<link rel="stylesheet" href="style.css?v=202610172249">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="icon" href="favicon.ico" sizes="48x48">
 <link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png">
@@ -44,43 +44,54 @@
   <main>
     <div class="page-head">
       <h1>دفترچهٔ سلامت پت</h1>
-      <p class="sub">واکسن، ضدانگل، وزن و ویزیت‌ها را ثبت کنید و نوبت بعدی را یادآوری بگیرید.</p>
+      <p class="sub">واکسن‌ها، ضدانگل‌ها، وزن و ویزیت‌ها همه‌جا کنار هم، با یادآوری نوبت بعدی.</p>
     </div>
     <section class="tool hb" data-hb>
       <div class="hb-install" data-hb-install hidden><button type="button" class="btn small" data-hb-do-install>نصب روی صفحهٔ اصلی گوشی</button></div>
       <p class="hb-ios" data-hb-ios hidden>برای نصب روی آیفون: دکمهٔ اشتراک‌گذاری مرورگر را بزنید و «Add to Home Screen» را انتخاب کنید.</p>
       <div class="hb-pets" data-hb-pets role="tablist" aria-label="پت‌ها"></div>
-      <form class="tool-form hb-petform" data-hb-petform hidden onsubmit="return false">
-        <h2 data-hb-pf-title>پت جدید</h2>
+
+      <form class="hb-petform" data-hb-petform hidden onsubmit="return false">
+        <div class="hb-pf-ic" aria-hidden="true">🐾</div>
+        <h2>شناسنامهٔ پت</h2>
         <div class="fld"><label for="hb-pn">نام پت</label><input id="hb-pn" type="text" maxlength="30" placeholder="مثلاً لوسی"></div>
         <div class="fld"><label>گونه</label><div class="seg" data-seg="hbsp"><button type="button" class="on" data-v="سگ">سگ</button><button type="button" data-v="گربه">گربه</button><button type="button" data-v="پرنده">پرنده</button><button type="button" data-v="دیگر">دیگر</button></div></div>
         <div class="fld"><label for="hb-pb">تاریخ تولد (اختیاری)</label><input id="hb-pb" type="date"></div>
-        <div class="hb-btns"><button type="button" class="btn primary" data-hb-save-pet>ذخیره</button><button type="button" class="btn" data-hb-cancel-pet>انصراف</button></div>
+        <div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-save-pet>ساخت دفترچه</button><button type="button" class="btn small ghost" data-hb-cancel-pet>انصراف</button></div>
       </form>
+
       <div data-hb-main hidden>
+        <div class="hb-cover" data-hb-cover></div>
         <div class="hb-rem" data-hb-rem></div>
-        <form class="tool-form hb-recform" data-hb-form onsubmit="return false">
-          <h2>ثبت مورد جدید</h2>
-          <div class="fld"><label for="hb-t">نوع</label>
-            <select id="hb-t"><option>واکسن</option><option>ضدانگل داخلی</option><option>ضدانگل خارجی (کک و کنه)</option><option>ویزیت</option><option>وزن</option><option>دارو</option><option>عقیم‌سازی</option><option>آزمایش</option><option>سایر</option></select></div>
-          <div class="fld"><label for="hb-d">تاریخ</label><input id="hb-d" type="date"></div>
-          <div class="fld"><label for="hb-n">نام یا توضیح</label><input id="hb-n" type="text" maxlength="80" placeholder="مثلاً واکسن سه‌گانه"></div>
-          <div class="fld" data-hb-w hidden><label for="hb-w">وزن (کیلوگرم)</label><input id="hb-w" type="number" inputmode="decimal" step="0.1" min="0.05" max="90"></div>
-          <div class="fld"><label for="hb-x">نوبت بعدی (اختیاری)</label><input id="hb-x" type="date">
-            <div class="hb-quick"><button type="button" data-hb-add="1">+۱ ماه</button><button type="button" data-hb-add="3">+۳ ماه</button><button type="button" data-hb-add="12">+۱ سال</button></div></div>
-          <button type="button" class="btn primary tool-go" data-hb-save>ثبت</button>
-        </form>
-        <h2>سابقه</h2>
+        <div class="hb-btns hb-center"><button type="button" class="btn small primary hb-add" data-hb-open>＋ ثبت در دفترچه</button></div>
+        <div class="hb-tabs" data-hb-tabs role="tablist" aria-label="بخش‌های دفترچه"></div>
         <div class="hb-weight" data-hb-weight></div>
-        <ul class="hb-list" data-hb-list></ul>
-        <div class="hb-btns hb-tools">
-          <button type="button" class="btn small" data-hb-print>چاپ دفترچه</button>
-          <button type="button" class="btn small" data-hb-export>دانلود نسخهٔ پشتیبان</button>
-          <label class="btn small hb-import">بازیابی از پشتیبان<input type="file" accept="application/json" data-hb-import hidden></label>
-          <button type="button" class="btn small ghost" data-hb-del-pet>حذف این پت</button>
+        <ol class="hb-book" data-hb-list></ol>
+        <div class="hb-btns hb-center hb-tools">
+          <button type="button" class="btn small" data-hb-print>چاپ</button>
+          <button type="button" class="btn small" data-hb-export>پشتیبان</button>
+          <label class="btn small hb-import">بازیابی<input type="file" accept="application/json" data-hb-import hidden></label>
+          <button type="button" class="btn small ghost" data-hb-del-pet>حذف پت</button>
         </div>
       </div>
-      <p class="hb-priv">اطلاعات فقط روی همین دستگاه ذخیره می‌شود و به جایی فرستاده نمی‌شود. اگر داده‌های مرورگر پاک شود، دفترچه هم پاک می‌شود؛ پس گاهی نسخهٔ پشتیبان بگیرید. این دفترچه جای پروندهٔ پزشکی دامپزشک نیست.</p>
+      <p class="hb-priv">اطلاعات فقط روی همین دستگاه ذخیره می‌شود و به جایی فرستاده نمی‌شود. اگر داده‌های مرورگر پاک شود، دفترچه هم پاک می‌شود؛ پس گاهی «پشتیبان» بگیرید. تاریخ‌های پیشنهادی تقریبی‌اند و برنامهٔ دقیق را دامپزشک تعیین می‌کند. این دفترچه جای پروندهٔ پزشکی نیست.</p>
+
+      <div class="hb-sheet" data-hb-sheet hidden role="dialog" aria-modal="true" aria-label="ثبت در دفترچه">
+        <div class="hb-sheet-card">
+          <button type="button" class="hb-x" data-hb-close aria-label="بستن">×</button>
+          <h2>ثبت در دفترچه</h2>
+          <div class="hb-types" data-hb-types></div>
+          <div class="hb-sf">
+            <div class="fld"><label for="hb-d">تاریخ</label><input id="hb-d" type="date"></div>
+            <div class="fld"><label for="hb-n">نام یا توضیح <small>(اختیاری)</small></label><input id="hb-n" type="text" maxlength="80" placeholder="مثلاً واکسن سه‌گانه"></div>
+            <div class="fld" data-hb-w hidden><label for="hb-w">وزن (کیلوگرم)</label><input id="hb-w" type="number" inputmode="decimal" step="0.1" min="0.05" max="90"></div>
+            <div class="fld"><label for="hb-x">نوبت بعدی <small>(اختیاری)</small></label><input id="hb-x" type="date">
+              <p class="hb-sug" data-hb-sug hidden></p>
+              <div class="hb-quick"><button type="button" data-hb-add="1">+۱ ماه</button><button type="button" data-hb-add="3">+۳ ماه</button><button type="button" data-hb-add="12">+۱ سال</button><button type="button" data-hb-clear>بدون نوبت</button></div></div>
+          </div>
+          <div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-save>ثبت</button></div>
+        </div>
+      </div>
     </section>
     <section>
       <div class="cta">
@@ -139,7 +150,7 @@
   </div>
 </div>
 <a class="fab" aria-label="نیاز به مشاوره؟" data-consult href="contact.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4V5z"/></svg><span><i class="l-long">نیاز به مشاوره؟</i><i class="l-short">مشاوره</i></span></a>
-<script src="app.js?v=202610172237"></script>
+<script src="app.js?v=202610172249"></script>
     </body>
     </html>
     

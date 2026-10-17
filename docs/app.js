@@ -1055,6 +1055,13 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
 (function () {
   var root = document.querySelector("[data-hb]"); if (!root) return;
   var KEY = "dm_hb";
+  var TYPES = [
+    ["واکسن", "💉", "vax"], ["ضدانگل داخلی", "🪱", "par"], ["ضدانگل خارجی (کک و کنه)", "🛡️", "par"], ["ویزیت", "🩺", "vis"],
+    ["وزن", "⚖️", "wt"], ["دارو", "💊", "oth"], ["عقیم‌سازی", "✂️", "vis"], ["آزمایش", "🧪", "vis"], ["سایر", "📝", "oth"]
+  ];
+  var TABS = [["همه", null], ["واکسن", ["vax"]], ["ضدانگل", ["par"]], ["وزن", ["wt"]], ["ویزیت و آزمایش", ["vis"]], ["دارو و سایر", ["oth"]]];
+  var SPE = { "سگ": "🐶", "گربه": "🐱", "پرنده": "🐦", "دیگر": "🐾" };
+  var curType = "واکسن", curTab = 0, xTouched = false;
   function q(s) { return root.querySelector(s); }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
   function load() { try { var d = JSON.parse(localStorage.getItem(KEY) || "null"); if (d && d.pets && d.recs) return d; } catch (e) {} return { pets: [], recs: [], cur: null }; }
@@ -1065,40 +1072,89 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function fd(s) { try { return new Date(s + "T12:00:00").toLocaleDateString("fa-IR"); } catch (e) { return s; } }
   function days(s) { var a = new Date(ymd(new Date()) + "T12:00:00"), b = new Date(s + "T12:00:00"); return Math.round((b - a) / 86400000); }
   function curPet() { return db.pets.filter(function (p) { return p.id === db.cur; })[0] || db.pets[0]; }
+  function addDays(s, n) { var d = new Date((s || ymd(new Date())) + "T12:00:00"); d.setDate(d.getDate() + n); return ymd(d); }
   function addMonths(s, n) { var d = new Date((s || ymd(new Date())) + "T12:00:00"); d.setMonth(d.getMonth() + n); return ymd(d); }
   function dl(name, text, type) { var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type: type })); a.download = name; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500); }
   function when(n) { return n === 0 ? "امروز" : n > 0 ? toolFa(n) + " روز دیگر" : toolFa(-n) + " روز گذشته"; }
+  function kind(t) { for (var i = 0; i < TYPES.length; i++) if (TYPES[i][0] === t) return TYPES[i]; return TYPES[8]; }
+  function ageText(b) {
+    if (!b) return ""; var d = days(b) * -1; if (d < 0) return "";
+    if (d < 60) return toolFa(Math.max(1, Math.round(d / 7))) + " هفته";
+    var m = Math.floor(d / 30.4); if (m < 24) return toolFa(m) + " ماه";
+    var y = Math.floor(m / 12), r = m % 12; return toolFa(y) + " سال" + (r ? " و " + toolFa(r) + " ماه" : "");
+  }
+  // پیشنهاد خودکار نوبت بعدی (تقریبی؛ طبق نظر دامپزشک)
+  function suggest(type, dateStr, pet) {
+    var young = false; if (pet && pet.birth) { var ageDays = Math.round((new Date(dateStr + "T12:00:00") - new Date(pet.birth + "T12:00:00")) / 86400000); young = ageDays >= 0 && ageDays < 112; }
+    var sp = pet ? pet.species : "";
+    if (type === "واکسن") { if (sp === "پرنده" || sp === "دیگر") return null; return young ? { d: 28, t: "۴ هفته بعد (دوز بعدی در دورهٔ توله/بچه‌گربه)" } : { d: 365, t: "۱ سال بعد (یادآور سالانه)" }; }
+    if (type === "ضدانگل داخلی") return young ? { d: 30, t: "۱ ماه بعد" } : { d: 90, t: "۳ ماه بعد" };
+    if (type === "ضدانگل خارجی (کک و کنه)") return { d: 30, t: "۱ ماه بعد" };
+    if (type === "وزن") return { d: 21, t: "۳ هفته بعد", manual: true };
+    return null;
+  }
 
+  function renderCover(cp) {
+    var mine = db.recs.filter(function (r) { return r.pet === cp.id; });
+    var lw = mine.filter(function (r) { return r.weight; }).sort(function (a, b) { return a.date < b.date ? 1 : -1; })[0];
+    var nx = db.recs.filter(function (r) { return r.pet === cp.id && r.next; }).sort(function (a, b) { return a.next < b.next ? -1 : 1; })[0];
+    var chips = [];
+    if (cp.birth && ageText(cp.birth)) chips.push("سن: " + ageText(cp.birth));
+    if (lw) chips.push("آخرین وزن: " + toolFa(lw.weight) + " کیلوگرم");
+    if (nx) chips.push("نوبت بعدی: " + fd(nx.next));
+    q("[data-hb-cover]").innerHTML = '<div class="hb-cv-ic">' + (SPE[cp.species] || "🐾") + '</div><small>دفترچهٔ سلامت</small><b>' + esc(cp.name) + '</b><span class="hb-cv-sp">' + esc(cp.species || "") + '</span>' + (chips.length ? '<div class="hb-cv-chips">' + chips.map(function (c) { return "<i>" + esc(c) + "</i>"; }).join("") + "</div>" : "");
+  }
   function render() {
     var pets = q("[data-hb-pets]"), main = q("[data-hb-main]"), pf = q("[data-hb-petform]");
     if (!db.pets.length) { pets.innerHTML = ""; main.hidden = true; pf.hidden = false; return; }
     var cp = curPet(); db.cur = cp.id;
-    pets.innerHTML = db.pets.map(function (p) { return '<button type="button" class="chip' + (p.id === cp.id ? " on" : "") + '" data-hb-pet="' + p.id + '">' + esc(p.name) + "</button>"; }).join("") + '<button type="button" class="chip" data-hb-newpet>+ پت جدید</button>';
-    main.hidden = !pf.hidden;
-    if (!pf.hidden) return;
-    // یادآوری‌ها (همهٔ پت‌ها)
+    pets.innerHTML = db.pets.map(function (p) { return '<button type="button" class="chip' + (p.id === cp.id ? " on" : "") + '" data-hb-pet="' + p.id + '">' + (SPE[p.species] || "🐾") + " " + esc(p.name) + "</button>"; }).join("") + '<button type="button" class="chip" data-hb-newpet>＋ پت جدید</button>';
+    main.hidden = !pf.hidden; if (!pf.hidden) return;
+    renderCover(cp);
     var rem = db.recs.filter(function (r) { return r.next; }).sort(function (a, b) { return a.next < b.next ? -1 : 1; });
-    q("[data-hb-rem]").innerHTML = rem.length ? "<h2>یادآوری‌ها</h2>" + rem.map(function (r) {
-      var p = db.pets.filter(function (x) { return x.id === r.pet; })[0]; if (!p) return ""; var n = days(r.next);
-      return '<div class="hb-r' + (n < 0 ? " late" : n <= 7 ? " soon" : "") + '"><div><b>' + esc(p.name) + " · " + esc(r.type) + (r.name ? ": " + esc(r.name) : "") + "</b><small>" + fd(r.next) + " · " + when(n) + '</small></div><span><button type="button" data-hb-ics="' + r.id + '">تقویم</button><button type="button" data-hb-done="' + r.id + '">انجام شد</button></span></div>';
+    q("[data-hb-rem]").innerHTML = rem.length ? '<h3>یادآوری‌ها</h3>' + rem.map(function (r) {
+      var p = db.pets.filter(function (x) { return x.id === r.pet; })[0]; if (!p) return ""; var n = days(r.next), k = kind(r.type);
+      return '<div class="hb-r' + (n < 0 ? " late" : n <= 7 ? " soon" : "") + '"><span class="hb-r-ic">' + k[1] + '</span><div><b>' + esc(p.name) + " · " + esc(r.type.replace(" (کک و کنه)", "")) + (r.name ? ": " + esc(r.name) : "") + "</b><small>" + fd(r.next) + " · " + when(n) + '</small></div><span class="hb-r-b"><button type="button" data-hb-ics="' + r.id + '">تقویم</button><button type="button" data-hb-done="' + r.id + '">انجام شد</button></span></div>';
     }).join("") : "";
-    // سابقه
+    q("[data-hb-tabs]").innerHTML = TABS.map(function (t, i) { return '<button type="button" class="chip' + (i === curTab ? " on" : "") + '" data-hb-tab="' + i + '">' + t[0] + "</button>"; }).join("");
     var mine = db.recs.filter(function (r) { return r.pet === cp.id; }).sort(function (a, b) { return a.date < b.date ? 1 : -1; });
-    q("[data-hb-list]").innerHTML = mine.length ? mine.map(function (r) {
-      return '<li><div><span class="hb-t">' + esc(r.type) + "</span> <b>" + esc(r.name || "") + "</b>" + (r.weight ? " · " + toolFa(r.weight) + " کیلوگرم" : "") + "<small>" + fd(r.date) + (r.next ? " · نوبت بعدی: " + fd(r.next) : "") + '</small></div><button type="button" class="hb-del" data-hb-del="' + r.id + '" aria-label="حذف">×</button></li>';
-    }).join("") : '<li class="hb-empty">هنوز موردی ثبت نشده است.</li>';
-    // نمودار وزن
+    var ks = TABS[curTab][1], shown = ks ? mine.filter(function (r) { return ks.indexOf(kind(r.type)[2]) > -1; }) : mine;
+    q("[data-hb-list]").innerHTML = shown.length ? shown.map(function (r) {
+      var k = kind(r.type);
+      return '<li class="hb-e k-' + k[2] + '"><span class="hb-dot">' + k[1] + '</span><div class="hb-ec"><div class="hb-eh"><span class="hb-t">' + esc(r.type.replace(" (کک و کنه)", "")) + '</span><time>' + fd(r.date) + "</time></div>" + (r.name ? "<b>" + esc(r.name) + "</b>" : "") + (r.weight ? "<span>" + toolFa(r.weight) + " کیلوگرم</span>" : "") + (r.next ? '<small>نوبت بعدی: ' + fd(r.next) + "</small>" : "") + '</div><button type="button" class="hb-del" data-hb-del="' + r.id + '" aria-label="حذف">×</button></li>';
+    }).join("") : '<li class="hb-empty">اینجا هنوز چیزی ثبت نشده است.<br>با «ثبت در دفترچه» اولین مورد را بنویسید.</li>';
     var ws = mine.filter(function (r) { return r.weight; }).reverse(), wb = q("[data-hb-weight]");
-    if (ws.length >= 2) {
+    if (curTab < 2 || curTab === 3) wb.innerHTML = ""; // نمودار وزن فقط در «همه» و «وزن»
+    if (ws.length >= 2 && (curTab === 0 || curTab === 3)) {
       var vals = ws.map(function (r) { return r.weight; }), mn = Math.min.apply(null, vals), mx = Math.max.apply(null, vals), rg = (mx - mn) || 1;
       var pts = ws.map(function (r, i) { return (10 + i * (280 / (ws.length - 1))).toFixed(1) + "," + (60 - ((r.weight - mn) / rg) * 46).toFixed(1); }).join(" ");
       wb.innerHTML = '<svg viewBox="0 0 300 70" aria-hidden="true"><polyline points="' + pts + '" fill="none" stroke="#1f5ea6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg><small>روند وزن: از ' + toolFa(vals[0]) + " به " + toolFa(vals[vals.length - 1]) + " کیلوگرم</small>";
     } else wb.innerHTML = "";
   }
-  function sync() { var t = q("#hb-t").value === "وزن"; q("[data-hb-w]").hidden = !t; }
-  q("#hb-d").value = ymd(new Date()); q("#hb-t").addEventListener("change", sync);
+  function renderTypes() {
+    q("[data-hb-types]").innerHTML = TYPES.map(function (t) { return '<button type="button" class="hb-ty' + (t[0] === curType ? " on" : "") + '" data-hb-type="' + esc(t[0]) + '"><span>' + t[1] + "</span>" + esc(t[0].replace(" (کک و کنه)", "")) + "</button>"; }).join("");
+    q("[data-hb-w]").hidden = curType !== "وزن";
+  }
+  function updateSug() {
+    var el = q("[data-hb-sug]"), cp = curPet(), s = suggest(curType, q("#hb-d").value || ymd(new Date()), cp);
+    if (!s) { el.hidden = true; return; }
+    var nd = addDays(q("#hb-d").value || ymd(new Date()), s.d); el.hidden = false;
+    el.innerHTML = "پیشنهاد: " + fd(nd) + " (" + s.t + "؛ تقریبی و طبق نظر دامپزشک)" + (s.manual ? ' <button type="button" data-hb-usesug="' + nd + '">یادآوری بگذار</button>' : "");
+    if (!xTouched && !s.manual) q("#hb-x").value = nd;
+  }
+  function openSheet() { xTouched = false; q("#hb-d").value = ymd(new Date()); q("#hb-n").value = ""; q("#hb-w").value = ""; q("#hb-x").value = ""; renderTypes(); updateSug(); q("[data-hb-sheet]").hidden = false; document.documentElement.classList.add("gift-open"); }
+  function closeSheet() { q("[data-hb-sheet]").hidden = true; document.documentElement.classList.remove("gift-open"); }
+  q("#hb-d").addEventListener("change", function () { xTouched = false; updateSug(); });
+  q("#hb-x").addEventListener("input", function () { xTouched = true; });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !q("[data-hb-sheet]").hidden) closeSheet(); });
+
   root.addEventListener("click", function (e) {
     var t = e.target, b;
+    if (t === q("[data-hb-sheet]")) return closeSheet();
+    if (t.closest("[data-hb-close]")) return closeSheet();
+    if (t.closest("[data-hb-open]")) return openSheet();
+    if ((b = t.closest("[data-hb-type]"))) { curType = b.getAttribute("data-hb-type"); xTouched = false; q("#hb-x").value = ""; renderTypes(); return updateSug(); }
+    if ((b = t.closest("[data-hb-tab]"))) { curTab = Number(b.getAttribute("data-hb-tab")); return render(); }
     if ((b = t.closest("[data-hb-pet]"))) { db.cur = b.getAttribute("data-hb-pet"); q("[data-hb-petform]").hidden = true; save(); return render(); }
     if (t.closest("[data-hb-newpet]")) { q("[data-hb-petform]").hidden = false; q("[data-hb-main]").hidden = true; return; }
     if (t.closest("[data-hb-cancel-pet]")) { q("[data-hb-petform]").hidden = true; return render(); }
@@ -1109,12 +1165,15 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     }
     if (t.closest("[data-hb-save]")) {
       var cp = curPet(); if (!cp) return; var d = q("#hb-d").value; if (!d) { q("#hb-d").focus(); return; }
-      var type = q("#hb-t").value, w = type === "وزن" ? toolNum(q("#hb-w").value) : 0;
-      if (type === "وزن" && !(w > 0)) { q("#hb-w").focus(); return; }
-      db.recs.push({ id: uid(), pet: cp.id, type: type, date: d, name: q("#hb-n").value.trim(), weight: w || 0, next: q("#hb-x").value || "" });
-      q("#hb-n").value = ""; q("#hb-w").value = ""; q("#hb-x").value = ""; save(); return render();
+      var w = curType === "وزن" ? toolNum(q("#hb-w").value) : 0;
+      if (curType === "وزن" && !(w > 0)) { q("#hb-w").focus(); return; }
+      db.recs.forEach(function (r) { if (r.pet === cp.id && r.type === curType && r.next && r.next <= d) r.next = ""; });
+      db.recs.push({ id: uid(), pet: cp.id, type: curType, date: d, name: q("#hb-n").value.trim(), weight: w || 0, next: q("#hb-x").value || "" });
+      save(); closeSheet(); return render();
     }
-    if ((b = t.closest("[data-hb-add]"))) { q("#hb-x").value = addMonths(q("#hb-d").value, Number(b.getAttribute("data-hb-add"))); return; }
+    if ((b = t.closest("[data-hb-add]"))) { xTouched = true; q("#hb-x").value = addMonths(q("#hb-d").value, Number(b.getAttribute("data-hb-add"))); return; }
+    if ((b = t.closest("[data-hb-usesug]"))) { xTouched = true; q("#hb-x").value = b.getAttribute("data-hb-usesug"); return; }
+    if (t.closest("[data-hb-clear]")) { xTouched = true; q("#hb-x").value = ""; return; }
     if ((b = t.closest("[data-hb-del]"))) { if (confirm("این مورد حذف شود؟")) { var id = b.getAttribute("data-hb-del"); db.recs = db.recs.filter(function (r) { return r.id !== id; }); save(); render(); } return; }
     if ((b = t.closest("[data-hb-done]"))) { var i2 = b.getAttribute("data-hb-done"); db.recs.forEach(function (r) { if (r.id === i2) r.next = ""; }); save(); return render(); }
     if ((b = t.closest("[data-hb-ics]"))) {
@@ -1134,7 +1193,6 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     rd.onload = function () { try { var d = JSON.parse(rd.result); if (!d.pets || !d.recs) throw 0; if (confirm("دفترچهٔ فعلی با نسخهٔ پشتیبان جایگزین شود؟")) { db = d; save(); render(); } } catch (x) { alert("فایل پشتیبان معتبر نیست."); } e.target.value = ""; };
     rd.readAsText(f);
   });
-  // نصب روی گوشی
   var dp = null;
   window.addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); dp = e; q("[data-hb-install]").hidden = false; });
   q("[data-hb-do-install]").addEventListener("click", function () { if (dp) { dp.prompt(); dp = null; q("[data-hb-install]").hidden = true; } });
