@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=202610172307">
+<link rel="stylesheet" href="style.css?v=202610172315">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="icon" href="favicon.ico" sizes="48x48">
 <link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png">
@@ -52,7 +52,8 @@
       <div class="hb-pets" data-hb-pets role="tablist" aria-label="پت‌ها"></div>
 
       <form class="hb-petform" data-hb-petform hidden onsubmit="return false">
-        <div class="hb-pf-ic" aria-hidden="true">🐾</div>
+        <button type="button" class="hb-pf-ic" data-hb-photo aria-label="افزودن عکس پت">🐾</button>
+        <div class="hb-pf-ph"><button type="button" class="btn small" data-hb-photo-add>📷 افزودن عکس</button><button type="button" class="hb-lnk" data-hb-photo-del hidden>حذف عکس</button><input type="file" accept="image/*" data-hb-file hidden></div>
         <h2 data-hb-pf-title>شناسنامهٔ پت</h2>
         <div class="fld"><label for="hb-pn">نام پت</label><input id="hb-pn" type="text" maxlength="30" placeholder="مثلاً لوسی"></div>
         <div class="fld"><label>گونه</label><div class="seg" data-seg="hbsp"><button type="button" class="on" data-v="سگ">سگ</button><button type="button" data-v="گربه">گربه</button><button type="button" data-v="پرنده">پرنده</button><button type="button" data-v="دیگر">دیگر</button></div></div>
@@ -62,8 +63,8 @@
 
       <div data-hb-main hidden>
         <div class="hb-cover" data-hb-cover></div>
-        <div class="hb-plan" data-hb-plan></div>
         <div class="hb-rem" data-hb-rem></div>
+        <div class="hb-plan" data-hb-plan></div>
         <div class="hb-btns hb-center"><button type="button" class="btn small primary hb-add" data-hb-open>＋ ثبت در دفترچه</button></div>
         <div class="hb-tabs" data-hb-tabs role="tablist" aria-label="بخش‌های دفترچه"></div>
         <div class="hb-weight" data-hb-weight></div>
@@ -145,7 +146,7 @@
   </div>
 </div>
 <a class="fab" aria-label="نیاز به مشاوره؟" data-consult href="contact.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4V5z"/></svg><span><i class="l-long">نیاز به مشاوره؟</i><i class="l-short">مشاوره</i></span></a>
-<script src="app.js?v=202610172307"></script>
+<script src="app.js?v=202610172315"></script>
     </body>
     </html>
     

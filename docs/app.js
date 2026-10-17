@@ -1143,13 +1143,12 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     var lim = addDays(ymd(new Date()), -14);
     return out.filter(function (x) { return x.date >= lim; });
   }
+  function avatar(p, cls) { return p.photo ? '<img class="' + cls + '" src="' + p.photo + '" alt="' + esc(p.name) + '">' : '<span class="' + cls + '">' + (SPE[p.species] || "🐾") + "</span>"; }
   function renderCover(cp) {
-    var lw = db.recs.filter(function (r) { return r.pet === cp.id && r.weight; }).sort(function (a, b) { return a.date < b.date ? 1 : -1; })[0];
-    var nx = allRem().filter(function (r) { return r.pet === cp.id; })[0], chips = [];
-    if (cp.birth && ageText(cp.birth)) chips.push("سن: " + ageText(cp.birth));
-    if (lw) chips.push("آخرین وزن: " + toolFa(lw.weight) + " کیلوگرم");
-    if (nx) chips.push("نوبت بعدی: " + fd(nx.date));
-    q("[data-hb-cover]").innerHTML = '<div class="hb-cv-ic">' + (SPE[cp.species] || "🐾") + '</div><small>دفترچهٔ سلامت</small><b>' + esc(cp.name) + '</b><span class="hb-cv-sp">' + esc(cp.species || "") + "</span>" + (chips.length ? '<div class="hb-cv-chips">' + chips.map(function (c) { return "<i>" + esc(c) + "</i>"; }).join("") + "</div>" : "");
+    var lw = db.recs.filter(function (r) { return r.pet === cp.id && r.weight; }).sort(function (a, b) { return a.date < b.date ? 1 : -1; })[0], chips = [];
+    if (cp.birth) chips.push("تولد: " + fd(cp.birth)); if (cp.birth && ageText(cp.birth)) chips.push("سن: " + ageText(cp.birth));
+    if (lw) chips.push("وزن: " + toolFa(lw.weight) + " کیلوگرم");
+    q("[data-hb-cover]").innerHTML = '<div class="hb-cv-ic">' + avatar(cp, "hb-cv-img") + '</div><small>شناسنامهٔ سلامت</small><b>' + esc(cp.name) + '</b><span class="hb-cv-sp">' + esc(cp.species || "") + "</span>" + (chips.length ? '<div class="hb-cv-chips">' + chips.map(function (c) { return "<i>" + esc(c) + "</i>"; }).join("") + "</div>" : "");
   }
   // همهٔ یادآوری‌ها: نوبت‌های بعدی + برنامهٔ واکسن
   function allRem() {
@@ -1162,7 +1161,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     var pets = q("[data-hb-pets]"), main = q("[data-hb-main]"), pf = q("[data-hb-petform]");
     if (!db.pets.length) { pets.innerHTML = ""; main.hidden = true; pf.hidden = false; return; }
     var cp = curPet(); db.cur = cp.id;
-    pets.innerHTML = db.pets.map(function (p) { return '<button type="button" class="chip' + (p.id === cp.id ? " on" : "") + '" data-hb-pet="' + p.id + '">' + (SPE[p.species] || "🐾") + " " + esc(p.name) + "</button>"; }).join("") + '<button type="button" class="chip" data-hb-newpet>＋ پت جدید</button>';
+    pets.innerHTML = db.pets.map(function (p) { return '<button type="button" class="chip' + (p.id === cp.id ? " on" : "") + '" data-hb-pet="' + p.id + '">' + avatar(p, "hb-mini") + " " + esc(p.name) + "</button>"; }).join("") + '<button type="button" class="chip" data-hb-newpet>＋ پت جدید</button>';
     main.hidden = !pf.hidden; if (!pf.hidden) return;
     renderCover(cp);
     // کارت برنامهٔ واکسن
@@ -1170,11 +1169,11 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (young && !hasPlan) pl.innerHTML = '<div class="hb-plan-c"><b>برنامهٔ واکسن ' + (cp.species === "سگ" ? "توله‌سگ" : "بچه‌گربه") + "</b><p>بر پایهٔ تاریخ تولد، نوبت‌های واکسن و ضدانگل پیشنهاد می‌شود (تقریبی؛ طبق نظر دامپزشک).</p><button type=\"button\" class=\"btn small primary\" data-hb-mkplan>افزودن به یادآوری‌ها</button></div>";
     else if (!cp.birth && (cp.species === "سگ" || cp.species === "گربه")) pl.innerHTML = '<div class="hb-plan-c"><b>برنامهٔ واکسن توله و بچه‌گربه</b><p>با نوشتن تاریخ تولد، برنامهٔ پیشنهادی ساخته می‌شود.</p><button type="button" class="btn small" data-hb-edit-pet>نوشتن تاریخ تولد</button></div>';
     else pl.innerHTML = hasPlan ? '<div class="hb-plan-c ok"><span>برنامهٔ واکسن ' + (cp.species === "سگ" ? "توله‌سگ" : "بچه‌گربه") + ' فعال است.</span><button type="button" class="hb-lnk" data-hb-delplan>حذف برنامه</button></div>' : "";
-    var rem = allRem(), lim = showAll ? rem.length : 6, rh = rem.slice(0, lim).map(function (r) {
+    var rem = allRem().filter(function (r) { return r.pet === cp.id; }), lim = showAll ? rem.length : 6, rh = rem.slice(0, lim).map(function (r) {
       var p = db.pets.filter(function (x) { return x.id === r.pet; })[0]; if (!p) return ""; var n = days(r.date), k = cfg(r.type);
-      return '<div class="hb-r' + (n < 0 ? " late" : n <= 7 ? " soon" : "") + '"><span class="hb-r-ic">' + k.ic + '</span><div><b>' + esc(p.name) + " · " + esc(r.type.replace(" (کک و کنه)", "")) + (r.label ? ": " + esc(r.label) : "") + "</b><small>" + fd(r.date) + " · " + when(n) + (r.kind === "plan" ? " · برنامه" : "") + '</small></div><span class="hb-r-b"><button type="button" data-hb-ics="' + r.kind + ":" + r.id + '">تقویم</button><button type="button" data-hb-done="' + r.kind + ":" + r.id + '">انجام شد</button></span></div>';
+      return '<div class="hb-r' + (n < 0 ? " late" : n <= 7 ? " soon" : "") + '"><span class="hb-r-ic">' + k.ic + '</span><div><b>' + esc(r.type.replace(" (کک و کنه)", "")) + (r.label ? " · " + esc(r.label) : "") + "</b><small>" + fd(r.date) + " · " + when(n) + (r.kind === "plan" ? " · برنامه" : "") + '</small></div><span class="hb-r-b"><button type="button" data-hb-ics="' + r.kind + ":" + r.id + '">تقویم</button><button type="button" data-hb-done="' + r.kind + ":" + r.id + '">انجام شد</button></span></div>';
     }).join("");
-    q("[data-hb-rem]").innerHTML = rem.length ? "<h3>یادآوری‌ها</h3>" + rh + (rem.length > 6 ? '<div class="hb-more"><button type="button" class="hb-lnk" data-hb-more>' + (showAll ? "نمایش کمتر" : "نمایش همه (" + toolFa(rem.length) + ")") + "</button></div>" : "") : "";
+    q("[data-hb-rem]").innerHTML = rem.length ? "<h3>🔔 یادآوری‌های " + esc(cp.name) + "</h3>" + rh + (rem.length > 6 ? '<div class="hb-more"><button type="button" class="hb-lnk" data-hb-more>' + (showAll ? "نمایش کمتر" : "نمایش همه (" + toolFa(rem.length) + ")") + "</button></div>" : "") : "";
     q("[data-hb-tabs]").innerHTML = TABS.map(function (t, i) { return '<button type="button" class="chip' + (i === curTab ? " on" : "") + '" data-hb-tab="' + i + '">' + t[0] + "</button>"; }).join("");
     var mine = db.recs.filter(function (r) { return r.pet === cp.id; }).sort(function (a, b) { return a.date < b.date ? 1 : -1; });
     var ks = TABS[curTab][1], shown = ks ? mine.filter(function (r) { return ks.indexOf(cfg(r.type).k) > -1; }) : mine;
@@ -1215,13 +1214,23 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   }
   function openSheet() { xTouched = false; renderTypes(); renderFields(); q("[data-hb-sheet]").hidden = false; document.documentElement.classList.add("gift-open"); }
   function closeSheet() { q("[data-hb-sheet]").hidden = true; document.documentElement.classList.remove("gift-open"); }
+  var formPhoto = "";
+  function showPhoto() { var b = q("[data-hb-photo]"); b.innerHTML = formPhoto ? '<img src="' + formPhoto + '" alt="">' : "🐾"; q("[data-hb-photo-del]").hidden = !formPhoto; }
+  function readPhoto(f) {
+    if (!f) return; var rd = new FileReader();
+    rd.onload = function () { var im = new Image(); im.onload = function () { var s = 320, w = im.width, h = im.height, m = Math.min(w, h), cv = document.createElement("canvas"); cv.width = cv.height = s; cv.getContext("2d").drawImage(im, (w - m) / 2, (h - m) / 2, m, m, 0, 0, s, s); formPhoto = cv.toDataURL("image/jpeg", .82); showPhoto(); }; im.src = rd.result; };
+    rd.readAsDataURL(f);
+  }
   function petForm(p) {
     editId = p ? p.id : null; q("[data-hb-pf-title]").textContent = p ? "ویرایش شناسنامه" : "شناسنامهٔ پت";
-    q("#hb-pn").value = p ? p.name : ""; JD.pb.set(p ? p.birth : "");
+    q("#hb-pn").value = p ? p.name : ""; JD.pb.set(p ? p.birth : ""); formPhoto = p && p.photo || ""; showPhoto();
     var segs = q('[data-seg="hbsp"]').children; [].forEach.call(segs, function (b) { b.classList.toggle("on", p ? b.getAttribute("data-v") === p.species : b.getAttribute("data-v") === "سگ"); });
     q("[data-hb-petform]").hidden = false; q("[data-hb-main]").hidden = true;
   }
   JD.pb = initJd(q('[data-jd="pb"]'), { optional: true, minY: -30, maxY: 0 });
+  q("[data-hb-file]").addEventListener("change", function () { readPhoto(this.files[0]); this.value = ""; });
+  // جمع‌شدن سربرگ سایت هنگام پایین رفتن
+  (function () { var hd = document.querySelector("header.top"), ly = window.scrollY; if (!hd) return; document.body.classList.add("hb-page"); window.addEventListener("scroll", function () { var y = window.scrollY; if (y > ly + 6 && y > 90) hd.classList.add("fold"); else if (y < ly - 6 || y < 40) hd.classList.remove("fold"); ly = y; }, { passive: true }); })();
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !q("[data-hb-sheet]").hidden) closeSheet(); });
 
   root.addEventListener("click", function (e) {
@@ -1236,11 +1245,13 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (t.closest("[data-hb-newpet]")) return petForm(null);
     if (t.closest("[data-hb-edit-pet]")) return petForm(curPet());
     if (t.closest("[data-hb-cancel-pet]")) { q("[data-hb-petform]").hidden = true; return render(); }
+    if (t.closest("[data-hb-photo]") || t.closest("[data-hb-photo-add]")) return q("[data-hb-file]").click();
+    if (t.closest("[data-hb-photo-del]")) { formPhoto = ""; return showPhoto(); }
     if (t.closest("[data-hb-save-pet]")) {
       var n2 = q("#hb-pn").value.trim(); if (!n2) { q("#hb-pn").focus(); return; }
       var sp = q('[data-seg="hbsp"] .on'), spv = sp ? sp.getAttribute("data-v") : "", bd = JD.pb.get();
-      if (editId) { var ep = db.pets.filter(function (x) { return x.id === editId; })[0]; if (ep) { ep.name = n2; ep.species = spv; ep.birth = bd; } }
-      else { var p = { id: uid(), name: n2, species: spv, birth: bd, plan: [] }; db.pets.push(p); db.cur = p.id; }
+      if (editId) { var ep = db.pets.filter(function (x) { return x.id === editId; })[0]; if (ep) { ep.name = n2; ep.species = spv; ep.birth = bd; ep.photo = formPhoto; } }
+      else { var p = { id: uid(), name: n2, species: spv, birth: bd, photo: formPhoto, plan: [] }; db.pets.push(p); db.cur = p.id; }
       editId = null; q("[data-hb-petform]").hidden = true; save(); return render();
     }
     if (t.closest("[data-hb-mkplan]")) { var cp2 = curPet(); cp2.plan = buildPlan(cp2); save(); return render(); }
