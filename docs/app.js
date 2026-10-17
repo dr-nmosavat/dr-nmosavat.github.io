@@ -1232,7 +1232,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   JD.pb = initJd(q('[data-jd="pb"]'), { optional: true, minY: -30, maxY: 0 });
   q("[data-hb-file]").addEventListener("change", function () { readPhoto(this.files[0]); this.value = ""; });
   // جمع‌شدن سربرگ سایت هنگام پایین رفتن
-  (function () { var hd = document.querySelector("header.top"), ly = window.scrollY; if (!hd) return; document.body.classList.add("hb-page"); window.addEventListener("scroll", function () { var y = window.scrollY; if (y > ly + 6 && y > 90) hd.classList.add("fold"); else if (y < ly - 6 || y < 40) hd.classList.remove("fold"); ly = y; }, { passive: true }); })();
+  (function () { var hd = document.querySelector("header.top"), ly = window.scrollY; if (!hd || !document.body.classList.contains("hb-page")) return; window.addEventListener("scroll", function () { var y = window.scrollY; if (y > ly + 6 && y > 90) hd.classList.add("fold"); else if (y < ly - 6 || y < 40) hd.classList.remove("fold"); ly = y; }, { passive: true }); })();
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !q("[data-hb-sheet]").hidden) closeSheet(); });
 
   root.addEventListener("click", function (e) {
