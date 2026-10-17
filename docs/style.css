@@ -1471,3 +1471,28 @@ button.hb-pf-ic img { width: 100%; height: 100%; object-fit: cover; }
 .hb-rem h3 { margin: 2px 0 8px; font-size: 16px; }
 header.top { transition: transform .3s ease, opacity .3s ease; }
 header.top.fold { transform: translateY(-140%); opacity: 0; pointer-events: none; }
+
+/* شناسنامه */
+body.hb-page .fab, body.hb-page .fab-bubble, body.hb-page .gift-root { display: none !important; }
+body.hb-page header.top { padding: 5px 14px; border-radius: 16px; justify-content: center; margin-block: 8px 4px; }
+body.hb-page header.top nav, body.hb-page header.top .cred, body.hb-page header.top .vet-tag { display: none; }
+body.hb-page header.top .brandcol, body.hb-page header.top .brandwrap { margin: 0; }
+body.hb-page header.top .brand svg { width: 26px; height: 26px; }
+body.hb-page header.top .brand span { font-size: 16px; }
+.hb-cover { padding: 16px 16px 18px; background: linear-gradient(160deg, #15406f, #1f5ea6); box-shadow: 0 10px 24px rgba(23,64,111,.28), inset 0 0 0 4px #1a4f8c, inset 0 0 0 5px rgba(232,200,120,.85), inset 0 0 0 9px #1a4f8c, inset 0 0 0 10px rgba(232,200,120,.45); }
+.hb-cover .hb-cv-t { font-size: 14px; letter-spacing: 1px; color: #f1dca0; margin: 4px 0 10px; opacity: 1; }
+.hb-cover .hb-cv-t::before, .hb-cover .hb-cv-t::after { content: "✦"; margin: 0 8px; font-size: 10px; }
+.hb-cover b { margin: 8px 0 4px; }
+.hb-id { margin: 10px 4px 2px; padding: 0; text-align: right; }
+.hb-id > div { display: flex; justify-content: space-between; gap: 12px; padding: 7px 4px; border-bottom: 1px dashed rgba(255,255,255,.35); font-size: 14px; }
+.hb-id > div:last-child { border-bottom: 0; }
+.hb-id dt { opacity: .8; } .hb-id dd { margin: 0; font-weight: 700; }
+.hb-det { margin-top: 8px; text-align: right; font-size: 13.5px; } .hb-det summary { cursor: pointer; color: var(--blue); font-weight: 600; } .hb-det p { margin: 6px 0 0; font-size: 13px; }
+.hb-actions { display: flex; flex-direction: column; align-items: center; gap: 14px; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line); }
+.hb-actions .hb-add { margin: 0; min-width: 210px; }
+.hb-arow { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.hb-actions .btn.small { min-height: 36px; padding: 5px 16px; font-size: 13.5px; }
+.hb-tools .btn { font-size: 12.5px !important; padding: 4px 14px !important; color: var(--muted); }
+.hb-danger { color: #b3382c; border-color: #e6b9b3; background: #fff; }
+.hb-actions .btn.hb-danger { color: #b3382c; border: 1px solid #e6b9b3; background: #fff; }
+.hb-actions .btn.ghost { background: transparent; }

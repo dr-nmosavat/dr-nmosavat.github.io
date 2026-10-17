@@ -1145,10 +1145,12 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   }
   function avatar(p, cls) { return p.photo ? '<img class="' + cls + '" src="' + p.photo + '" alt="' + esc(p.name) + '">' : '<span class="' + cls + '">' + (SPE[p.species] || "🐾") + "</span>"; }
   function renderCover(cp) {
-    var lw = db.recs.filter(function (r) { return r.pet === cp.id && r.weight; }).sort(function (a, b) { return a.date < b.date ? 1 : -1; })[0], chips = [];
-    if (cp.birth) chips.push("تولد: " + fd(cp.birth)); if (cp.birth && ageText(cp.birth)) chips.push("سن: " + ageText(cp.birth));
-    if (lw) chips.push("وزن: " + toolFa(lw.weight) + " کیلوگرم");
-    q("[data-hb-cover]").innerHTML = '<div class="hb-cv-ic">' + avatar(cp, "hb-cv-img") + '</div><small>شناسنامهٔ سلامت</small><b>' + esc(cp.name) + '</b><span class="hb-cv-sp">' + esc(cp.species || "") + "</span>" + (chips.length ? '<div class="hb-cv-chips">' + chips.map(function (c) { return "<i>" + esc(c) + "</i>"; }).join("") + "</div>" : "");
+    var lw = db.recs.filter(function (r) { return r.pet === cp.id && r.weight; }).sort(function (a, b) { return a.date < b.date ? 1 : -1; })[0], rows = [];
+    if (cp.species) rows.push(["گونه", cp.species]);
+    if (cp.birth) rows.push(["تاریخ تولد", fd(cp.birth)]);
+    if (cp.birth && ageText(cp.birth)) rows.push(["سن", ageText(cp.birth)]);
+    if (lw) rows.push(["آخرین وزن", toolFa(lw.weight) + " کیلوگرم"]);
+    q("[data-hb-cover]").innerHTML = '<small class="hb-cv-t">شناسنامهٔ سلامت</small><div class="hb-cv-ic">' + avatar(cp, "hb-cv-img") + '</div><b>' + esc(cp.name) + "</b>" + (rows.length ? '<dl class="hb-id">' + rows.map(function (r) { return "<div><dt>" + r[0] + "</dt><dd>" + esc(r[1]) + "</dd></div>"; }).join("") + "</dl>" : "");
   }
   // همهٔ یادآوری‌ها: نوبت‌های بعدی + برنامهٔ واکسن
   function allRem() {
@@ -1166,14 +1168,14 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     renderCover(cp);
     // کارت برنامهٔ واکسن
     var pl = q("[data-hb-plan]"), young = cp.birth && (cp.species === "سگ" || cp.species === "گربه") && -days(cp.birth) < 400, hasPlan = (cp.plan || []).length;
-    if (young && !hasPlan) pl.innerHTML = '<div class="hb-plan-c"><b>برنامهٔ واکسن ' + (cp.species === "سگ" ? "توله‌سگ" : "بچه‌گربه") + "</b><p>بر پایهٔ تاریخ تولد، نوبت‌های واکسن و ضدانگل پیشنهاد می‌شود (تقریبی؛ طبق نظر دامپزشک).</p><button type=\"button\" class=\"btn small primary\" data-hb-mkplan>افزودن به یادآوری‌ها</button></div>";
+    if (young && !hasPlan) pl.innerHTML = '<div class="hb-plan-c"><b>برنامهٔ واکسن ' + (cp.species === "سگ" ? "توله‌سگ" : "بچه‌گربه") + "</b><p>با زدن دکمهٔ زیر، تاریخ نوبت‌های واکسن و کرم‌کشی بر اساس تاریخ تولد حساب می‌شود و به «یادآوری‌ها» اضافه می‌شود. تاریخ‌ها تقریبی‌اند و طبق نظر دامپزشک تنظیم کنید.</p><button type=\"button\" class=\"btn small primary\" data-hb-mkplan>📅 ساخت برنامهٔ واکسن و کرم‌کشی</button><details class=\"hb-det\"><summary>برنامه شامل چه چیزی است؟</summary><p>واکسن در هفتهٔ ۸، ۱۲ و ۱۶ (" + (cp.species === "سگ" ? "چندگانه سگ" : "سه‌گانه گربه") + ")، هاری در هفتهٔ ۱۶ و یادآور سالانه؛ ضدانگل داخلی در هفته‌های ۲، ۴، ۶، ۸، ۱۲، ۱۶، ۲۰ و ۲۴. بعد از ساخت، هر نوبت با «انجام شد» در دفترچه ثبت می‌شود و می‌توانید آن را به تقویم گوشی اضافه کنید. هر زمان خواستید «حذف برنامه» را بزنید.</p></details></div>";
     else if (!cp.birth && (cp.species === "سگ" || cp.species === "گربه")) pl.innerHTML = '<div class="hb-plan-c"><b>برنامهٔ واکسن توله و بچه‌گربه</b><p>با نوشتن تاریخ تولد، برنامهٔ پیشنهادی ساخته می‌شود.</p><button type="button" class="btn small" data-hb-edit-pet>نوشتن تاریخ تولد</button></div>';
     else pl.innerHTML = hasPlan ? '<div class="hb-plan-c ok"><span>برنامهٔ واکسن ' + (cp.species === "سگ" ? "توله‌سگ" : "بچه‌گربه") + ' فعال است.</span><button type="button" class="hb-lnk" data-hb-delplan>حذف برنامه</button></div>' : "";
-    var rem = allRem().filter(function (r) { return r.pet === cp.id; }), lim = showAll ? rem.length : 6, rh = rem.slice(0, lim).map(function (r) {
+    var rem = allRem().filter(function (r) { return r.pet === cp.id; }), lim = showAll ? rem.length : 3, rh = rem.slice(0, lim).map(function (r) {
       var p = db.pets.filter(function (x) { return x.id === r.pet; })[0]; if (!p) return ""; var n = days(r.date), k = cfg(r.type);
       return '<div class="hb-r' + (n < 0 ? " late" : n <= 7 ? " soon" : "") + '"><span class="hb-r-ic">' + k.ic + '</span><div><b>' + esc(r.type.replace(" (کک و کنه)", "")) + (r.label ? " · " + esc(r.label) : "") + "</b><small>" + fd(r.date) + " · " + when(n) + (r.kind === "plan" ? " · برنامه" : "") + '</small></div><span class="hb-r-b"><button type="button" data-hb-ics="' + r.kind + ":" + r.id + '">تقویم</button><button type="button" data-hb-done="' + r.kind + ":" + r.id + '">انجام شد</button></span></div>';
     }).join("");
-    q("[data-hb-rem]").innerHTML = rem.length ? "<h3>🔔 یادآوری‌های " + esc(cp.name) + "</h3>" + rh + (rem.length > 6 ? '<div class="hb-more"><button type="button" class="hb-lnk" data-hb-more>' + (showAll ? "نمایش کمتر" : "نمایش همه (" + toolFa(rem.length) + ")") + "</button></div>" : "") : "";
+    q("[data-hb-rem]").innerHTML = rem.length ? "<h3>🔔 یادآوری‌های " + esc(cp.name) + "</h3>" + rh + (rem.length > 3 ? '<div class="hb-more"><button type="button" class="hb-lnk" data-hb-more>' + (showAll ? "نمایش کمتر" : "نمایش همه (" + toolFa(rem.length) + ")") + "</button></div>" : "") : "";
     q("[data-hb-tabs]").innerHTML = TABS.map(function (t, i) { return '<button type="button" class="chip' + (i === curTab ? " on" : "") + '" data-hb-tab="' + i + '">' + t[0] + "</button>"; }).join("");
     var mine = db.recs.filter(function (r) { return r.pet === cp.id; }).sort(function (a, b) { return a.date < b.date ? 1 : -1; });
     var ks = TABS[curTab][1], shown = ks ? mine.filter(function (r) { return ks.indexOf(cfg(r.type).k) > -1; }) : mine;
