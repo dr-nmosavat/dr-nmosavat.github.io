@@ -1224,9 +1224,9 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   }
   function render() {
     var pets = q("[data-hb-pets]"), main = q("[data-hb-main]"), pf = q("[data-hb-petform]");
-    var noAcct = q("[data-hb-noacct]");
-    if (!db.pets.length) { var guest = srvOn() && !isDr(); pets.innerHTML = ""; main.hidden = true; pf.hidden = guest; if (noAcct) noAcct.hidden = !guest; document.documentElement.classList.remove("hb-has-pet"); return; }
-    if (noAcct) noAcct.hidden = true;
+    var noAcct = q("[data-hb-noacct]"), gate = q("[data-hb-drgate]");
+    if (!db.pets.length) { var guest = srvOn() && !isDr(); pets.innerHTML = ""; main.hidden = true; pf.hidden = guest; if (noAcct) noAcct.hidden = !(guest && !DRPAGE); if (gate) gate.hidden = !(guest && DRPAGE); document.documentElement.classList.remove("hb-has-pet"); return; }
+    if (noAcct) noAcct.hidden = true; if (gate) gate.hidden = true;
     var cp = curPet(); db.cur = cp.id;
     pets.innerHTML = db.pets.map(function (p) { return '<button type="button" class="chip' + (p.id === cp.id ? " on" : "") + '" data-hb-pet="' + p.id + '">' + avatar(p, "hb-mini") + " " + esc(p.name) + "</button>"; }).join("") + (srvOn() && !isDr() ? "" : '<button type="button" class="chip" data-hb-newpet>＋ پت جدید</button>');
     main.hidden = !pf.hidden; if (!pf.hidden) return;
@@ -1267,7 +1267,8 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   }
   function tokGet() { try { var o = JSON.parse(localStorage.getItem("dm_hb_tok") || "null"); return o && o.exp > Date.now() ? o.t : ""; } catch (e) { return ""; } }
   function tokSet(t) { try { if (t) localStorage.setItem("dm_hb_tok", JSON.stringify({ t: t, exp: (Number(String(t).split(".")[0]) || Date.now() + 3 * 86400000) - 60000 })); else localStorage.removeItem("dm_hb_tok"); } catch (e) {} }
-  function isDr() { try { var f = localStorage.getItem("dm_hb_dr") === "1"; if (f && srvOn() && !tokGet()) { localStorage.removeItem("dm_hb_dr"); return false; } return f; } catch (e) { return false; } }
+  var DRPAGE = document.body.classList.contains("hb-drpage");
+  function isDr() { if (!DRPAGE) return false; try { var f = localStorage.getItem("dm_hb_dr") === "1"; if (f && srvOn() && !tokGet()) { localStorage.removeItem("dm_hb_dr"); return false; } return f; } catch (e) { return false; } }
   function srvOf(p) { return p && p.srv && p.srv.code ? p.srv : null; }
   function errMsg(e) { return e === "net" ? "اتصال با سرور برقرار نشد. اینترنت را بررسی کنید." : e === "auth" ? "دسترسی مجاز نیست (دوباره وارد شوید یا لینک را بررسی کنید)." : e === "forbidden" ? "این مورد را فقط دکتر ثبت یا تغییر می‌دهد." : e === "locked" ? "ورود موقتاً قفل شد؛ چند دقیقه بعد دوباره تلاش کنید." : "خطای سرور؛ دوباره تلاش کنید."; }
   function toSrvPet(p) { return { code: p.srv && p.srv.code, name: p.name, en: p.en, owner: p.owner, guardian: p.guardian, species: p.species, breed: p.breed, breedEn: p.breedEn, birth: p.birth, plan: p.plan || [], consent: p.consent ? 1 : 0 }; }

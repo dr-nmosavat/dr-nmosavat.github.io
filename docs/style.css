@@ -1712,3 +1712,7 @@ html.hb-dr .hb-install, html.hb-dr .hb-ios { display: none !important; }
 .hb-cropz { width: min(76vw, 300px); display: block; margin: 0 auto; accent-color: #1f5ea6; }
 .hb-cropnote { font-size: 12.5px; color: var(--muted); margin: 8px 0 10px; }
 .hb-shlink { min-height: 150px; font-size: 13px; line-height: 1.9; direction: rtl; text-align: right; white-space: pre-wrap; }
+
+body:not(.hb-drpage) .hb-drbar, body:not(.hb-drpage) .hb-drgate { display: none !important; }
+body.hb-drpage .hb-drgate .btn { min-width: 200px; min-height: 48px; font-size: 16px; }
+body.hb-drpage .hb-drgate:not([hidden]) ~ .hb-drbar { display: none !important; }
