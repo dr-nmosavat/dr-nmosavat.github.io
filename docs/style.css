@@ -1716,3 +1716,8 @@ html.hb-dr .hb-install, html.hb-dr .hb-ios { display: none !important; }
 body:not(.hb-drpage) .hb-drbar, body:not(.hb-drpage) .hb-drgate { display: none !important; }
 body.hb-drpage .hb-drgate .btn { min-width: 200px; min-height: 48px; font-size: 16px; }
 body.hb-drpage .hb-drgate:not([hidden]) ~ .hb-drbar { display: none !important; }
+
+.hb-verify { background: #fff8e6; border: 1px solid #ecd48a; border-radius: 16px; padding: 10px 12px; margin-bottom: 10px; } .hb-verify h3 { margin: 0 0 8px; font-size: 15px; }
+.hb-vrow { display: flex; gap: 8px; } .hb-vrow input { flex: 1; min-width: 0; min-height: 44px; border: 1.5px solid var(--line); border-radius: 12px; padding: 6px 12px; font: inherit; font-size: 16px; text-transform: uppercase; background: #fff; }
+.hb-vbox { margin-top: 8px; border-radius: 12px; padding: 10px 12px; } .hb-vbox b { font-size: 16px; display: block; } .hb-vbox p { margin: 4px 0 8px; font-size: 14px; }
+.hb-vbox.ok { background: #e3f6ec; color: #0f6b44; } .hb-vbox.bad { background: #fdeceb; color: #a02a20; }

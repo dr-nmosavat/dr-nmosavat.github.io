@@ -1295,7 +1295,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   }
   function locked(t) { return !isDr() && OWNER_LOCKED.indexOf(t) > -1; }
   function toast(msg) { var t = document.createElement("div"); t.className = "hb-toast"; t.textContent = msg; document.body.appendChild(t); setTimeout(function () { t.classList.add("off"); }, 3200); setTimeout(function () { t.remove(); }, 3800); }
-  function applyRole() { document.documentElement.classList.toggle("hb-dr", isDr()); var b = q("[data-hb-drbtn]"); if (b) b.textContent = isDr() ? "خروج از حالت دکتر" : "ورود دکتر"; var bd = q("[data-hb-drbadge]"); if (bd) bd.hidden = !isDr(); var sb = q("[data-hb-searchbox]"); if (sb) sb.hidden = !(srvOn() && isDr()); }
+  function applyRole() { document.documentElement.classList.toggle("hb-dr", isDr()); var b = q("[data-hb-drbtn]"); if (b) b.textContent = isDr() ? "خروج از حالت دکتر" : "ورود دکتر"; var bd = q("[data-hb-drbadge]"); if (bd) bd.hidden = !isDr(); var sb = q("[data-hb-searchbox]"); if (sb) sb.hidden = !(srvOn() && isDr()); var vb = q("[data-hb-verifybox]"); if (vb) vb.hidden = !(srvOn() && isDr()); }
   function checkDrPass(pw) {
     if (!window.crypto || !crypto.subtle) return Promise.resolve(false);
     var s = atob(DR_SALT), salt = new Uint8Array(s.length), i; for (i = 0; i < s.length; i++) salt[i] = s.charCodeAt(i);
@@ -1625,6 +1625,17 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if ((b = t.closest("[data-hb-pgo]"))) return setPg(Number(b.getAttribute("data-hb-pgo")));
     if (t.closest("[data-hb-present]")) { editList = false; document.documentElement.classList.add("hb-present"); render(); window.scrollTo(0, 0); return; }
     if (t.closest("[data-hb-present-x]")) { document.documentElement.classList.remove("hb-present"); render(); return; }
+    if (t.closest("[data-hb-vgo]") || t.closest("[data-hb-vuse]")) {
+      var vuse = !!t.closest("[data-hb-vuse]"), vc = q("[data-hb-vcode]").value.trim().toUpperCase(), vr = q("[data-hb-vres]"); if (!vc) { q("[data-hb-vcode]").focus(); return; }
+      vr.innerHTML = '<p class="hb-qmsg">در حال بررسی…</p>';
+      api({ a: vuse ? "useCode" : "verifyCode", t: tokGet(), code: vc }).then(function (j) {
+        if (j.err === "net" || j.err === "auth" || j.err === "server") { vr.innerHTML = '<div class="hb-vbox bad"><b>' + esc(errMsg(j.err)) + "</b></div>"; return; }
+        var st = j.status, ex = j.exp ? new Date(j.exp).toLocaleDateString("fa-IR") : "", lab = esc(j.label || "");
+        var msg = { valid: ["ok", "کد معتبر است ✓", "جایزه: <b>" + lab + "</b><br>اعتبار تا: " + ex], usedNow: ["ok", "ثبت شد: استفاده شد ✓", "جایزه: <b>" + lab + "</b>"], used: ["bad", "قبلاً استفاده شده", "جایزه: <b>" + lab + "</b>" + (j.usedAt ? "<br>زمان استفاده: " + esc(j.usedAt) : "")], expired: ["bad", "منقضی شده", "جایزه: <b>" + lab + "</b><br>اعتبار تا: " + ex], fake: ["bad", "کد جعلی", "امضای کد با سرور نمی‌خواند."], notfound: ["bad", "کد پیدا نشد", "این کد در شیت ثبت نشده است."], bad: ["bad", "قالب کد درست نیست", "قالب درست: DM-1234-ABCD"] }[st] || ["bad", "نتیجهٔ نامشخص", ""];
+        vr.innerHTML = '<div class="hb-vbox ' + msg[0] + '"><b>' + msg[1] + "</b><p>" + msg[2] + "</p>" + (st === "valid" ? '<button type="button" class="btn small primary" data-hb-vuse>ثبت به‌عنوان استفاده‌شده</button>' : "") + "</div>";
+      });
+      return;
+    }
     if ((b = t.closest("[data-hb-qopen]"))) {
       var qc = b.getAttribute("data-hb-qopen"); b.disabled = true;
       api({ a: "get", t: tokGet(), code: qc }).then(function (j) { b.disabled = false; if (!j.ok) return alert(errMsg(j.err)); var p = upsertSrv(j.pet, j.recs, j.pet.key); db.cur = p.id; q("[data-hb-petform]").hidden = true; q("[data-hb-qres]").innerHTML = ""; q("[data-hb-q]").value = ""; save(); render(); });
@@ -1772,7 +1783,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   window.addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); dp = e; q("[data-hb-install]").hidden = false; });
   q("[data-hb-do-install]").addEventListener("click", function () { if (dp) { dp.prompt(); dp = null; q("[data-hb-install]").hidden = true; } });
   if (/iphone|ipad/i.test(navigator.userAgent) && !window.navigator.standalone) q("[data-hb-ios]").hidden = false;
-  (function () { var w = q("[data-hb-wa]"); if (w && INFO.whatsapp) w.href = "https://wa.me/" + INFO.whatsapp + "?text=" + encodeURIComponent("سلام دکتر مساوات، می‌خواهم شناسنامهٔ سلامت پتم را بگیرم."); var pwi = q("[data-hb-drpw]"); if (pwi) pwi.addEventListener("keydown", function (e) { if (e.key === "Enter") q("[data-hb-dr-ok]").click(); }); })();
+  (function () { var w = q("[data-hb-wa]"); if (w && INFO.whatsapp) w.href = "https://wa.me/" + INFO.whatsapp + "?text=" + encodeURIComponent("سلام دکتر مساوات، می‌خواهم شناسنامهٔ سلامت پتم را بگیرم."); var vci = q("[data-hb-vcode]"); if (vci) vci.addEventListener("keydown", function (e) { if (e.key === "Enter") q("[data-hb-vgo]").click(); }); var pwi = q("[data-hb-drpw]"); if (pwi) pwi.addEventListener("keydown", function (e) { if (e.key === "Enter") q("[data-hb-dr-ok]").click(); }); })();
   applyRole();
   checkImport();
   syncCur();

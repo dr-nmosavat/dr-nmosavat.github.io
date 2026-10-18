@@ -155,6 +155,8 @@ function health_(b) {
     if (a === 'delRec') return delRec_(b, true);
     if (a === 'rotate') return rotate_(b);
     if (a === 'deletePet') return deletePet_(b);
+    if (a === 'verifyCode') return verifyCode_(b, false);
+    if (a === 'useCode') return verifyCode_(b, true);
   } finally { lock.releaseLock(); }
   return { ok: false, err: 'bad' };
 }
@@ -239,6 +241,36 @@ function delRec_(b, asDr) {
 function touchPet_(pet) { var sh = hsheet_('Pets', PET_COLS); pet.updated = nowIso_(); writeRow_(sh, PET_COLS, pet, pet._row); }
 function rotate_(b) { var p = findPet_(b.code); if (!p || p.deleted === '1') return { ok: false, err: 'notfound' }; p.key = rnd_(14); p.updated = nowIso_(); writeRow_(hsheet_('Pets', PET_COLS), PET_COLS, p, p._row); return { ok: true, pet: petOut_(p, true) }; }
 function deletePet_(b) { var p = findPet_(b.code); if (!p) return { ok: false, err: 'notfound' }; p.deleted = '1'; p.updated = nowIso_(); writeRow_(hsheet_('Pets', PET_COLS), PET_COLS, p, p._row); return { ok: true }; }
+
+// ---- بررسی و ثبت «استفاده شد» برای کد جایزهٔ چرخ (از صفحهٔ دکتر) ----
+function lookupCode_(code) {
+  code = String(code || '').trim().toUpperCase();
+  var m = /^DM-(\d{4})-([0-9A-F]{4})$/.exec(code); if (!m) return { status: 'bad' };
+  var sh = sheet_(), data = sh.getDataRange().getValues(), i;
+  for (i = 1; i < data.length; i++) {
+    if (String(data[i][COL.code]).toUpperCase() !== code) continue;
+    var prize = data[i][COL.prize], exp = Number(data[i][COL.exp]);
+    if (sig_(m[1], prize, exp) !== m[2]) return { status: 'fake' };
+    var o = { label: LABELS[prize] || prize, exp: exp, row: i + 1, sh: sh };
+    if (data[i][COL.used]) { o.status = 'used'; o.usedAt = data[i][COL.usedAt] ? Utilities.formatDate(new Date(data[i][COL.usedAt]), CFG.tz, 'yyyy/MM/dd HH:mm') : ''; }
+    else if (exp < Date.now()) o.status = 'expired';
+    else o.status = 'valid';
+    return o;
+  }
+  return { status: 'notfound' };
+}
+function verifyCode_(b, use) {
+  var lock = LockService.getScriptLock(); lock.waitLock(15000);
+  try {
+    var r = lookupCode_(b.code), out = { ok: true, status: r.status, label: r.label || '', exp: r.exp || 0, usedAt: r.usedAt || '' };
+    if (use) {
+      if (r.status !== 'valid') return { ok: false, err: 'notvalid', status: r.status };
+      r.sh.getRange(r.row, COL.used + 1, 1, 2).setValues([[true, new Date()]]);
+      out.status = 'usedNow';
+    }
+    return out;
+  } finally { lock.releaseLock(); }
+}
 
 function doPost(e) {
   var b = {};
