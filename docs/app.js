@@ -1060,10 +1060,15 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   var DOG_VT = ["۴گانه سگ", "۵گانه سگ", "۶گانه سگ", "۷گانه سگ", "۸گانه سگ", "۹گانه سگ", "۱۰گانه سگ", "هاری", "بوردتلا (سرفهٔ کنل)", "لپتوسپیروز", "کرونا ویروس سگ"];
   var CAT_VT = ["۳گانه گربه (FVRCP)", "۴گانه گربه", "لوسمی گربه (FeLV)", "هاری", "کلامیدیا گربه"];
   var DOG_VB = ["Nobivac", "Vanguard", "Eurican", "Hexadog", "Duramune", "Recombitek", "Biocan", "Canigen", "Rabisin", "Defensor"];
-  var CAT_VB = ["Nobivac Tricat", "Felocell", "Purevax", "Feligen", "Eurifel", "Rabisin", "Defensor"];
+  var CAT_VB = ["Nobivac Tricat", "Biofel", "Felocell", "Purevax", "Feligen", "Eurifel", "Rabisin", "Defensor"];
   var INT_B = ["Drontal", "Milbemax", "Panacur", "Caniverm", "Pyrantel (ژنریک)"];
   var EXT_B = ["Frontline", "Advantix", "Bravecto", "NexGard", "Simparica", "Revolution", "Seresto", "Broadline"];
   var WTIC = '<svg class="hb-svg" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3.5" width="18" height="17" rx="4.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 9.2a4 4 0 0 1 8 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M12 9.2l1.7-1.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><text x="12" y="17.2" text-anchor="middle" font-size="6" font-weight="700" fill="currentColor" font-family="sans-serif">kg</text></svg>';
+  var DRUGS = ["Pimobendan", "Furosemide", "Enalapril", "Benazepril", "Spironolactone", "Amoxicillin", "Amoxicillin-Clavulanate", "Cephalexin", "Metronidazole", "Doxycycline", "Prednisolone", "Meloxicam", "Omeprazole", "Famotidine", "Ondansetron", "Maropitant", "Gabapentin", "Levothyroxine"];
+  var FREQ = ["روزی ۱ بار", "روزی ۲ بار", "روزی ۳ بار", "روزی ۴ بار", "یک روز در میان", "هفته‌ای یک بار", "در صورت نیاز"];
+  var HOW = ["با غذا", "ناشتا", "نیم ساعت قبل از غذا", "بعد از غذا", "هر زمان"];
+  var DUR = ["۳ روز", "۵ روز", "۷ روز", "۱۰ روز", "۱۴ روز", "۲۱ روز", "۱ ماه", "۳ ماه", "دائمی"];
+  var DURD = { "۳ روز": 3, "۵ روز": 5, "۷ روز": 7, "۱۰ روز": 10, "۱۴ روز": 14, "۲۱ روز": 21, "۱ ماه": 30, "۳ ماه": 90 };
   function F(id, label, o) { o = o || {}; o.id = id; o.label = label; return o; }
   function bySp(d, c) { return function (sp) { return sp === "سگ" ? d : sp === "گربه" ? c : []; }; }
   function fx(l) { return function () { return l; }; }
@@ -1074,7 +1079,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     "ضدانگل خارجی (کک و کنه)": { ic: "🛡️", k: "par", f: [F("name", "نوع محصول", { sel: fx(["قطرهٔ پشتی", "قرص", "اسپری", "قلاده", "شامپوی ضدانگل"]) }), F("brand", "برند", { sel: fx(EXT_B), ph: "نام برند" }), F("serial", "سریال‌نامبر (Lot / Batch)", { ltr: 1, ph: "مثلاً A12345" })] },
     "ویزیت": { ic: "🩺", k: "vis", f: [F("name", "دلیل مراجعه", { sel: fx(["معاینهٔ عمومی", "چکاپ سالانه", "بیماری یا مشکل", "کنترل بعد از درمان", "مشاورهٔ آنلاین", "ویزیت در منزل"]) }), F("place", "محل ویزیت", { sel: fx(PLACES), ph: "نام کلینیک یا دامپزشک" }), F("extra", "توضیح (علامت یا تشخیص)")] },
     "وزن": { ic: WTIC, k: "wt", weight: true, f: [F("extra", "توضیح")] },
-    "دارو": { ic: "💊", k: "oth", f: [F("name", "نام دارو", { req: 1, ph: "مثلاً آنتی‌بیوتیک" }), F("extra", "دوز و مدت مصرف")] },
+    "دارو": { ic: "💊", k: "oth", noNext: true, dateLabel: "تاریخ شروع مصرف", f: [F("name", "نام دارو", { sel: fx(DRUGS), req: 1, ph: "نام دارو" }), F("extra", "دوز مصرف", { req: 1, ph: "مثلاً ۲.۵ mg یا ۱ قرص" }), F("freq", "دفعات مصرف", { sel: fx(FREQ), req: 1 }), F("how", "نحوه مصرف", { sel: fx(HOW) }), F("dur", "مدت مصرف", { sel: fx(DUR), req: 1 })] },
     "عقیم‌سازی": { ic: "✂️", k: "vis", f: [F("name", "نوع", { sel: fx(["عقیم‌سازی ماده", "اخته (نر)"]) }), F("place", "کلینیک یا جراح", { sel: fx(PLACES), ph: "نام کلینیک یا جراح" }), F("extra", "توضیح")] },
     "آزمایش": { ic: "🧪", k: "vis", f: [F("name", "نوع آزمایش", { sel: fx(["آزمایش خون", "آزمایش ادرار", "آزمایش مدفوع", "تست سریع", "سونوگرافی یا رادیوگرافی"]) }), F("extra", "نتیجه یا یادداشت")] },
     "سایر": { ic: "📝", k: "oth", f: [F("name", "عنوان", { req: 1 }), F("extra", "توضیح")] }
@@ -1088,7 +1093,14 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   var SPEN = { "سگ": "Dog", "گربه": "Cat", "پرنده": "Bird", "دیگر": "Other" };
   var BRE = [["ژرمن شپرد", "German Shepherd"], ["گلدن", "Golden Retriever"], ["لابرادور", "Labrador Retriever"], ["هاسکی", "Husky"], ["پاگ", "Pug"], ["پودل", "Poodle"], ["شیتزو", "Shih Tzu"], ["پامرانین", "Pomeranian"], ["اسپیتز", "Spitz"], ["چیواوا", "Chihuahua"], ["یورکشایر", "Yorkshire Terrier"], ["بولداگ", "Bulldog"], ["روتوایلر", "Rottweiler"], ["دوبرمن", "Doberman"], ["مالتیز", "Maltese"], ["کوکر", "Cocker Spaniel"], ["بیگل", "Beagle"], ["سامویید", "Samoyed"], ["تریر", "Terrier"], ["شیرازی", "Persian"], ["پرشین", "Persian"], ["هیمالیایی", "Himalayan"], ["اسکاتیش", "Scottish Fold"], ["بریتیش", "British Shorthair"], ["سیامی", "Siamese"], ["مین کون", "Maine Coon"], ["بنگال", "Bengal"], ["رگدال", "Ragdoll"], ["آنگورا", "Turkish Angora"], ["بومی", "Domestic"], ["خیابانی", "Domestic"], ["مخلوط", "Mixed"], ["خورشیدی", "Sun Conure"], ["کاسکو", "African Grey"], ["عروس هلندی", "Cockatiel"], ["مرغ عشق", "Lovebird"], ["مینا", "Myna"], ["قناری", "Canary"], ["فنچ", "Finch"], ["کاکادو", "Cockatoo"], ["ماکائو", "Macaw"]];
   function normFa(s) { return String(s || "").replace(/ي/g, "ی").replace(/ك/g, "ک").replace(/[\u200c\u200f]/g, "").replace(/\s+/g, " ").trim(); }
-  function breedEn(s) { var n = normFa(s); if (!n) return ""; for (var i = 0; i < BRE.length; i++) if (n.indexOf(normFa(BRE[i][0])) > -1) return BRE[i][1]; return ""; }
+  var BR = {
+    "سگ": [["ژرمن شپرد", "German Shepherd"], ["گلدن ریتریور", "Golden Retriever"], ["لابرادور", "Labrador Retriever"], ["هاسکی", "Husky"], ["پاگ", "Pug"], ["پودل", "Poodle"], ["شیتزو", "Shih Tzu"], ["پامرانین", "Pomeranian"], ["اسپیتز", "Spitz"], ["چیواوا", "Chihuahua"], ["یورکشایر", "Yorkshire Terrier"], ["بولداگ", "Bulldog"], ["روتوایلر", "Rottweiler"], ["دوبرمن", "Doberman"], ["مالتیز", "Maltese"], ["کوکر اسپانیل", "Cocker Spaniel"], ["بیگل", "Beagle"], ["سامویید", "Samoyed"], ["تریر", "Terrier"], ["مخلوط", "Mixed Breed"]],
+    "گربه": [["شیرازی (پرشین)", "Persian"], ["هیمالیایی", "Himalayan"], ["اسکاتیش فولد", "Scottish Fold"], ["بریتیش شورت‌هر", "British Shorthair"], ["سیامی", "Siamese"], ["مین‌کون", "Maine Coon"], ["بنگال", "Bengal"], ["رگدال", "Ragdoll"], ["آنگورا", "Turkish Angora"], ["بومی (خانگی)", "Domestic"], ["مخلوط", "Mixed Breed"]],
+    "پرنده": [["طوطی خورشیدی", "Sun Conure"], ["کاسکو (خاکستری آفریقایی)", "African Grey"], ["عروس هلندی", "Cockatiel"], ["مرغ عشق", "Lovebird"], ["مینا", "Myna"], ["قناری", "Canary"], ["فنچ", "Finch"], ["کاکادو", "Cockatoo"], ["ماکائو", "Macaw"]],
+    "دیگر": []
+  };
+  function breedEn(s) { var n0 = normFa(s), k, i; for (k in BR) for (i = 0; i < BR[k].length; i++) if (normFa(BR[k][i][0]) === n0) return BR[k][i][1]; return breedEn0(s); }
+  function breedEn0(s) { var n = normFa(s); if (!n) return ""; for (var i = 0; i < BRE.length; i++) if (n.indexOf(normFa(BRE[i][0])) > -1) return BRE[i][1]; return ""; }
   var SPE = { "سگ": "🐶", "گربه": "🐱", "پرنده": "🐦", "دیگر": "🐾" };
   var curType = "واکسن", curTab = 0, xTouched = false, editId = null, showAll = false, asc = false, JD = {};
   function q(s) { return root.querySelector(s); }
@@ -1190,12 +1202,13 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     var lw = db.recs.filter(function (r) { return r.pet === cp.id && r.weight; }).sort(function (a, b) { return a.date < b.date ? 1 : -1; })[0], rows = [];
     rows.push(["صاحب پت / Owner", cp.owner ? esc(cp.owner) : '<span class="nil">—</span>']);
     if (cp.guardian) rows.push(["سرپرست / Guardian", esc(cp.guardian)]);
-    if (cp.species) rows.push(["گونه / Species", esc(cp.species) + (SPEN[cp.species] ? '<br><span class="en">' + SPEN[cp.species] + "</span>" : "")]);
+    function enp(s) { return s ? ' <span class="en">· ' + esc(s) + "</span>" : ""; }
+    if (cp.species) rows.push(["گونه / Species", esc(cp.species) + enp(SPEN[cp.species])]);
     var be = cp.breedEn || breedEn(cp.breed);
-    if (cp.breed) rows.push(["نژاد / Breed", esc(cp.breed) + (be ? '<br><span class="en">' + esc(be) + "</span>" : "")]);
-    if (cp.birth) rows.push(["تاریخ تولد / Birth date", esc(fd(cp.birth)) + '<br><span class="en">' + enDate(cp.birth) + "</span>"]);
+    if (cp.breed) rows.push(["نژاد / Breed", esc(cp.breed) + enp(be)]);
+    if (cp.birth) rows.push(["تولد / Birth", esc(fd(cp.birth)) + enp(enDate(cp.birth))]);
     if (cp.birth && ageText(cp.birth)) rows.push(["سن / Age", esc(ageText(cp.birth))]);
-    if (lw) rows.push(["آخرین وزن / Weight", toolFa(lw.weight) + " کیلوگرم<br><span class=\"en\">" + lw.weight + " kg</span>"]);
+    if (lw) rows.push(["وزن / Weight", toolFa(lw.weight) + " کیلوگرم" + enp(lw.weight + " kg")]);
     q("[data-hb-cover]").innerHTML = '<button type="button" class="hb-qr" data-hb-qr aria-label="نمایش QR شناسنامه">' + qrSvg(qrText(cp)) + '</button><small class="hb-cv-t">شناسنامهٔ سلامت<br><i>Health Record</i></small><div class="hb-cv-ic">' + avatar(cp, "hb-cv-img") + '</div><b>' + esc(cp.name) + "</b>" + (cp.en ? '<span class="hb-cv-en" dir="ltr">' + esc(cp.en) + "</span>" : "") + (rows.length ? '<dl class="hb-id">' + rows.map(function (r) { return "<div><dt>" + r[0] + "</dt><dd>" + r[1] + "</dd></div>"; }).join("") + "</dl>" : "");
   }
   // همهٔ یادآوری‌ها: نوبت‌های بعدی + برنامهٔ واکسن
@@ -1225,18 +1238,17 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       extra += items.length - shown.length;
       if (!shown.length) {
         var had = db.recs.some(function (r) { return r.pet === cp.id && r.type === t; });
-        rl += '<div class="hb-r none"><span class="hb-r-ic">' + k.ic + '</span><div><b>' + esc(tl(t)) + (had ? ": نوبت بعدی تعیین نشده" : " ثبت نشده") + (locked(t) ? " (ثبت توسط دکتر)" : "") + '</b>' + "" + '</div>' + (locked(t) ? "" : '<span class="hb-r-b"><button type="button" data-hb-open-type="' + esc(t) + '">＋ ثبت</button></span>') + '</div>';
+        rl += '<div class="hb-r none" data-hb-goto="' + esc(t) + '"><span class="hb-r-ic">' + k.ic + '</span><div class="hb-r-t"><b>' + esc(tl(t)) + (had ? ": نوبت بعدی تعیین نشده" : " ثبت نشده") + (locked(t) ? " (ثبت توسط دکتر)" : "") + "</b></div></div>";
         return;
       }
       shown.forEach(function (r) {
         var n = days(r.date);
-        rl += '<div class="hb-r' + (n < 0 ? " late" : n <= 7 ? " soon" : "") + '"><span class="hb-r-ic">' + k.ic + '</span><div><b>' + esc(r.type === "واکسن" ? "واکسن" : tl(r.type)) + (r.label ? " · " + (r.html ? r.label : esc(r.label)) : "") + "</b><small>" + fd(r.date) + (n <= 30 ? " · " + (n < 0 ? toolFa(-n) + " روز گذشته" : n === 0 ? "امروز" : toolFa(n) + " روز") : "") + '</small></div><span class="hb-r-b"><button type="button" data-hb-ics="' + r.kind + ":" + r.id + '" title="افزودن به تقویم" aria-label="افزودن به تقویم">📅</button>' + (locked(r.type) ? "" : '<button type="button" data-hb-done="' + r.kind + ":" + r.id + '" title="انجام شد" aria-label="انجام شد">✔</button>') + "</span></div>";
+        rl += '<div class="hb-r' + (n < 0 ? " late" : n <= 7 ? " soon" : "") + '" data-hb-goto="' + esc(r.type) + '"><span class="hb-r-ic">' + k.ic + '</span><div class="hb-r-t"><b>' + esc(r.type === "واکسن" ? "واکسن" : tl(r.type)) + (r.label ? " · " + (r.html ? r.label : esc(r.label)) : "") + "</b><small>" + fd(r.date) + (n <= 30 ? " · " + (n < 0 ? toolFa(-n) + " روز گذشته" : n === 0 ? "امروز" : toolFa(n) + " روز") : "") + '</small></div><span class="hb-r-b"><button type="button" data-hb-ics="' + r.kind + ":" + r.id + '" title="افزودن به تقویم" aria-label="افزودن به تقویم">📅</button>' + (locked(r.type) ? "" : '<button type="button" data-hb-done="' + r.kind + ":" + r.id + '" title="انجام شد" aria-label="انجام شد">✔</button>') + "</span></div>";
       });
     });
     q("[data-hb-rem]").innerHTML = "<h3>🔔 یادآور</h3>" + rl + (extra > 0 || showAll ? '<div class="hb-more"><button type="button" class="hb-lnk" data-hb-more>' + (showAll ? "فقط نوبت بعدی هر مورد" : "برنامهٔ کامل نوبت‌ها") + "</button></div>" : "");
     renderPages(cp);
     document.documentElement.classList.add("hb-has-pet");
-    q("[data-hb-editlist]").textContent = editList ? "پایان ویرایش فهرست" : "ویرایش فهرست"; q("[data-hb-edithint]").hidden = !editList;
   }
   var OWNER_LOCKED = ["واکسن", "ویزیت", "آزمایش", "عقیم‌سازی"];   // انواعی که فقط دکتر ثبت می‌کند
   var DR_SALT = "GnOd3U5koVp1Ozi8RTcLbA==", DR_HASH = "b4Ba9BSekt9YN0YQ3iruqAzem9RYjTbLV4PClSZjdFs=";
@@ -1250,7 +1262,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   }
   var curPg = 0, editList = false;
   var PGS = ["مشخصات", "واکسیناسیون", "ضدانگل", "سایر"];
-  function recDel(r) { return editList && (isDr() || !r.dr) ? '<button type="button" class="hb-pdel" data-hb-del="' + r.id + '" aria-label="حذف">✕</button>' : ""; }
+  function recDel(r) { return false ? '<button type="button" class="hb-pdel" data-hb-del="' + r.id + '" aria-label="حذف">✕</button>' : ""; }
   function pageRows(cp, types, mode) {
     var rs = db.recs.filter(function (r) { return r.pet === cp.id && types.indexOf(r.type) > -1; }).sort(function (x, y) { return x.date < y.date ? 1 : -1; });
     if (!rs.length) return '<p class="hb-pe">' + (mode === "vax" && !isDr() ? "واکسن‌ها توسط دکتر ثبت می‌شود." : "هنوز موردی ثبت نشده است.") + "</p>";
@@ -1259,6 +1271,10 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       if (mode === "vax" || mode === "par") {
         var main = (r.brand ? "<bdi>" + esc(r.brand) + "</bdi>" + (r.name ? " · " : "") : "") + (r.name ? esc(r.name) : r.brand ? "" : tl(r.type));
         return '<div class="hb-pr">' + recDel(r) + '<div class="hb-pn"><b>' + main + "</b>" + (mode === "par" ? "<span>" + (r.type === "ضدانگل داخلی" ? "داخلی" : "خارجی") + "</span>" : "") + (r.serial ? '<small dir="ltr">Lot: ' + esc(r.serial) + "</small>" : "") + '</div><div class="hb-pd"><span><i>' + (mode === "vax" ? "تزریق" : "مصرف") + "</i>" + fd(r.date) + "</span><span><i>تکرار</i>" + (r.next ? fd(r.next) : "—") + "</span></div></div>";
+      }
+      if (r.type === "دارو") {
+        var act = r.dur === "دائمی" || (r.end && days(r.end) >= 0), line2 = [r.extra, r.freq, r.how].filter(Boolean).map(esc).join(" · ");
+        return '<div class="hb-pr"><div class="hb-pn"><b>' + k.ic + " " + esc(r.name || "دارو") + (act ? ' <span class="hb-act">فعال</span>' : "") + "</b>" + (line2 ? "<small>" + line2 + "</small>" : "") + '</div><div class="hb-pd"><span><i>شروع</i>' + fd(r.date) + "</span><span><i>تا</i>" + (r.dur === "دائمی" ? "دائمی" : r.end ? fd(r.end) : "—") + "</span></div></div>";
       }
       var det = [r.name, r.place, r.extra].filter(Boolean).map(esc).join(" · ") + (r.weight ? (r.name || r.place || r.extra ? " · " : "") + toolFa(r.weight) + " کیلوگرم" : "");
       return '<div class="hb-pr">' + recDel(r) + '<div class="hb-pn"><b>' + k.ic + " " + tl(r.type) + "</b>" + (!r.dr && (r.type === "سایر" || r.type === "دارو") ? "<span>ثبت صاحب پت</span>" : "") + (det ? "<small>" + det + "</small>" : "") + '</div><div class="hb-pd"><span>' + fd(r.date) + "</span></div></div>";
@@ -1278,24 +1294,53 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     q('[data-hb-pg="3"]').innerHTML = pg(3, "🩺 ویزیت، آزمایش، وزن و سایر", weightChart(cp) + pageRows(cp, ["ویزیت", "آزمایش", "عقیم‌سازی", "دارو", "وزن", "سایر"], "oth"));
     q("[data-hb-ptabs]").innerHTML = PGS.map(function (t, i) { return '<button type="button" class="chip' + (i === curPg ? " on" : "") + '" data-hb-pgo="' + i + '">' + t + "</button>"; }).join("");
     q("[data-hb-dots]").innerHTML = PGS.map(function (t, i) { return '<i class="' + (i === curPg ? "on" : "") + '"></i>'; }).join("");
-    var tr = q("[data-hb-track]"); tr.scrollTo({ left: (getComputedStyle(tr).direction === "rtl" ? -1 : 1) * curPg * tr.clientWidth, behavior: "auto" });
+    var tr = q("[data-hb-track]"); tr.scrollTo({ left: (getComputedStyle(tr).direction === "rtl" ? -1 : 1) * curPg * tr.clientWidth, behavior: "auto" }); fitTrack();
   }
+  function fitTrack() { var tr = q("[data-hb-track]"), s = tr && tr.children[curPg]; if (s) tr.style.height = s.offsetHeight + "px"; }
+  window.addEventListener("resize", function () { if (q("[data-hb-track]")) fitTrack(); });
+  function setPg(i) { curPg = i; goPg(i); [].forEach.call(q("[data-hb-ptabs]").children, function (c, n) { c.classList.toggle("on", n === i); }); [].forEach.call(q("[data-hb-dots]").children, function (c, n) { c.classList.toggle("on", n === i); }); fitTrack(); }
   function goPg(i) { var tr = q("[data-hb-track]"); tr.scrollTo({ left: (getComputedStyle(tr).direction === "rtl" ? -1 : 1) * i * tr.clientWidth, behavior: "smooth" }); }
   (function () {
     var tr = q("[data-hb-track]"), raf = 0; if (!tr) return;
     tr.addEventListener("scroll", function () {
       if (raf) return; raf = requestAnimationFrame(function () {
         raf = 0; var i = Math.max(0, Math.min(PGS.length - 1, Math.round(Math.abs(tr.scrollLeft) / (tr.clientWidth || 1))));
-        if (i !== curPg) { curPg = i; [].forEach.call(q("[data-hb-ptabs]").children, function (c, n) { c.classList.toggle("on", n === i); }); [].forEach.call(q("[data-hb-dots]").children, function (c, n) { c.classList.toggle("on", n === i); }); }
+        if (i !== curPg) { curPg = i; fitTrack(); [].forEach.call(q("[data-hb-ptabs]").children, function (c, n) { c.classList.toggle("on", n === i); }); [].forEach.call(q("[data-hb-dots]").children, function (c, n) { c.classList.toggle("on", n === i); }); }
       });
     }, { passive: true });
   })();
   // ---- برگهٔ ثبت: فیلدها بر پایهٔ نوع ----
+  var editRecId = null;
   function renderTypes() {
-    q("[data-hb-types]").innerHTML = ORDER.filter(function (t) { return !locked(t); }).map(function (t) { return '<button type="button" class="hb-ty' + (t === curType ? " on" : "") + '" data-hb-type="' + esc(t) + '"><span>' + cfg(t).ic + "</span>" + tl(t) + "</button>"; }).join("");
+    var avail = ORDER.filter(function (t) { return !locked(t); });
+    q("[data-hb-types]").innerHTML = '<div class="fld"><label for="hb-tsel">نوع خدمت</label><select id="hb-tsel" data-hb-tsel' + (editRecId ? " disabled" : "") + ">" + avail.map(function (t) { return '<option value="' + esc(t) + '"' + (t === curType ? " selected" : "") + ">" + tl(t) + "</option>"; }).join("") + "</select></div>";
+  }
+  function showTab(w) {
+    q("[data-hb-newwrap]").hidden = w !== "new"; q("[data-hb-hist]").hidden = w !== "hist";
+    [].forEach.call(q("[data-hb-stabs]").children, function (c) { c.classList.toggle("on", c.getAttribute("data-hb-stab") === w); });
+    if (w === "hist") renderHist();
+  }
+  function histMain(r) { var m = [r.brand ? "<bdi>" + esc(r.brand) + "</bdi>" : "", r.name ? esc(r.name) : ""].filter(Boolean).join(" · "); return m ? " · " + m : ""; }
+  function renderHist() {
+    var cp = curPet(), rs = db.recs.filter(function (r) { return r.pet === cp.id; }).sort(function (x, y) { return x.date < y.date ? 1 : -1; });
+    q("[data-hb-hist]").innerHTML = rs.length ? rs.map(function (r) {
+      var can = isDr() || !r.dr, ed = can && !locked(r.type);
+      return '<div class="hb-hr"><span class="hb-hr-ic">' + cfg(r.type).ic + '</span><div class="hb-hr-t"><b>' + esc(tl(r.type)) + histMain(r) + "</b><small>" + fd(r.date) + '</small></div><span class="hb-hr-b">' + (ed ? '<button type="button" data-hb-redit="' + r.id + '" aria-label="ویرایش">✏️</button>' : "") + (can ? '<button type="button" data-hb-rdel="' + r.id + '" aria-label="حذف">🗑</button>' : '<span class="hb-lock" title="ثبت دکتر">🔒</span>') + "</span></div>";
+    }).join("") : '<p class="hb-pe2">هنوز چیزی ثبت نشده است.</p>';
+  }
+  function startEdit(id) {
+    var r = db.recs.filter(function (x) { return x.id === id; })[0]; if (!r || locked(r.type) || (r.dr && !isDr())) return;
+    editRecId = id; curType = r.type; showTab("new"); renderTypes(); renderFields();
+    var c = cfg(r.type); c.f.forEach(function (f) {
+      var v = r[f.id] || "", el = q("#hb-f-" + f.id); if (!el) return;
+      if (el.tagName === "SELECT") { var has = [].some.call(el.options, function (o) { return o.value === v; }); if (v && !has) { el.value = "__o"; var o2 = q("#" + el.id + "-o"); o2.hidden = false; o2.value = v; } else el.value = v; } else el.value = v;
+    });
+    if (c.weight && q("#hb-w")) q("#hb-w").value = r.weight || "";
+    JD.d.set(r.date); JD.x.set(r.next || ""); xTouched = true; updateSug();
+    q("[data-hb-save]").textContent = "ذخیره تغییرات";
   }
   function fieldHtml(f, sp) {
-    var opts = f.sel ? f.sel(sp) : [], id = "hb-f-" + f.id, lab = f.label + (f.req ? ' <b class="hb-rq">*</b>' : ' <small>(اختیاری)</small>');
+    var opts = f.sel ? f.sel(sp).concat(((db.mem || {})[curType + "|" + f.id] || []).filter(function (m) { return f.sel(sp).indexOf(m) < 0; })) : [], id = "hb-f-" + f.id, lab = f.label + (f.req ? ' <b class="hb-rq">*</b>' : ' <small>(اختیاری)</small>');
     if (opts.length) return '<div class="fld" data-f="' + f.id + '"><label for="' + id + '">' + lab + '</label><select id="' + id + '" data-hb-sel><option value="">انتخاب کنید…</option>' + opts.map(function (o) { return "<option>" + esc(o) + "</option>"; }).join("") + '<option value="__o">سایر (می‌نویسم)</option></select><input id="' + id + '-o" type="text" maxlength="90" hidden placeholder="' + esc(f.ph || "بنویسید") + '"></div>';
     return '<div class="fld" data-f="' + f.id + '"><label for="' + id + '">' + lab + '</label><input id="' + id + '" type="text" maxlength="90"' + (f.ltr ? ' dir="ltr"' : "") + ' placeholder="' + esc(f.ph || "") + '"></div>';
   }
@@ -1304,10 +1349,10 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     var c = cfg(curType), cp = curPet(), sp = cp ? cp.species : "", h = "";
     c.f.forEach(function (f) { h += fieldHtml(f, sp); });
     if (c.weight) h = '<div class="fld"><label for="hb-w">وزن (کیلوگرم) <b class="hb-rq">*</b></label><input id="hb-w" type="number" inputmode="decimal" step="0.1" min="0.05" max="90"></div>' + h;
-    h += '<div class="fld"><label>تاریخ (شمسی)</label><div class="jd" data-jd="d"></div></div>';
-    if (!c.weight) h += '<div class="fld"><label>تاریخ تکرار / نوبت بعدی <small>(اختیاری)</small></label><div class="jd" data-jd="x"></div><p class="hb-sug" data-hb-sug hidden></p><div class="hb-quick"><button type="button" data-hb-add="1">+۱ ماه</button><button type="button" data-hb-add="3">+۳ ماه</button><button type="button" data-hb-add="12">+۱ سال</button><button type="button" data-hb-clear>بدون نوبت</button></div></div>';
+    h += '<div class="fld"><label>' + (c.dateLabel || "تاریخ (شمسی)") + '</label><div class="jd" data-jd="d"></div></div>';
+    if (!c.weight && !c.noNext) h += '<div class="fld"><label>تاریخ تکرار / نوبت بعدی <small>(اختیاری)</small></label><div class="jd" data-jd="x"></div><p class="hb-sug" data-hb-sug hidden></p><div class="hb-quick"><button type="button" data-hb-add="1">+۱ ماه</button><button type="button" data-hb-add="3">+۳ ماه</button><button type="button" data-hb-add="12">+۱ سال</button><button type="button" data-hb-clear>بدون نوبت</button></div></div>';
     q("[data-hb-sf]").innerHTML = h; q("[data-hb-err]").hidden = true;
-    JD.d = initJd(q('[data-jd="d"]'), { minY: -2, maxY: 0 }); JD.x = c.weight ? { get: function () { return ""; }, set: function () {}, on: function () {} } : initJd(q('[data-jd="x"]'), { optional: true, minY: 0, maxY: 6 });
+    JD.d = initJd(q('[data-jd="d"]'), { minY: -2, maxY: 0 }); JD.x = (c.weight || c.noNext) ? { get: function () { return ""; }, set: function () {}, on: function () {} } : initJd(q('[data-jd="x"]'), { optional: true, minY: 0, maxY: 6 });
     JD.d.set(ymd(new Date())); JD.d.on(function () { xTouched = false; updateSug(); }); JD.x.on(function () { xTouched = true; });
     updateSug();
   }
@@ -1318,8 +1363,8 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     el.innerHTML = "پیشنهاد: " + fd(nd) + " (" + s.t + "؛ تقریبی و طبق نظر دامپزشک)" + (s.manual ? ' <button type="button" data-hb-usesug="' + nd + '">یادآوری بگذار</button>' : "");
     if (!xTouched && !s.manual) JD.x.set(nd);
   }
-  function openSheet() { if (locked(curType)) curType = ORDER.filter(function (t) { return !locked(t); })[0]; xTouched = false; renderTypes(); renderFields(); q("[data-hb-sheet]").hidden = false; document.documentElement.classList.add("gift-open"); }
-  function closeSheet() { q("[data-hb-sheet]").hidden = true; document.documentElement.classList.remove("gift-open"); }
+  function openSheet() { editRecId = null; if (locked(curType)) curType = ORDER.filter(function (t) { return !locked(t); })[0]; xTouched = false; showTab("new"); renderTypes(); renderFields(); q("[data-hb-save]").textContent = "ثبت"; q("[data-hb-sheet]").hidden = false; document.documentElement.classList.add("gift-open"); }
+  function closeSheet() { editRecId = null; q("[data-hb-sheet]").hidden = true; document.documentElement.classList.remove("gift-open"); }
   var formPhoto = "";
   function showPhoto() { var b = q("[data-hb-photo]"); b.innerHTML = formPhoto ? '<img src="' + formPhoto + '" alt="">' : "🐾"; q("[data-hb-photo-del]").hidden = !formPhoto; }
   function readPhoto(f) {
@@ -1327,15 +1372,25 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     rd.onload = function () { var im = new Image(); im.onload = function () { var s = 320, w = im.width, h = im.height, m = Math.min(w, h), cv = document.createElement("canvas"); cv.width = cv.height = s; cv.getContext("2d").drawImage(im, (w - m) / 2, (h - m) / 2, m, m, 0, 0, s, s); formPhoto = cv.toDataURL("image/jpeg", .82); showPhoto(); }; im.src = rd.result; };
     rd.readAsDataURL(f);
   }
+  function fillBreeds(sp, cur) {
+    var s = q("#hb-pbr"), list = BR[sp] || [], has = list.some(function (x) { return x[0] === cur; });
+    s.innerHTML = '<option value="">انتخاب کنید…</option>' + list.map(function (x) { return "<option>" + esc(x[0]) + "</option>"; }).join("") + '<option value="__o">سایر (می‌نویسم)</option>';
+    var o = q("#hb-pbro"); o.hidden = true; o.value = "";
+    if (cur && has) s.value = cur; else if (cur) { s.value = "__o"; o.hidden = false; o.value = cur; } else s.value = "";
+  }
+  function getBreed() { var s = q("#hb-pbr"); return s.value === "__o" ? q("#hb-pbro").value.trim() : s.value; }
   function petForm(p) {
     editId = p ? p.id : null; q("[data-hb-pf-title]").textContent = p ? "ویرایش شناسنامه" : "شناسنامهٔ پت";
-    q("#hb-pn").value = p ? p.name : ""; q("#hb-pe").value = p && p.en || ""; q("#hb-po").value = p && p.owner || ""; q("#hb-pg").value = p && p.guardian || ""; q("#hb-pbr").value = p && p.breed || ""; q("#hb-pbe").value = p && p.breedEn || ""; q("#hb-pbe").setAttribute("data-auto", p && p.breedEn ? "" : "1"); JD.pb.set(p ? p.birth : ""); formPhoto = p && p.photo || ""; showPhoto();
+    q("#hb-pn").value = p ? p.name : ""; q("#hb-pe").value = p && p.en || ""; q("#hb-po").value = p && p.owner || ""; q("#hb-pg").value = p && p.guardian || "";  q("#hb-pbe").value = p && p.breedEn || ""; q("#hb-pbe").setAttribute("data-auto", p && p.breedEn ? "" : "1"); JD.pb.set(p ? p.birth : ""); formPhoto = p && p.photo || ""; showPhoto();
     var segs = q('[data-seg="hbsp"]').children; [].forEach.call(segs, function (b) { b.classList.toggle("on", p ? b.getAttribute("data-v") === p.species : b.getAttribute("data-v") === "سگ"); });
+    fillBreeds(p ? p.species : "سگ", p ? p.breed : "");
     q("[data-hb-petform]").hidden = false; q("[data-hb-main]").hidden = true;
   }
   JD.pb = initJd(q('[data-jd="pb"]'), { optional: true, minY: -30, maxY: 0 });
-  root.addEventListener("change", function (e) { var s = e.target; if (s && s.hasAttribute && s.hasAttribute("data-hb-sel")) { var o = q("#" + s.id + "-o"); if (o) { o.hidden = s.value !== "__o"; if (!o.hidden) o.focus(); } } });
-  q("#hb-pbr").addEventListener("input", function () { var e = q("#hb-pbe"); if (e.getAttribute("data-auto") === "1") e.value = breedEn(this.value); });
+  root.addEventListener("change", function (e) { var s = e.target; if (s && s.hasAttribute && s.hasAttribute("data-hb-tsel")) { curType = s.value; xTouched = false; renderFields(); return; } if (s && s.hasAttribute && s.hasAttribute("data-hb-sel")) { var o = q("#" + s.id + "-o"); if (o) { o.hidden = s.value !== "__o"; if (!o.hidden) o.focus(); } } });
+  q("#hb-pbr").addEventListener("change", function () { var o = q("#hb-pbro"); o.hidden = this.value !== "__o"; if (!o.hidden) o.focus(); var e = q("#hb-pbe"); if (e.getAttribute("data-auto") === "1") e.value = breedEn(getBreed()); });
+  q("#hb-pbro").addEventListener("input", function () { var e = q("#hb-pbe"); if (e.getAttribute("data-auto") === "1") e.value = breedEn(this.value); });
+  document.addEventListener("click", function (e) { if (e.target.closest && e.target.closest('[data-seg="hbsp"] button')) setTimeout(function () { var on = q('[data-seg="hbsp"] .on'); fillBreeds(on ? on.getAttribute("data-v") : "سگ", ""); q("#hb-pbe").value = ""; q("#hb-pbe").setAttribute("data-auto", "1"); }, 0); });
   q("#hb-pbe").addEventListener("input", function () { this.setAttribute("data-auto", ""); });
   q("[data-hb-file]").addEventListener("change", function () { readPhoto(this.files[0]); this.value = ""; });
   // جمع‌شدن سربرگ سایت هنگام پایین رفتن
@@ -1354,29 +1409,51 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     var p = m === "2" ? (window.DecompressionStream ? pipe(bytes, window.DecompressionStream) : Promise.reject(new Error("no"))) : Promise.resolve(bytes);
     return p.then(function (b) { return JSON.parse(new TextDecoder().decode(b)); });
   }
+  var DICT = [].concat(DOG_VT, CAT_VT, DOG_VB, CAT_VB, INT_B, EXT_B, PLACES, DRUGS, FREQ, HOW, DUR);
+  function dEnc(s) { if (!s) return ""; var i = DICT.indexOf(s); return i > -1 ? "~" + i.toString(36) : s; }
+  function dDec(s) { if (typeof s !== "string") return ""; if (/^~[0-9a-z]+$/.test(s)) { var v = DICT[parseInt(s.slice(1), 36)]; return v == null ? "" : v; } return s; }
+  function dayN(s) { var p = s.split("-"); return Math.round((Date.UTC(+p[0], +p[1] - 1, +p[2]) - Date.UTC(2020, 0, 1)) / 864e5); }
+  function dayD(n) { var d = new Date(Date.UTC(2020, 0, 1) + (+n || 0) * 864e5); return d.getUTCFullYear() + "-" + ("0" + (d.getUTCMonth() + 1)).slice(-2) + "-" + ("0" + d.getUTCDate()).slice(-2); }
   function shareData(cp) {
-    var p = {}; ["id", "name", "en", "owner", "guardian", "species", "breed", "breedEn", "birth"].forEach(function (k) { if (cp[k]) p[k] = cp[k]; });
-    p.plan = cp.plan || [];
-    var r = db.recs.filter(function (x) { return x.pet === cp.id; }).map(function (x) { var o = {}; ["id", "type", "date", "name", "brand", "serial", "place", "extra", "weight", "next", "closed"].forEach(function (k) { if (x[k]) o[k] = x[k]; }); if (isDr()) o.d = 1; return o; });
+    var recs = db.recs.filter(function (x) { return x.pet === cp.id; }).map(function (x) {
+      var r = [ORDER.indexOf(x.type), dayN(x.date), dEnc(x.name), dEnc(x.brand), x.serial || "", dEnc(x.place), x.extra || "", x.weight || 0, x.next ? dayN(x.next) : 0, (x.dr ? 1 : 0) | (isDr() ? 1 : 0) | (x.closed ? 2 : 0), dEnc(x.freq), dEnc(x.how), dEnc(x.dur), x.end ? dayN(x.end) : 0];
+      while (r.length > 3 && (r[r.length - 1] === "" || r[r.length - 1] === 0)) r.pop(); return r;
+    });
+    var plan = (cp.plan || []).map(function (x) { return [ORDER.indexOf(x.type), dayN(x.date), x.label || "", x.done ? 1 : 0]; });
+    return [2, cp.id, cp.name, cp.en || "", cp.owner || "", cp.guardian || "", Object.keys(SPE).indexOf(cp.species), cp.breed || "", cp.breedEn || "", cp.birth ? dayN(cp.birth) : 0, plan, recs];
+  }
+  function expandShare(a) {
+    var p = { id: a[1], name: a[2], en: a[3], owner: a[4], guardian: a[5], species: Object.keys(SPE)[a[6]] || "دیگر", breed: a[7], breedEn: a[8], birth: a[9] ? dayD(a[9]) : "", plan: [] };
+    (a[10] || []).forEach(function (x) { if (ORDER[x[0]]) p.plan.push({ type: ORDER[x[0]], date: dayD(x[1]), label: x[2], done: !!x[3] }); });
+    var r = (a[11] || []).filter(function (x) { return ORDER[x[0]]; }).map(function (x) { var fl = x[9] || 0; return { type: ORDER[x[0]], date: dayD(x[1]), name: dDec(x[2]), brand: dDec(x[3]), serial: x[4], place: dDec(x[5]), extra: x[6], weight: x[7], next: x[8] ? dayD(x[8]) : "", closed: !!(fl & 2), d: fl & 1 ? 1 : 0, freq: dDec(x[10]), how: dDec(x[11]), dur: dDec(x[12]), end: x[13] ? dayD(x[13]) : "" }; });
     return { v: 1, p: p, r: r };
   }
   function cleanStr(v, n) { return typeof v === "string" ? v.slice(0, n || 120) : ""; }
   function cleanDate(v) { return typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : ""; }
   function sanitizeShare(d) {
+    if (Array.isArray(d)) d = expandShare(d);
     if (!d || d.v !== 1 || !d.p || !Array.isArray(d.r)) throw new Error("bad");
     var p = d.p, pet = { id: /^[a-z0-9]{3,30}$/.test(p.id || "") ? p.id : uid(), name: cleanStr(p.name, 30), en: cleanStr(p.en, 30), owner: cleanStr(p.owner, 40), guardian: cleanStr(p.guardian, 40), species: SPE[p.species] ? p.species : "دیگر", breed: cleanStr(p.breed, 40), breedEn: cleanStr(p.breedEn, 40), birth: cleanDate(p.birth), plan: [] };
     if (!pet.name) throw new Error("bad");
     (Array.isArray(p.plan) ? p.plan : []).slice(0, 60).forEach(function (x) { if (x && CFG[x.type] && cleanDate(x.date)) pet.plan.push({ id: /^[a-z0-9]{3,30}$/.test(x.id || "") ? x.id : uid(), type: x.type, label: cleanStr(x.label, 90), date: x.date, done: !!x.done }); });
-    var recs = []; d.r.slice(0, 400).forEach(function (x) { if (!x || !CFG[x.type] || !cleanDate(x.date)) return; var w = Number(x.weight) || 0; recs.push({ id: /^[a-z0-9]{3,30}$/.test(x.id || "") ? x.id : uid(), pet: pet.id, type: x.type, date: x.date, name: cleanStr(x.name, 90), brand: cleanStr(x.brand, 60), serial: cleanStr(x.serial, 60), place: cleanStr(x.place, 90), extra: cleanStr(x.extra, 90), weight: w > 0 && w < 200 ? w : 0, next: cleanDate(x.next), closed: !!x.closed, dr: x.d === 1 ? 1 : 0 }); });
+    var recs = []; d.r.slice(0, 400).forEach(function (x) { if (!x || !CFG[x.type] || !cleanDate(x.date)) return; var w = Number(x.weight) || 0; recs.push({ id: /^[a-z0-9]{3,30}$/.test(x.id || "") ? x.id : uid(), pet: pet.id, type: x.type, date: x.date, name: cleanStr(x.name, 90), brand: cleanStr(x.brand, 60), serial: cleanStr(x.serial, 60), place: cleanStr(x.place, 90), extra: cleanStr(x.extra, 90), freq: cleanStr(x.freq, 40), how: cleanStr(x.how, 40), dur: cleanStr(x.dur, 20), end: cleanDate(x.end), weight: w > 0 && w < 200 ? w : 0, next: cleanDate(x.next), closed: !!x.closed, dr: x.d === 1 ? 1 : 0 }); });
     return { pet: pet, recs: recs };
   }
   function faDigits(s) { return String(s || "").replace(/[۰-۹]/g, function (c) { return c.charCodeAt(0) - 1776; }).replace(/[٠-٩]/g, function (c) { return c.charCodeAt(0) - 1632; }).replace(/\D/g, ""); }
   function waNum(s) { var d = faDigits(s); if (!d) return ""; if (d.indexOf("00") === 0) d = d.slice(2); if (d.charAt(0) === "0") d = "98" + d.slice(1); else if (d.length === 10 && d.charAt(0) === "9") d = "98" + d; return d; }
   var shareLink = "";
   function shareMsg() { var cp = curPet(); return "سلام، شناسنامهٔ سلامت «" + cp.name + "» از طرف دکتر نیلوفر مساوات آماده شد. با این لینک در گوشی‌تان باز و ذخیره کنید:\n" + shareLink; }
+  function qrFromText(text) {
+    try { var qq = qrLib(0, "L"); qq.addData(text, "Byte"); qq.make(); var n = qq.getModuleCount(), d = "", r, c; for (r = 0; r < n; r++) for (c = 0; c < n; c++) if (qq.isDark(r, c)) d += "M" + (c + 3) + " " + (r + 3) + "h1v1h-1z"; return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + (n + 6) + " " + (n + 6) + '" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#fff"/><path d="' + d + '" fill="#000"/></svg>'; } catch (e) { return ""; }
+  }
+  function savePng(sv, name) {
+    if (!sv) return; var im2 = new Image(), url = URL.createObjectURL(new Blob([sv.outerHTML], { type: "image/svg+xml" }));
+    im2.onload = function () { var cv = document.createElement("canvas"); cv.width = cv.height = 800; var cx = cv.getContext("2d"); cx.fillStyle = "#fff"; cx.fillRect(0, 0, 800, 800); cx.imageSmoothingEnabled = false; cx.drawImage(im2, 0, 0, 800, 800); cv.toBlob(function (bl) { var l = document.createElement("a"); l.href = URL.createObjectURL(bl); l.download = name; document.body.appendChild(l); l.click(); setTimeout(function () { l.remove(); }, 500); }); };
+    im2.src = url;
+  }
   function openShare() {
-    var cp = curPet(); if (!cp) return; shareLink = ""; q("[data-hb-shlink]").value = "در حال ساخت لینک…"; q("[data-hb-shm]").hidden = false; document.documentElement.classList.add("gift-open");
-    packShare(shareData(cp)).then(function (s) { shareLink = location.href.replace(/#.*$/, "") + "#share=" + s; q("[data-hb-shlink]").value = shareLink; q("[data-hb-shlen]").textContent = toolFa(shareLink.length) + " نویسه"; }).catch(function () { q("[data-hb-shlink]").value = "ساخت لینک در این مرورگر ممکن نشد."; });
+    var cp = curPet(); if (!cp) return; shareLink = ""; q("[data-hb-shqr]").innerHTML = ""; q("[data-hb-shlink]").value = "در حال ساخت لینک…"; q("[data-hb-shm]").hidden = false; document.documentElement.classList.add("gift-open");
+    packShare(shareData(cp)).then(function (s) { shareLink = location.href.replace(/#.*$/, "") + "#share=" + s; q("[data-hb-shlink]").value = shareLink; q("[data-hb-shlen]").textContent = toolFa(shareLink.length) + " نویسه"; var qs = qrFromText(shareLink); q("[data-hb-shqr]").innerHTML = qs || "<p class=\"hb-shnote\">لینک برای QR بیش از حد بلند است؛ از لینک یا واتساپ استفاده کنید.</p>"; }).catch(function () { q("[data-hb-shlink]").value = "ساخت لینک در این مرورگر ممکن نشد."; });
   }
   function closeModal(sel) { q(sel).hidden = true; document.documentElement.classList.remove("gift-open"); }
   var pendingImport = null;
@@ -1396,7 +1473,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (t === q("[data-hb-sheet]")) return closeSheet();
     if (t.closest("[data-hb-close]")) return closeSheet();
     if (t.closest("[data-hb-open]")) return openSheet();
-    if ((b = t.closest("[data-hb-type]"))) { curType = b.getAttribute("data-hb-type"); xTouched = false; renderTypes(); return renderFields(); }
+    if ((b = t.closest("[data-hb-goto]")) && !t.closest("button")) { var gt = b.getAttribute("data-hb-goto"); setPg(gt === "واکسن" ? 1 : /ضدانگل/.test(gt) ? 2 : 3); q("[data-hb-ptabs]").scrollIntoView({ behavior: "smooth", block: "start" }); return; }
     if ((b = t.closest("[data-hb-opt]"))) { [].forEach.call(b.parentNode.children, function (x) { x.classList.toggle("on", x === b); }); var n = q("#hb-n"); if (n) n.value = b.getAttribute("data-hb-opt"); return; }
     if ((b = t.closest("[data-hb-tab]"))) { curTab = Number(b.getAttribute("data-hb-tab")); return render(); }
     if ((b = t.closest("[data-hb-pet]"))) { db.cur = b.getAttribute("data-hb-pet"); q("[data-hb-petform]").hidden = true; save(); return render(); }
@@ -1408,18 +1485,17 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (t.closest("[data-hb-save-pet]")) {
       var n2 = q("#hb-pn").value.trim(); if (!n2) { q("#hb-pn").focus(); return; }
       var sp = q('[data-seg="hbsp"] .on'), spv = sp ? sp.getAttribute("data-v") : "", bd = JD.pb.get();
-      if (editId) { var ep = db.pets.filter(function (x) { return x.id === editId; })[0]; if (ep) { ep.name = n2; ep.en = q("#hb-pe").value.trim(); ep.owner = q("#hb-po").value.trim(); ep.guardian = q("#hb-pg").value.trim(); ep.breed = q("#hb-pbr").value.trim(); ep.breedEn = q("#hb-pbe").value.trim(); ep.species = spv; ep.birth = bd; ep.photo = formPhoto; } }
-      else { var p = { id: uid(), name: n2, en: q("#hb-pe").value.trim(), owner: q("#hb-po").value.trim(), guardian: q("#hb-pg").value.trim(), breed: q("#hb-pbr").value.trim(), breedEn: q("#hb-pbe").value.trim(), species: spv, birth: bd, photo: formPhoto, plan: [] }; db.pets.push(p); db.cur = p.id; }
+      if (editId) { var ep = db.pets.filter(function (x) { return x.id === editId; })[0]; if (ep) { ep.name = n2; ep.en = q("#hb-pe").value.trim(); ep.owner = q("#hb-po").value.trim(); ep.guardian = q("#hb-pg").value.trim(); ep.breed = getBreed(); ep.breedEn = q("#hb-pbe").value.trim(); ep.species = spv; ep.birth = bd; ep.photo = formPhoto; } }
+      else { var p = { id: uid(), name: n2, en: q("#hb-pe").value.trim(), owner: q("#hb-po").value.trim(), guardian: q("#hb-pg").value.trim(), breed: getBreed(), breedEn: q("#hb-pbe").value.trim(), species: spv, birth: bd, photo: formPhoto, plan: [] }; db.pets.push(p); db.cur = p.id; }
       editId = null; q("[data-hb-petform]").hidden = true; save(); return render();
     }
     if (t.closest("[data-hb-mkplan]")) { var cp2 = curPet(); cp2.plan = buildPlan(cp2); save(); return render(); }
     if (t.closest("[data-hb-delplan]")) { if (confirm("برنامهٔ پیشنهادی حذف شود؟")) { curPet().plan = []; save(); render(); } return; }
     if ((b = t.closest("[data-hb-open-type]"))) { if (locked(b.getAttribute("data-hb-open-type"))) return; curType = b.getAttribute("data-hb-open-type"); openSheet(); return; }
     if (t.closest("[data-hb-sort]")) { asc = !asc; return render(); }
-    if ((b = t.closest("[data-hb-pgo]"))) { curPg = Number(b.getAttribute("data-hb-pgo")); goPg(curPg); [].forEach.call(q("[data-hb-ptabs]").children, function (c, n) { c.classList.toggle("on", n === curPg); }); [].forEach.call(q("[data-hb-dots]").children, function (c, n) { c.classList.toggle("on", n === curPg); }); return; }
+    if ((b = t.closest("[data-hb-pgo]"))) return setPg(Number(b.getAttribute("data-hb-pgo")));
     if (t.closest("[data-hb-present]")) { editList = false; document.documentElement.classList.add("hb-present"); render(); window.scrollTo(0, 0); return; }
     if (t.closest("[data-hb-present-x]")) { document.documentElement.classList.remove("hb-present"); render(); return; }
-    if (t.closest("[data-hb-editlist]")) { editList = !editList; return render(); }
     if (t.closest("[data-hb-share]")) return isDr() ? openShare() : undefined;
     if (t.closest("[data-hb-drbtn]")) {
       if (isDr()) { try { localStorage.removeItem("dm_hb_dr"); } catch (x) {} applyRole(); return render(); }
@@ -1439,27 +1515,34 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     }
     if (t.closest("[data-hb-qr]")) { var cq = curPet(); q("[data-hb-qrbox]").innerHTML = qrSvg(qrText(cq)); q("[data-hb-qrm]").hidden = false; document.documentElement.classList.add("gift-open"); return; }
     if (t.closest("[data-hb-qr-close]") || t === q("[data-hb-qrm]")) { q("[data-hb-qrm]").hidden = true; document.documentElement.classList.remove("gift-open"); return; }
-    if (t.closest("[data-hb-qr-save]")) {
-      var sv = q("[data-hb-qrbox] svg"); if (!sv) return; var im2 = new Image(), url = URL.createObjectURL(new Blob([sv.outerHTML], { type: "image/svg+xml" }));
-      im2.onload = function () { var cv = document.createElement("canvas"); cv.width = cv.height = 800; var cx = cv.getContext("2d"); cx.fillStyle = "#fff"; cx.fillRect(0, 0, 800, 800); cx.imageSmoothingEnabled = false; cx.drawImage(im2, 0, 0, 800, 800); cv.toBlob(function (bl) { var l = document.createElement("a"); l.href = URL.createObjectURL(bl); l.download = "qr-" + (curPet().en || "pet") + ".png"; document.body.appendChild(l); l.click(); setTimeout(function () { l.remove(); }, 500); }); };
-      im2.src = url; return;
-    }
+    if (t.closest("[data-hb-qr-save]")) return savePng(q("[data-hb-qrbox] svg"), "qr-" + (curPet().en || "pet") + ".png");
+    if (t.closest("[data-hb-shqr-save]")) return savePng(q("[data-hb-shqr] svg"), "share-" + (curPet().en || "pet") + ".png");
     if (t.closest("[data-hb-more]")) { showAll = !showAll; return render(); }
     if (t.closest("[data-hb-save]")) {
-      if (locked(curType)) return; var cp = curPet(); if (!cp) return; var d = JD.d.get(); if (!d) return; var c = cfg(curType), er = q("[data-hb-err]"), vals = {};
+      var ed = editRecId ? db.recs.filter(function (r) { return r.id === editRecId; })[0] : null;
+      if (locked(curType) || (editRecId && !ed)) return;
+      var cp = curPet(); if (!cp) return; var d = JD.d.get(); if (!d) return; var c = cfg(curType), er = q("[data-hb-err]"), vals = {};
       var w = c.weight ? toolNum((q("#hb-w") || {}).value) : 0;
       if (c.weight && !(w > 0)) { er.textContent = "وزن را وارد کنید."; er.hidden = false; q("#hb-w").focus(); return; }
       for (var fi = 0; fi < c.f.length; fi++) { var ff = c.f[fi]; vals[ff.id] = fieldVal(ff); if (ff.req && !vals[ff.id]) { er.textContent = "«" + ff.label.replace(" (Lot / Batch)", "") + "» الزامی است."; er.hidden = false; var el0 = q("#hb-f-" + ff.id); if (el0) { el0.focus(); if (el0.tagName === "SELECT" && el0.value === "__o") q("#" + el0.id + "-o").focus(); } return; } }
-      var nx = JD.x.get();
-      db.recs.forEach(function (r) { if (r.pet === cp.id && r.type === curType && r.next && !r.closed && r.next <= d) r.closed = true; });
-      var nm = vals.name || "";
-      (cp.plan || []).forEach(function (x) {
-        if (x.done || x.type !== curType || Math.abs(days(x.date) - days(d)) > 10) return;
-        if (curType === "ضدانگل داخلی" || (/گانه/.test(nm) && /گانه/.test(x.label)) || (/هاری/.test(nm) && /هاری/.test(x.label))) x.done = true;
-      });
-      db.recs.push({ id: uid(), pet: cp.id, type: curType, dr: isDr() ? 1 : 0, date: d, name: nm, brand: vals.brand || "", serial: vals.serial || "", place: vals.place || "", extra: vals.extra || "", weight: w || 0, next: nx });
-      save(); closeSheet(); return render();
+      var nx = JD.x.get(), nm = vals.name || "", end = DURD[vals.dur] ? addDays(d, DURD[vals.dur]) : "";
+      db.mem = db.mem || {};
+      c.f.forEach(function (f) { var el = q("#hb-f-" + f.id); if (el && el.tagName === "SELECT" && el.value === "__o" && vals[f.id]) { var mk = curType + "|" + f.id; if (f.sel(cp.species).indexOf(vals[f.id]) < 0) { db.mem[mk] = db.mem[mk] || []; if (db.mem[mk].indexOf(vals[f.id]) < 0) db.mem[mk].push(vals[f.id]); } } });
+      var fields = { date: d, name: nm, brand: vals.brand || "", serial: vals.serial || "", place: vals.place || "", extra: vals.extra || "", freq: vals.freq || "", how: vals.how || "", dur: vals.dur || "", end: end, weight: w || 0, next: nx };
+      if (ed) { for (var kf in fields) ed[kf] = fields[kf]; ed.closed = false; }
+      else {
+        db.recs.forEach(function (r) { if (r.pet === cp.id && r.type === curType && r.next && !r.closed && r.next <= d) r.closed = true; });
+        (cp.plan || []).forEach(function (x) {
+          if (x.done || x.type !== curType || Math.abs(days(x.date) - days(d)) > 10) return;
+          if (curType === "ضدانگل داخلی" || (/گانه/.test(nm) && /گانه/.test(x.label)) || (/هاری/.test(nm) && /هاری/.test(x.label))) x.done = true;
+        });
+        var rec = { id: uid(), pet: cp.id, type: curType, dr: isDr() ? 1 : 0 }; for (var k2 in fields) rec[k2] = fields[k2]; db.recs.push(rec);
+      }
+      editRecId = null; save(); closeSheet(); return render();
     }
+    if ((b = t.closest("[data-hb-stab]"))) { editRecId = null; if (b.getAttribute("data-hb-stab") === "new") { renderTypes(); renderFields(); q("[data-hb-save]").textContent = "ثبت"; } return showTab(b.getAttribute("data-hb-stab")); }
+    if ((b = t.closest("[data-hb-redit]"))) return startEdit(b.getAttribute("data-hb-redit"));
+    if ((b = t.closest("[data-hb-rdel]"))) { var rid2 = b.getAttribute("data-hb-rdel"), r2 = db.recs.filter(function (r) { return r.id === rid2; })[0]; if (r2 && (isDr() || !r2.dr) && confirm("این مورد حذف شود؟")) { db.recs = db.recs.filter(function (r) { return r.id !== rid2; }); save(); renderHist(); render(); } return; }
     if ((b = t.closest("[data-hb-add]"))) { xTouched = true; JD.x.set(addMonths(JD.d.get(), Number(b.getAttribute("data-hb-add")))); return; }
     if ((b = t.closest("[data-hb-usesug]"))) { xTouched = true; JD.x.set(b.getAttribute("data-hb-usesug")); return; }
     if (t.closest("[data-hb-clear]")) { xTouched = true; JD.x.set(""); return; }

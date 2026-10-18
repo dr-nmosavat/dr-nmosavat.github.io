@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=202610181129">
+<link rel="stylesheet" href="style.css?v=202610181206">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="icon" href="favicon.ico" sizes="48x48">
 <link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png">
@@ -60,7 +60,7 @@
         <div class="fld"><label for="hb-po">نام صاحب پت</label><input id="hb-po" type="text" maxlength="40" placeholder="نام و نام خانوادگی"></div>
         <div class="fld"><label for="hb-pg">نام سرپرست <small>(اگر با صاحب فرق دارد، اختیاری)</small></label><input id="hb-pg" type="text" maxlength="40" placeholder="نام نگهدارنده یا سرپرست"></div>
         <div class="fld"><label>گونه</label><div class="seg" data-seg="hbsp"><button type="button" class="on" data-v="سگ">سگ</button><button type="button" data-v="گربه">گربه</button><button type="button" data-v="پرنده">پرنده</button><button type="button" data-v="دیگر">دیگر</button></div></div>
-        <div class="fld"><label for="hb-pbr">نژاد <small>(اختیاری)</small></label><input id="hb-pbr" type="text" maxlength="40" placeholder="مثلاً شیرازی، پاگ، ژرمن شپرد، مخلوط"></div>
+        <div class="fld"><label for="hb-pbr">نژاد <small>(اختیاری)</small></label><select id="hb-pbr"></select><input id="hb-pbro" type="text" maxlength="40" hidden placeholder="نام نژاد را بنویسید"></div>
         <div class="fld"><label for="hb-pbe">نژاد به انگلیسی <small>(خودکار برای نژادهای رایج)</small></label><input id="hb-pbe" data-auto="1" type="text" dir="ltr" maxlength="40" placeholder="e.g. Persian"></div>
         <div class="fld"><label>تاریخ تولد <small>(اختیاری، شمسی؛ میلادی خودکار نوشته می‌شود)</small></label><div class="jd" data-jd="pb"></div></div>
         <div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-save-pet>ذخیره</button><button type="button" class="btn small ghost" data-hb-cancel-pet>انصراف</button></div>
@@ -78,8 +78,7 @@
           </div>
           <div class="hb-dots" data-hb-dots aria-hidden="true"></div>
         </div>
-        <div class="hb-editrow"><button type="button" class="btn small hb-showbtn" data-hb-present>🪪 نمایش شناسنامه به دیگران</button> <button type="button" class="hb-lnk" data-hb-editlist>ویرایش فهرست</button></div>
-        <p class="hb-hint" data-hb-edithint hidden>برای حذف یک مورد اشتباه، دکمهٔ ✕ کنار آن را بزنید. هر مورد پیش از حذف از شما تأیید می‌گیرد.</p>
+        <div class="hb-editrow"><button type="button" class="btn small hb-showbtn" data-hb-present>🪪 نمایش شناسنامه به دیگران</button></div>
         <div class="hb-rem" data-hb-rem></div>
         <div class="hb-plan" data-hb-plan></div>
         <div class="hb-actions">
@@ -97,8 +96,10 @@
           <h2>ارسال برای صاحب پت</h2>
           <p>لینک زیر شناسنامهٔ این پت (به‌همراه واکسن‌ها، ضدانگل‌ها و ویزیت‌ها) را دارد. صاحب پت لینک را در گوشی خودش باز می‌کند و با یک دکمه در دفترچهٔ خودش ذخیره می‌شود.</p>
           <div class="fld"><label for="hb-shnum">شمارهٔ واتساپ صاحب پت <small>(اختیاری)</small></label><input id="hb-shnum" data-hb-shnum type="tel" inputmode="tel" dir="ltr" placeholder="09123456789"></div>
+          <div class="hb-qrbox hb-shqr" data-hb-shqr></div>
+          <p class="hb-shqrnote">گوشی دیگر را جلوی صفحه بگیرید و با دوربین این QR را اسکن کنید تا شناسنامه باز شود؛ یا تصویر آن را ذخیره و ارسال کنید.</p>
           <textarea class="hb-shlink" data-hb-shlink readonly rows="3" dir="ltr"></textarea><small class="hb-shlen" data-hb-shlen></small>
-          <div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-sh-wa>ارسال در واتساپ</button><button type="button" class="btn small" data-hb-sh-copy>کپی لینک</button><button type="button" class="btn small ghost" data-hb-sh-close>بستن</button></div>
+          <div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-sh-wa>ارسال در واتساپ</button><button type="button" class="btn small" data-hb-sh-copy>کپی لینک</button><button type="button" class="btn small" data-hb-shqr-save>ذخیره QR</button><button type="button" class="btn small ghost" data-hb-sh-close>بستن</button></div>
           <p class="hb-shnote">لینک شامل اطلاعات پت است و هر کس آن را داشته باشد می‌بیند؛ فقط برای خود صاحب پت بفرستید. عکس پت داخل لینک نمی‌آید. اطلاعات فقط در لینک است و روی سرور سایت ذخیره نمی‌شود.</p>
         </div>
       </div>
@@ -131,10 +132,14 @@
         <div class="hb-sheet-card">
           <button type="button" class="hb-x" data-hb-close aria-label="بستن">×</button>
           <h2>ثبت در دفترچه</h2>
-          <div class="hb-types" data-hb-types></div>
-          <div class="hb-sf" data-hb-sf></div>
-          <p class="hb-err" data-hb-err hidden></p>
-          <div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-save>ثبت</button></div>
+          <div class="hb-stabs" data-hb-stabs><button type="button" class="chip on" data-hb-stab="new">ثبت جدید</button><button type="button" class="chip" data-hb-stab="hist">ثبت‌های قبلی (ویرایش)</button></div>
+          <div class="hb-newwrap" data-hb-newwrap>
+            <div data-hb-types></div>
+            <div class="hb-sf" data-hb-sf></div>
+            <p class="hb-err" data-hb-err hidden></p>
+            <div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-save>ثبت</button></div>
+          </div>
+          <div class="hb-hist" data-hb-hist hidden></div>
         </div>
       </div>
     </section>
@@ -195,7 +200,7 @@
   </div>
 </div>
 <a class="fab" aria-label="نیاز به مشاوره؟" data-consult href="contact.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4V5z"/></svg><span><i class="l-long">نیاز به مشاوره؟</i><i class="l-short">مشاوره</i></span></a>
-<script src="app.js?v=202610181129"></script>
+<script src="app.js?v=202610181206"></script>
     </body>
     </html>
     

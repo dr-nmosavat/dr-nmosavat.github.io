@@ -1642,3 +1642,25 @@ html.hb-present .hb-px { position: fixed; bottom: 18px; inset-inline: auto; left
 .hb-r .hb-r-ic { width: 22px; height: 22px; background: none; font-size: 16px; border-radius: 0; }
 .hb-r { gap: 6px; padding: 5px 8px; } .hb-r b { font-size: 12.5px; } .hb-r small { font-size: 10.5px; }
 .hb-r .hb-r-b button { width: 26px; height: 26px; font-size: 12px; } .hb-r .hb-r-b { gap: 4px; }
+
+/* فرم ثبت: تب‌ها، فهرست ثبت‌های قبلی */
+.hb-stabs { display: flex; gap: 6px; justify-content: center; } .hb-stabs .chip { padding: 5px 14px; font-size: 13px; }
+.hb-sheet-card select, .hb-sheet-card input[type=text] { min-height: 44px; }
+.hb-hist { display: grid; gap: 6px; }
+.hb-hr { display: flex; align-items: center; gap: 8px; background: #f2f5f9; border-radius: 12px; padding: 7px 10px; }
+.hb-hr-ic { font-size: 18px; width: 24px; text-align: center; flex: none; } .hb-hr-t { flex: 1; min-width: 0; } .hb-hr-t b { display: block; font-size: 13px; line-height: 1.6; } .hb-hr-t small { color: var(--muted); font-size: 11.5px; }
+.hb-hr-b { display: flex; gap: 6px; flex: none; } .hb-hr-b button { border: 1px solid var(--line); background: #fff; border-radius: 50%; width: 32px; height: 32px; font-size: 14px; cursor: pointer; }
+.hb-pe2 { text-align: center; color: var(--muted); padding: 18px 0; }
+.hb-act { background: #d9f2e6; color: #0f6b44; font-size: 10.5px; font-weight: 700; padding: 1px 8px; border-radius: 999px; margin-inline-start: 4px; }
+/* صفحهٔ ۱: ردیف‌های باریک */
+.hb-id > div { padding: 5px 2px; gap: 8px; align-items: baseline; } .hb-id dt { font-size: 12px; } .hb-id dd { font-size: 13.5px; text-align: left; } .hb-id dd .en { display: inline; font-size: 12px; }
+/* کارت: ارتفاع هر صفحه */
+.hb-track { align-items: flex-start; transition: height .2s ease; } .hb-slide { align-self: flex-start; }
+@media print { .hb-track { height: auto !important; } }
+/* یادآور: کادر دو خطی کوچک */
+.hb-r { cursor: pointer; align-items: center; }
+.hb-r > .hb-r-t { display: block; flex: 1; min-width: 0; }
+.hb-r .hb-r-t b { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; white-space: normal; overflow: hidden; font-size: 12.5px; line-height: 1.5; }
+.hb-r .hb-r-t small { display: block; margin: 0; font-size: 11px; line-height: 1.5; }
+.hb-ptabs { scroll-margin-top: 70px; }
+.hb-shqr { margin: 6px auto; } .hb-shqrnote { font-size: 12px; color: var(--muted); text-align: center; margin: 0 0 8px; }
