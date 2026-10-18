@@ -1682,3 +1682,11 @@ html.hb-present .hb-px { position: fixed; bottom: 18px; inset-inline: auto; left
 .hb-cons { font-size: 13px; display: none; align-items: center; gap: 8px; margin: 8px 0; } html.hb-dr .hb-cons { display: flex; }
 .hb-tosrv { display: none; } html.hb-dr.hb-need-srv .hb-tosrv { display: inline-flex; }
 .hb-actions .hb-tosrv { display: none; } html.hb-dr.hb-need-srv .hb-actions .hb-tosrv { display: inline-flex; }
+
+.hb-noacct { text-align: center; padding: 8px 4px 4px; } .hb-noacct-ic { font-size: 54px; } .hb-noacct h2 { margin: 6px 0 8px; font-size: 20px; } .hb-noacct p { color: var(--muted); }
+.hb-noacct ol { text-align: right; max-width: 420px; margin: 12px auto 16px; padding-inline-start: 22px; line-height: 2; font-size: 14.5px; }
+.hb-drbar { margin: 16px 0 4px; }
+.hb-drbtn { background: #fff; color: #1f5ea6; border: 1.5px solid #1f5ea6; min-height: 44px; padding: 8px 22px; font-size: 15px; font-weight: 700; }
+.hb-drbtn::before { content: "👩‍⚕️ "; }
+.hb-drbadge { font-size: 14px; padding: 6px 14px; }
+.hb-remme { display: flex; align-items: center; gap: 8px; font-size: 13.5px; margin: 8px 0; }

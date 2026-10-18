@@ -57,7 +57,7 @@ function pickPrize_(noRetry, freeLeft) {
 // ======================= شناسنامهٔ سلامت =======================
 var H = {
   prefix: 'NM-',                 // پیشوند کد پت
-  tokenDays: 3,                  // اعتبار توکن دکتر
+  tokenDays: 3,                  // اعتبار توکن دکتر (بدون «مرا به خاطر بسپار»)
   maxFails: 8,                   // تلاش ناموفق ورود در ۱۰ دقیقه
   ownerTypes: ['ضدانگل داخلی', 'ضدانگل خارجی (کک و کنه)', 'وزن', 'دارو', 'سایر'],   // صاحب پت می‌تواند ثبت کند
   allTypes: ["واکسن", "ضدانگل داخلی", "ضدانگل خارجی (کک و کنه)", "ویزیت", "وزن", "دارو", "عقیم‌سازی", "آزمایش", "سایر"]
@@ -93,8 +93,8 @@ function rnd_(n) { var s = '', u; while (s.length < n) { u = Utilities.getUuid()
 function nowIso_() { return Utilities.formatDate(new Date(), CFG.tz, "yyyy-MM-dd'T'HH:mm:ss"); }
 
 // ---- توکن دکتر ----
-function mkToken_() {
-  var exp = Date.now() + H.tokenDays * 86400000;
+function mkToken_(days) {
+  var exp = Date.now() + (days || H.tokenDays) * 86400000;
   return exp + '.' + sig16_('dr|' + exp);
 }
 function sig16_(txt) {
@@ -165,7 +165,7 @@ function drLogin_(b) {
   var pass = prop_('DR_PASS');
   if (!pass || String(b.pass || '') !== pass) { cache.put('drfails', String(fails + 1), 600); return { ok: false, err: 'auth' }; }
   cache.remove('drfails');
-  return { ok: true, t: mkToken_() };
+  return { ok: true, t: mkToken_(b.rem ? 30 : 0) };   // «مرا به خاطر بسپار» = ۳۰ روز
 }
 
 function search_(b) {

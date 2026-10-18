@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=202610182105">
+<link rel="stylesheet" href="style.css?v=202610182153">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="icon" href="favicon.ico" sizes="48x48">
 <link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png">
@@ -49,6 +49,17 @@
     <section class="tool hb" data-hb>
       <div class="hb-install" data-hb-install hidden><button type="button" class="btn small" data-hb-do-install>نصب روی صفحهٔ اصلی گوشی</button></div>
       <p class="hb-ios" data-hb-ios hidden>برای نصب روی آیفون: دکمهٔ اشتراک‌گذاری مرورگر را بزنید و «Add to Home Screen» را انتخاب کنید.</p>
+      <div class="hb-noacct" data-hb-noacct hidden>
+        <div class="hb-noacct-ic" aria-hidden="true">📒</div>
+        <h2>شناسنامهٔ پت شما کجاست؟</h2>
+        <p>شناسنامهٔ سلامت را دکتر نیلوفر مساوات برای پت شما می‌سازد و با QR یا لینک برایتان می‌فرستد.</p>
+        <ol>
+          <li>در مراجعه یا گفت‌وگو با دکتر، <b>QR یا لینک</b> شناسنامهٔ پت‌تان را بگیرید.</li>
+          <li>QR را با دوربین گوشی اسکن کنید یا روی لینک بزنید.</li>
+          <li>«افزودن به دفترچهٔ من» را بزنید. از این به بعد هر بار این صفحه را باز کنید، آخرین وضعیت پت‌تان را می‌بینید.</li>
+        </ol>
+        <a class="btn primary" data-hb-wa href="contact.html" target="_blank" rel="noopener">پیام به دکتر در واتساپ</a>
+      </div>
       <div class="hb-search" data-hb-searchbox hidden>
         <input type="search" data-hb-q autocomplete="off" placeholder="🔎 جستجوی پت: نام، صاحب یا کد (مثل NM-1234)">
         <div class="hb-qres" data-hb-qres></div>
@@ -94,7 +105,7 @@
           <div class="hb-arow hb-tools"><button type="button" class="btn small ghost" data-hb-print>چاپ</button><button type="button" class="btn small ghost" data-hb-export>پشتیبان</button><label class="btn small ghost hb-import">بازیابی<input type="file" accept="application/json" data-hb-import hidden></label></div>
         </div>
       </div>
-      <p class="hb-drbar"><span class="hb-drbadge" data-hb-drbadge hidden>👩‍⚕️ حالت دکتر فعال است</span> <button type="button" class="hb-lnk" data-hb-drbtn>ورود دکتر</button></p>
+      <p class="hb-drbar"><span class="hb-drbadge" data-hb-drbadge hidden>👩‍⚕️ حالت دکتر فعال است</span> <button type="button" class="btn small hb-drbtn" data-hb-drbtn>ورود دکتر</button></p>
       <p class="hb-priv">اطلاعات فقط روی همین دستگاه ذخیره می‌شود و به جایی فرستاده نمی‌شود. اگر داده‌های مرورگر پاک شود، دفترچه هم پاک می‌شود؛ پس گاهی «پشتیبان» بگیرید. تاریخ‌های پیشنهادی تقریبی‌اند و برنامهٔ دقیق را دامپزشک تعیین می‌کند. این دفترچه جای پروندهٔ پزشکی نیست.</p>
 
       <div class="hb-qrm" data-hb-shm hidden role="dialog" aria-modal="true" aria-label="ارسال شناسنامه برای صاحب پت">
@@ -122,6 +133,7 @@
           <h2>ورود دکتر</h2>
           <p>ثبت واکسن و ارسال شناسنامه برای صاحب پت فقط با رمز دکتر ممکن است.</p>
           <div class="fld"><input data-hb-drpw type="password" dir="ltr" autocomplete="off" placeholder="رمز"></div>
+          <label class="hb-remme"><input type="checkbox" data-hb-remember checked> مرا به خاطر بسپار (۳۰ روز روی این دستگاه)</label>
           <p class="hb-err" data-hb-drerr hidden>رمز درست نیست.</p>
           <div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-dr-ok>ورود</button><button type="button" class="btn small ghost" data-hb-dr-close>انصراف</button></div>
         </div>
@@ -206,7 +218,7 @@
   </div>
 </div>
 <a class="fab" aria-label="نیاز به مشاوره؟" data-consult href="contact.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4V5z"/></svg><span><i class="l-long">نیاز به مشاوره؟</i><i class="l-short">مشاوره</i></span></a>
-<script src="app.js?v=202610182105"></script>
+<script src="app.js?v=202610182153"></script>
     </body>
     </html>
     
