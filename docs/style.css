@@ -1701,3 +1701,13 @@ html.hb-dr .hb-install, html.hb-dr .hb-ios { display: none !important; }
 .hb-cv-ic { overflow: visible !important; }
 .hb-petform.photoonly .fld, .hb-petform.photoonly .hb-cons, .hb-petform.photoonly .hb-err { display: none !important; }
 @media print { .hb-cam { display: none; } }
+
+/* عکس پت: بزرگ‌تر، دکمهٔ دوربین کوچک */
+.hb-card .hb-cv-ic { width: 124px; height: 124px; font-size: 62px; margin-bottom: 8px; }
+.hb-cam { width: 22px; height: 22px; font-size: 11px; border-width: 1.5px; bottom: 2px; inset-inline-end: 2px; }
+.hb-viewc { text-align: center; } .hb-viewc img { width: min(80vw, 340px); height: min(80vw, 340px); object-fit: cover; border-radius: 50%; border: 4px solid #e4c066; display: block; margin: 4px auto 14px; }
+.hb-cropv { width: min(76vw, 300px); aspect-ratio: 1; margin: 0 auto 10px; position: relative; border-radius: 12px; overflow: hidden; background: #111; touch-action: none; }
+.hb-cropv canvas { width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
+.hb-cropv::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at center, transparent 0 70.5%, rgba(0,0,0,.55) 71%); box-shadow: inset 0 0 0 2px rgba(255,255,255,.4); }
+.hb-cropz { width: min(76vw, 300px); display: block; margin: 0 auto; accent-color: #1f5ea6; }
+.hb-cropnote { font-size: 12.5px; color: var(--muted); margin: 8px 0 10px; }

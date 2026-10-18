@@ -1407,6 +1407,45 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function closeSheet() { editRecId = null; q("[data-hb-sheet]").hidden = true; document.documentElement.classList.remove("gift-open"); }
   var formPhoto = "";
   function showPhoto() { var b = q("[data-hb-photo]"); b.innerHTML = formPhoto ? '<img src="' + formPhoto + '" alt="">' : "🐾"; q("[data-hb-photo-del]").hidden = !formPhoto; }
+  // ---- برش و اندازهٔ عکس ----
+  var CR = null;
+  function cropDraw() {
+    var c = q("[data-hb-cropc]"), x = c.getContext("2d"), V = c.width, s = CR.s0 * CR.z, w = CR.im.width * s, h = CR.im.height * s;
+    var mx = Math.max(0, (w - V) / 2), my = Math.max(0, (h - V) / 2); CR.ox = Math.max(-mx, Math.min(mx, CR.ox)); CR.oy = Math.max(-my, Math.min(my, CR.oy));
+    x.fillStyle = "#111"; x.fillRect(0, 0, V, V); x.drawImage(CR.im, V / 2 + CR.ox - w / 2, V / 2 + CR.oy - h / 2, w, h);
+  }
+  function cropPhoto(f, cb) {
+    if (!f) return; var rd = new FileReader();
+    rd.onload = function () {
+      var im = new Image(); im.onload = function () {
+        var c = q("[data-hb-cropc]"); CR = { im: im, s0: c.width / Math.min(im.width, im.height), z: 1, ox: 0, oy: 0, cb: cb, pts: {}, pd: 0 };
+        q("[data-hb-cropz]").value = 1; cropDraw(); q("[data-hb-cropm]").hidden = false; document.documentElement.classList.add("gift-open");
+      }; im.src = rd.result;
+    };
+    rd.readAsDataURL(f);
+  }
+  (function () {
+    var c = q("[data-hb-cropc]"), zr = q("[data-hb-cropz]"); if (!c) return;
+    function k() { return c.width / c.getBoundingClientRect().width; }
+    function dist() { var p = Object.keys(CR.pts).map(function (i) { return CR.pts[i]; }); return Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y); }
+    c.addEventListener("pointerdown", function (e) { if (!CR) return; c.setPointerCapture(e.pointerId); CR.pts[e.pointerId] = { x: e.clientX, y: e.clientY }; if (Object.keys(CR.pts).length === 2) CR.pd = dist(); });
+    c.addEventListener("pointermove", function (e) {
+      if (!CR || !CR.pts[e.pointerId]) return; var n = Object.keys(CR.pts).length, p = CR.pts[e.pointerId];
+      if (n === 1) { CR.ox += (e.clientX - p.x) * k(); CR.oy += (e.clientY - p.y) * k(); p.x = e.clientX; p.y = e.clientY; }
+      else { p.x = e.clientX; p.y = e.clientY; var d = dist(); if (CR.pd) CR.z = Math.max(1, Math.min(4, CR.z * d / CR.pd)); CR.pd = d; zr.value = CR.z; }
+      cropDraw();
+    });
+    function up(e) { if (CR) { delete CR.pts[e.pointerId]; CR.pd = 0; } }
+    c.addEventListener("pointerup", up); c.addEventListener("pointercancel", up);
+    c.addEventListener("wheel", function (e) { if (!CR) return; e.preventDefault(); CR.z = Math.max(1, Math.min(4, CR.z * (e.deltaY < 0 ? 1.08 : 0.93))); zr.value = CR.z; cropDraw(); }, { passive: false });
+    zr.addEventListener("input", function () { if (CR) { CR.z = Number(zr.value); cropDraw(); } });
+  })();
+  function cropSave() {
+    if (!CR) return; var c = q("[data-hb-cropc]"), V = c.width, O = 480, f = O / V, o = document.createElement("canvas"); o.width = o.height = O;
+    var s = CR.s0 * CR.z * f, w = CR.im.width * s, h = CR.im.height * s, x = o.getContext("2d");
+    x.fillStyle = "#fff"; x.fillRect(0, 0, O, O); x.drawImage(CR.im, O / 2 + CR.ox * f - w / 2, O / 2 + CR.oy * f - h / 2, w, h);
+    var d = o.toDataURL("image/jpeg", .85), cb = CR.cb; CR = null; q("[data-hb-cropm]").hidden = true; document.documentElement.classList.remove("gift-open"); cb(d);
+  }
   function resizePhoto(f, cb) {
     if (!f) return; var rd = new FileReader();
     rd.onload = function () { var im = new Image(); im.onload = function () { var s = 320, w = im.width, h = im.height, m = Math.min(w, h), cv = document.createElement("canvas"); cv.width = cv.height = s; cv.getContext("2d").drawImage(im, (w - m) / 2, (h - m) / 2, m, m, 0, 0, s, s); cb(cv.toDataURL("image/jpeg", .82)); }; im.src = rd.result; };
@@ -1444,8 +1483,8 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   q("#hb-pbro").addEventListener("input", function () { var e = q("#hb-pbe"); if (e.getAttribute("data-auto") === "1") e.value = breedEn(this.value); });
   document.addEventListener("click", function (e) { if (e.target.closest && e.target.closest('[data-seg="hbsp"] button')) setTimeout(function () { var on = q('[data-seg="hbsp"] .on'); fillBreeds(on ? on.getAttribute("data-v") : "سگ", ""); q("#hb-pbe").value = ""; q("#hb-pbe").setAttribute("data-auto", "1"); }, 0); });
   q("#hb-pbe").addEventListener("input", function () { this.setAttribute("data-auto", ""); });
-  q("[data-hb-file]").addEventListener("change", function () { readPhoto(this.files[0]); this.value = ""; });
-  q("[data-hb-file2]").addEventListener("change", function () { var inp = this; resizePhoto(inp.files[0], function (d) { var cp = curPet(); if (cp) { cp.photo = d; save(); render(); } }); inp.value = ""; });
+  q("[data-hb-file]").addEventListener("change", function () { var inp = this; cropPhoto(inp.files[0], function (d) { formPhoto = d; showPhoto(); }); inp.value = ""; });
+  q("[data-hb-file2]").addEventListener("change", function () { var inp = this; cropPhoto(inp.files[0], function (d) { var cp = curPet(); if (cp) { cp.photo = d; save(); render(); } }); inp.value = ""; });
   // جمع‌شدن سربرگ سایت هنگام پایین رفتن
   (function () { var hd = document.querySelector("header.top"), ly = window.scrollY; if (!hd || !document.body.classList.contains("hb-page")) return; window.addEventListener("scroll", function () { var y = window.scrollY; if (y > ly + 6 && y > 90) hd.classList.add("fold"); else if (y < ly - 6 || y < 40) hd.classList.remove("fold"); ly = y; }, { passive: true }); })();
   // ---- ارسال شناسنامه برای صاحب پت (لینک) و دریافت ----
@@ -1547,7 +1586,11 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (t.closest("[data-hb-newpet]")) return petForm(null);
     if (t.closest("[data-hb-edit-pet]")) { var pe = curPet(); petForm(pe); q("[data-hb-petform]").classList.toggle("photoonly", srvOn() && !isDr()); q("[data-hb-pf-title]").textContent = srvOn() && !isDr() ? "تغییر عکس پت" : "ویرایش شناسنامه"; return; }
     if (t.closest("[data-hb-cancel-pet]")) { q("[data-hb-petform]").hidden = true; return render(); }
-    if (t.closest("[data-hb-cover-photo]")) return q("[data-hb-file2]").click();
+    if (t.closest("[data-hb-cover-photo]")) { var cpp = curPet(); if (t.closest(".hb-cam") || !cpp || !cpp.photo) return q("[data-hb-file2]").click(); q("[data-hb-viewimg]").src = cpp.photo; q("[data-hb-viewm]").hidden = false; document.documentElement.classList.add("gift-open"); return; }
+    if (t.closest("[data-hb-view-change]")) { q("[data-hb-viewm]").hidden = true; document.documentElement.classList.remove("gift-open"); return q("[data-hb-file2]").click(); }
+    if (t.closest("[data-hb-view-close]") || t === q("[data-hb-viewm]")) { q("[data-hb-viewm]").hidden = true; document.documentElement.classList.remove("gift-open"); return; }
+    if (t.closest("[data-hb-crop-ok]")) return cropSave();
+    if (t.closest("[data-hb-crop-x]") || t === q("[data-hb-cropm]")) { CR = null; q("[data-hb-cropm]").hidden = true; document.documentElement.classList.remove("gift-open"); return; }
     if (t.closest("[data-hb-photo]") || t.closest("[data-hb-photo-add]")) return q("[data-hb-file]").click();
     if (t.closest("[data-hb-photo-del]")) { formPhoto = ""; return showPhoto(); }
     if (t.closest("[data-hb-save-pet]")) {

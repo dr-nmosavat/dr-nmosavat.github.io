@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=202610182208">
+<link rel="stylesheet" href="style.css?v=202610182212">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="icon" href="favicon.ico" sizes="48x48">
 <link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png">
@@ -129,6 +129,21 @@
           <div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-imp-yes>افزودن به دفترچهٔ من</button><button type="button" class="btn small ghost" data-hb-imp-no>الان نه</button></div>
         </div>
       </div>
+      <div class="hb-qrm" data-hb-viewm hidden role="dialog" aria-modal="true" aria-label="عکس پت">
+        <div class="hb-qrc hb-viewc">
+          <img data-hb-viewimg alt="عکس پت">
+          <div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-view-change>📷 تغییر عکس</button><button type="button" class="btn small ghost" data-hb-view-close>بستن</button></div>
+        </div>
+      </div>
+      <div class="hb-qrm" data-hb-cropm hidden role="dialog" aria-modal="true" aria-label="برش عکس">
+        <div class="hb-qrc">
+          <h2>برش و اندازهٔ عکس</h2>
+          <div class="hb-cropv"><canvas data-hb-cropc width="300" height="300"></canvas></div>
+          <input type="range" class="hb-cropz" data-hb-cropz min="1" max="4" step="0.01" value="1" aria-label="بزرگ و کوچک">
+          <p class="hb-cropnote">عکس را با انگشت جابه‌جا کنید و با نوار (یا دو انگشت) بزرگ و کوچک کنید. قسمت داخل دایره ذخیره می‌شود.</p>
+          <div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-crop-ok>ذخیره عکس</button><button type="button" class="btn small ghost" data-hb-crop-x>انصراف</button></div>
+        </div>
+      </div>
       <div class="hb-qrm" data-hb-drm hidden role="dialog" aria-modal="true" aria-label="ورود دکتر">
         <div class="hb-qrc">
           <h2>ورود دکتر</h2>
@@ -219,7 +234,7 @@
   </div>
 </div>
 <a class="fab" aria-label="نیاز به مشاوره؟" data-consult href="contact.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4V5z"/></svg><span><i class="l-long">نیاز به مشاوره؟</i><i class="l-short">مشاوره</i></span></a>
-<script src="app.js?v=202610182208"></script>
+<script src="app.js?v=202610182212"></script>
     </body>
     </html>
     
