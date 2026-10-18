@@ -1059,7 +1059,8 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   var MON = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"];
   var PLACES = ["مرکز دامپزشکی ونک (دکتر مساوات)", "کلینیک ژیوان، تجریش", "کلینیک ژیوان، هروی", "تهران پت کلینیک، تهرانپارس", "ویزیت در منزل"];
   var DOG_VT = ["۴گانه سگ", "۵گانه سگ", "۶گانه سگ", "۷گانه سگ", "۸گانه سگ", "۹گانه سگ", "۱۰گانه سگ", "هاری", "بوردتلا (سرفهٔ کنل)", "لپتوسپیروز", "کرونا ویروس سگ"];
-  var CAT_VT = ["۳گانه گربه (FVRCP)", "۴گانه گربه", "لوسمی گربه (FeLV)", "هاری", "کلامیدیا گربه"];
+  var CAT_VT = ["۳گانه گربه", "۴گانه گربه", "هاری"];
+  var CAT_VT_LEGACY = ["۳گانه گربه (FVRCP)", "۴گانه گربه", "لوسمی گربه (FeLV)", "هاری", "کلامیدیا گربه"];   // فقط برای سازگاری لینک‌های قدیمی
   var DOG_VB = ["Nobivac", "Vanguard", "Eurican", "Hexadog", "Duramune", "Recombitek", "Biocan", "Canigen", "Rabisin", "Defensor"];
   var CAT_VB = ["Nobivac Tricat", "Biofel", "Felocell", "Purevax", "Feligen", "Eurifel", "Rabisin", "Defensor"];
   var INT_B = ["Drontal", "Milbemax", "Panacur", "Caniverm", "Pyrantel (ژنریک)"];
@@ -1092,11 +1093,11 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   var STAT = ["واکسن", "ضدانگل داخلی", "ضدانگل خارجی (کک و کنه)", "ویزیت"];
   var TABS = [["به تفکیک نوع", null], ["واکسن", ["واکسن"]], ["ضدانگل", ["ضدانگل داخلی", "ضدانگل خارجی (کک و کنه)"]], ["ویزیت", ["ویزیت"]], ["آزمایش", ["آزمایش"]], ["عقیم‌سازی", ["عقیم‌سازی"]], ["دارو", ["دارو"]], ["وزن", ["وزن"]], ["سایر", ["سایر"]]];
   var SPEN = { "سگ": "Dog", "گربه": "Cat", "پرنده": "Bird", "دیگر": "Other" };
-  var BRE = [["ژرمن شپرد", "German Shepherd"], ["گلدن", "Golden Retriever"], ["لابرادور", "Labrador Retriever"], ["هاسکی", "Husky"], ["پاگ", "Pug"], ["پودل", "Poodle"], ["شیتزو", "Shih Tzu"], ["پامرانین", "Pomeranian"], ["اسپیتز", "Spitz"], ["چیواوا", "Chihuahua"], ["یورکشایر", "Yorkshire Terrier"], ["بولداگ", "Bulldog"], ["روتوایلر", "Rottweiler"], ["دوبرمن", "Doberman"], ["مالتیز", "Maltese"], ["کوکر", "Cocker Spaniel"], ["بیگل", "Beagle"], ["سامویید", "Samoyed"], ["تریر", "Terrier"], ["شیرازی", "Persian"], ["پرشین", "Persian"], ["هیمالیایی", "Himalayan"], ["اسکاتیش", "Scottish Fold"], ["بریتیش", "British Shorthair"], ["سیامی", "Siamese"], ["مین کون", "Maine Coon"], ["بنگال", "Bengal"], ["رگدال", "Ragdoll"], ["آنگورا", "Turkish Angora"], ["بومی", "Domestic"], ["خیابانی", "Domestic"], ["مخلوط", "Mixed"], ["خورشیدی", "Sun Conure"], ["کاسکو", "African Grey"], ["عروس هلندی", "Cockatiel"], ["مرغ عشق", "Lovebird"], ["مینا", "Myna"], ["قناری", "Canary"], ["فنچ", "Finch"], ["کاکادو", "Cockatoo"], ["ماکائو", "Macaw"]];
+  var BRE = [["ژرمن شپرد", "German Shepherd"], ["گلدن", "Golden Retriever"], ["لابرادور", "Labrador Retriever"], ["هاسکی", "Husky"], ["پاگ", "Pug"], ["پودل", "Poodle"], ["شیتزو", "Shih Tzu"], ["پامرانین", "Pomeranian"], ["اسپیتز", "Spitz"], ["چیواوا", "Chihuahua"], ["یورکشایر", "Yorkshire Terrier"], ["بولداگ", "Bulldog"], ["روتوایلر", "Rottweiler"], ["دوبرمن", "Doberman"], ["مالتیز", "Maltese"], ["کوکر", "Cocker Spaniel"], ["بیگل", "Beagle"], ["سامویید", "Samoyed"], ["تریر", "Terrier"], ["شیرازی", "Persian"], ["پرشین", "Persian"], ["هیمالیایی", "Himalayan"], ["اسکاتیش", "Scottish Fold"], ["بریتیش", "British Shorthair"], ["سیامی", "Siamese"], ["مین کون", "Maine Coon"], ["بنگال", "Bengal"], ["رگدال", "Ragdoll"], ["آنگورا", "Turkish Angora"], ["DSH", "Domestic Shorthair"], ["بومی", "Domestic Shorthair"], ["خیابانی", "Domestic Shorthair"], ["مخلوط", "Mixed"], ["خورشیدی", "Sun Conure"], ["کاسکو", "African Grey"], ["عروس هلندی", "Cockatiel"], ["مرغ عشق", "Lovebird"], ["مینا", "Myna"], ["قناری", "Canary"], ["فنچ", "Finch"], ["کاکادو", "Cockatoo"], ["ماکائو", "Macaw"]];
   function normFa(s) { return String(s || "").replace(/ي/g, "ی").replace(/ك/g, "ک").replace(/[\u200c\u200f]/g, "").replace(/\s+/g, " ").trim(); }
   var BR = {
     "سگ": [["ژرمن شپرد", "German Shepherd"], ["گلدن ریتریور", "Golden Retriever"], ["لابرادور", "Labrador Retriever"], ["هاسکی", "Husky"], ["پاگ", "Pug"], ["پودل", "Poodle"], ["شیتزو", "Shih Tzu"], ["پامرانین", "Pomeranian"], ["اسپیتز", "Spitz"], ["چیواوا", "Chihuahua"], ["یورکشایر", "Yorkshire Terrier"], ["بولداگ", "Bulldog"], ["روتوایلر", "Rottweiler"], ["دوبرمن", "Doberman"], ["مالتیز", "Maltese"], ["کوکر اسپانیل", "Cocker Spaniel"], ["بیگل", "Beagle"], ["سامویید", "Samoyed"], ["تریر", "Terrier"], ["مخلوط", "Mixed Breed"]],
-    "گربه": [["شیرازی (پرشین)", "Persian"], ["هیمالیایی", "Himalayan"], ["اسکاتیش فولد", "Scottish Fold"], ["بریتیش شورت‌هر", "British Shorthair"], ["سیامی", "Siamese"], ["مین‌کون", "Maine Coon"], ["بنگال", "Bengal"], ["رگدال", "Ragdoll"], ["آنگورا", "Turkish Angora"], ["بومی (خانگی)", "Domestic"], ["مخلوط", "Mixed Breed"]],
+    "گربه": [["شیرازی (پرشین)", "Persian"], ["هیمالیایی", "Himalayan"], ["اسکاتیش فولد", "Scottish Fold"], ["بریتیش شورت‌هر", "British Shorthair"], ["سیامی", "Siamese"], ["مین‌کون", "Maine Coon"], ["بنگال", "Bengal"], ["رگدال", "Ragdoll"], ["آنگورا", "Turkish Angora"], ["DSH (بومی خانگی)", "Domestic Shorthair"], ["مخلوط", "Mixed Breed"]],
     "پرنده": [["طوطی خورشیدی", "Sun Conure"], ["کاسکو (خاکستری آفریقایی)", "African Grey"], ["عروس هلندی", "Cockatiel"], ["مرغ عشق", "Lovebird"], ["مینا", "Myna"], ["قناری", "Canary"], ["فنچ", "Finch"], ["کاکادو", "Cockatoo"], ["ماکائو", "Macaw"]],
     "دیگر": []
   };
@@ -1292,6 +1293,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     });
   }
   function locked(t) { return !isDr() && OWNER_LOCKED.indexOf(t) > -1; }
+  function toast(msg) { var t = document.createElement("div"); t.className = "hb-toast"; t.textContent = msg; document.body.appendChild(t); setTimeout(function () { t.classList.add("off"); }, 3200); setTimeout(function () { t.remove(); }, 3800); }
   function applyRole() { document.documentElement.classList.toggle("hb-dr", isDr()); var b = q("[data-hb-drbtn]"); if (b) b.textContent = isDr() ? "خروج از حالت دکتر" : "ورود دکتر"; var bd = q("[data-hb-drbadge]"); if (bd) bd.hidden = !isDr(); var sb = q("[data-hb-searchbox]"); if (sb) sb.hidden = !(srvOn() && isDr()); }
   function checkDrPass(pw) {
     if (!window.crypto || !crypto.subtle) return Promise.resolve(false);
@@ -1453,7 +1455,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     var p = m === "2" ? (window.DecompressionStream ? pipe(bytes, window.DecompressionStream) : Promise.reject(new Error("no"))) : Promise.resolve(bytes);
     return p.then(function (b) { return JSON.parse(new TextDecoder().decode(b)); });
   }
-  var DICT = [].concat(DOG_VT, CAT_VT, DOG_VB, CAT_VB, INT_B, EXT_B, PLACES, DRUGS, FREQ, HOW, DUR);
+  var DICT = [].concat(DOG_VT, CAT_VT_LEGACY, DOG_VB, CAT_VB, INT_B, EXT_B, PLACES, DRUGS, FREQ, HOW, DUR);
   function dEnc(s) { if (!s) return ""; var i = DICT.indexOf(s); return i > -1 ? "~" + i.toString(36) : s; }
   function dDec(s) { if (typeof s !== "string") return ""; if (/^~[0-9a-z]+$/.test(s)) { var v = DICT[parseInt(s.slice(1), 36)]; return v == null ? "" : v; } return s; }
   function dayN(s) { var p = s.split("-"); return Math.round((Date.UTC(+p[0], +p[1] - 1, +p[2]) - Date.UTC(2020, 0, 1)) / 864e5); }
@@ -1598,7 +1600,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     }
     if (t.closest("[data-hb-dr-close]") || t === q("[data-hb-drm]")) return closeModal("[data-hb-drm]");
     if (t.closest("[data-hb-dr-ok]")) {
-      var pw = q("[data-hb-drpw]").value.trim(), er0 = q("[data-hb-drerr]"), fin0 = function () { try { localStorage.setItem("dm_hb_dr", "1"); } catch (x) {} closeModal("[data-hb-drm]"); curType = "واکسن"; applyRole(); render(); syncCur(); };
+      var pw = q("[data-hb-drpw]").value.trim(), er0 = q("[data-hb-drerr]"), fin0 = function () { try { localStorage.setItem("dm_hb_dr", "1"); } catch (x) {} closeModal("[data-hb-drm]"); curType = "واکسن"; applyRole(); render(); syncCur(); toast("خوش آمدید خانم دکتر 👩‍⚕️"); };
       if (srvOn()) api({ a: "drLogin", pass: pw, rem: q("[data-hb-remember]").checked ? 1 : 0 }).then(function (j) { if (!j.ok) { er0.textContent = j.err === "auth" ? "رمز درست نیست." : errMsg(j.err); er0.hidden = false; return; } tokSet(j.t); fin0(); });
       else checkDrPass(pw).then(function (ok) { if (!ok) { er0.textContent = "رمز درست نیست."; er0.hidden = false; return; } fin0(); });
       return;

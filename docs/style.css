@@ -1690,3 +1690,7 @@ html.hb-present .hb-px { position: fixed; bottom: 18px; inset-inline: auto; left
 .hb-drbtn::before { content: "👩‍⚕️ "; }
 .hb-drbadge { font-size: 14px; padding: 6px 14px; }
 .hb-remme { display: flex; align-items: center; gap: 8px; font-size: 13.5px; margin: 8px 0; }
+
+html.hb-dr .hb-install, html.hb-dr .hb-ios { display: none !important; }
+.hb-toast { position: fixed; z-index: 120; top: 16px; left: 50%; transform: translateX(-50%); background: #12766a; color: #fff; padding: 12px 22px; border-radius: 999px; font-weight: 700; font-size: 15px; box-shadow: 0 8px 24px rgba(0,0,0,.25); transition: opacity .5s, transform .5s; }
+.hb-toast.off { opacity: 0; transform: translate(-50%, -12px); }
