@@ -1666,3 +1666,11 @@ html.hb-present .hb-px { position: fixed; bottom: 18px; inset-inline: auto; left
 .hb-shqr { margin: 6px auto; } .hb-shqrnote { font-size: 12px; color: var(--muted); text-align: center; margin: 0 0 8px; }
 .hb-track { transition: none; }
 .hb-pg-b { max-height: 300px; }
+
+/* واترمارک و امضای ریز */
+.hb-id, .hb-pg-b { background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='14 -4 172 172' opacity=%270.05%27%3E%3Cpath d='M78 8h44v52h52v44h-52v52H78v-52H26V60h52z' fill='%231f5aa6'/%3E%3Cg fill='%23fff' transform='translate(65 51) scale(1.25)'%3E%3Cellipse cx='13' cy='21' rx='5' ry='6.5'/%3E%3Cellipse cx='22' cy='12' rx='5' ry='6.5'/%3E%3Cellipse cx='34' cy='12' rx='5' ry='6.5'/%3E%3Cellipse cx='43' cy='21' rx='4.5' ry='6'/%3E%3Cpath d='M28 24c-7 0-14 7-14 13 0 4 3 6 7 6 3 0 4-1 7-1s4 1 7 1c4 0 7-2 7-6 0-6-7-13-14-13z'/%3E%3C/g%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: center; background-size: 120px; background-color: #e8ecf2; }
+.hb-slide { position: relative; padding-bottom: 44px; }
+.hb-slide::after { content: "دکتر نیلوفر مساوات"; position: absolute; inset-inline: 0; bottom: 25px; text-align: center; font-size: 10.5px; color: #f1dca0; opacity: .8; letter-spacing: .3px; pointer-events: none; }
+@media print { .hb-id, .hb-pg-b { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+.hb-track { align-items: stretch; } .hb-slide { align-self: stretch; }
+.hb-id, .hb-pg-b { background-size: 96px; }
