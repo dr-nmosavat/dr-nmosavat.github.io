@@ -1071,9 +1071,14 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     "سایر": { ic: "📝", k: "oth", nameLabel: "توضیح", ph: "", extra: "" }
   };
   var ORDER = ["واکسن", "ضدانگل داخلی", "ضدانگل خارجی (کک و کنه)", "ویزیت", "وزن", "دارو", "عقیم‌سازی", "آزمایش", "سایر"];
-  var TABS = [["همه", null], ["واکسن", ["vax"]], ["ضدانگل", ["par"]], ["وزن", ["wt"]], ["ویزیت و آزمایش", ["vis"]], ["دارو و سایر", ["oth"]]];
+  var STAT = ["واکسن", "ضدانگل داخلی", "ضدانگل خارجی (کک و کنه)", "ویزیت"];
+  var TABS = [["به تفکیک نوع", null], ["واکسن", ["واکسن"]], ["ضدانگل", ["ضدانگل داخلی", "ضدانگل خارجی (کک و کنه)"]], ["ویزیت", ["ویزیت"]], ["آزمایش", ["آزمایش"]], ["عقیم‌سازی", ["عقیم‌سازی"]], ["دارو", ["دارو"]], ["وزن", ["وزن"]], ["سایر", ["سایر"]]];
+  var SPEN = { "سگ": "Dog", "گربه": "Cat", "پرنده": "Bird", "دیگر": "Other" };
+  var BRE = [["ژرمن شپرد", "German Shepherd"], ["گلدن", "Golden Retriever"], ["لابرادور", "Labrador Retriever"], ["هاسکی", "Husky"], ["پاگ", "Pug"], ["پودل", "Poodle"], ["شیتزو", "Shih Tzu"], ["پامرانین", "Pomeranian"], ["اسپیتز", "Spitz"], ["چیواوا", "Chihuahua"], ["یورکشایر", "Yorkshire Terrier"], ["بولداگ", "Bulldog"], ["روتوایلر", "Rottweiler"], ["دوبرمن", "Doberman"], ["مالتیز", "Maltese"], ["کوکر", "Cocker Spaniel"], ["بیگل", "Beagle"], ["سامویید", "Samoyed"], ["تریر", "Terrier"], ["شیرازی", "Persian"], ["پرشین", "Persian"], ["هیمالیایی", "Himalayan"], ["اسکاتیش", "Scottish Fold"], ["بریتیش", "British Shorthair"], ["سیامی", "Siamese"], ["مین کون", "Maine Coon"], ["بنگال", "Bengal"], ["رگدال", "Ragdoll"], ["آنگورا", "Turkish Angora"], ["بومی", "Domestic"], ["خیابانی", "Domestic"], ["مخلوط", "Mixed"], ["خورشیدی", "Sun Conure"], ["کاسکو", "African Grey"], ["عروس هلندی", "Cockatiel"], ["مرغ عشق", "Lovebird"], ["مینا", "Myna"], ["قناری", "Canary"], ["فنچ", "Finch"], ["کاکادو", "Cockatoo"], ["ماکائو", "Macaw"]];
+  function normFa(s) { return String(s || "").replace(/ي/g, "ی").replace(/ك/g, "ک").replace(/[\u200c\u200f]/g, "").replace(/\s+/g, " ").trim(); }
+  function breedEn(s) { var n = normFa(s); if (!n) return ""; for (var i = 0; i < BRE.length; i++) if (n.indexOf(normFa(BRE[i][0])) > -1) return BRE[i][1]; return ""; }
   var SPE = { "سگ": "🐶", "گربه": "🐱", "پرنده": "🐦", "دیگر": "🐾" };
-  var curType = "واکسن", curTab = 0, xTouched = false, editId = null, showAll = false, JD = {};
+  var curType = "واکسن", curTab = 0, xTouched = false, editId = null, showAll = false, asc = false, JD = {};
   function q(s) { return root.querySelector(s); }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
   function load() { try { var d = JSON.parse(localStorage.getItem(KEY) || "null"); if (d && d.pets && d.recs) return d; } catch (e) {} return { pets: [], recs: [], cur: null }; }
@@ -1148,12 +1153,18 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function enDate(s) { var p = s.split("-"); return +p[2] + " " + GM[+p[1] - 1] + " " + p[0]; }
   function renderCover(cp) {
     var lw = db.recs.filter(function (r) { return r.pet === cp.id && r.weight; }).sort(function (a, b) { return a.date < b.date ? 1 : -1; })[0], rows = [];
-    if (cp.species) rows.push(["گونه / Species", esc(cp.species)]);
-    if (cp.breed) rows.push(["نژاد / Breed", esc(cp.breed)]);
+    if (cp.species) rows.push(["گونه / Species", esc(cp.species) + (SPEN[cp.species] ? '<br><span class="en">' + SPEN[cp.species] + "</span>" : "")]);
+    var be = cp.breedEn || breedEn(cp.breed);
+    if (cp.breed) rows.push(["نژاد / Breed", esc(cp.breed) + (be ? '<br><span class="en">' + esc(be) + "</span>" : "")]);
     if (cp.birth) rows.push(["تاریخ تولد / Birth date", esc(fd(cp.birth)) + '<br><span class="en">' + enDate(cp.birth) + "</span>"]);
     if (cp.birth && ageText(cp.birth)) rows.push(["سن / Age", esc(ageText(cp.birth))]);
     if (lw) rows.push(["آخرین وزن / Weight", toolFa(lw.weight) + " کیلوگرم<br><span class=\"en\">" + lw.weight + " kg</span>"]);
-    q("[data-hb-cover]").innerHTML = '<small class="hb-cv-t">شناسنامهٔ سلامت · Health Record</small><div class="hb-cv-ic">' + avatar(cp, "hb-cv-img") + '</div><b>' + esc(cp.name) + "</b>" + (cp.en ? '<span class="hb-cv-en" dir="ltr">' + esc(cp.en) + "</span>" : "") + (rows.length ? '<dl class="hb-id">' + rows.map(function (r) { return "<div><dt>" + r[0] + "</dt><dd>" + r[1] + "</dd></div>"; }).join("") + "</dl>" : "");
+    var lst = [];
+    [["واکسن", ["آخرین واکسن", "Vaccine"]], ["ضدانگل داخلی", ["آخرین ضدانگل داخلی", "Deworming"]], ["ضدانگل خارجی (کک و کنه)", ["آخرین ضدانگل خارجی", "Flea & tick"]], ["ویزیت", ["آخرین ویزیت", "Visit"]]].forEach(function (x) {
+      var r = db.recs.filter(function (z) { return z.pet === cp.id && z.type === x[0]; }).sort(function (u, v) { return u.date < v.date ? 1 : -1; })[0];
+      if (r) lst.push("<div><dt>" + x[1][0] + "</dt><dd>" + esc(fd(r.date)) + '<br><span class="en">Last ' + x[1][1] + " · " + enDate(r.date) + "</span></dd></div>");
+    });
+    q("[data-hb-cover]").innerHTML = '<small class="hb-cv-t">شناسنامهٔ سلامت · Health Record</small><div class="hb-cv-ic">' + avatar(cp, "hb-cv-img") + '</div><b>' + esc(cp.name) + "</b>" + (cp.en ? '<span class="hb-cv-en" dir="ltr">' + esc(cp.en) + "</span>" : "") + (rows.length ? '<dl class="hb-id">' + rows.map(function (r) { return "<div><dt>" + r[0] + "</dt><dd>" + r[1] + "</dd></div>"; }).join("") + "</dl>" : "") + (lst.length ? '<dl class="hb-id hb-last">' + lst.join("") + "</dl>" : "");
   }
   // همهٔ یادآوری‌ها: نوبت‌های بعدی + برنامهٔ واکسن
   function allRem() {
@@ -1174,20 +1185,30 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (young && !hasPlan) pl.innerHTML = '<div class="hb-plan-c"><b>برنامهٔ واکسن ' + (cp.species === "سگ" ? "توله‌سگ" : "بچه‌گربه") + "</b><p>با زدن دکمهٔ زیر، تاریخ نوبت‌های واکسن و کرم‌کشی بر اساس تاریخ تولد حساب می‌شود و به «یادآوری‌ها» اضافه می‌شود. تاریخ‌ها تقریبی‌اند و طبق نظر دامپزشک تنظیم کنید.</p><button type=\"button\" class=\"btn small primary\" data-hb-mkplan>📅 ساخت برنامهٔ واکسن و کرم‌کشی</button><details class=\"hb-det\"><summary>برنامه شامل چه چیزی است؟</summary><p>واکسن در هفتهٔ ۸، ۱۲ و ۱۶ (" + (cp.species === "سگ" ? "چندگانه سگ" : "سه‌گانه گربه") + ")، هاری در هفتهٔ ۱۶ و یادآور سالانه؛ ضدانگل داخلی در هفته‌های ۲، ۴، ۶، ۸، ۱۲، ۱۶، ۲۰ و ۲۴. بعد از ساخت، هر نوبت با «انجام شد» در دفترچه ثبت می‌شود و می‌توانید آن را به تقویم گوشی اضافه کنید. هر زمان خواستید «حذف برنامه» را بزنید.</p></details></div>";
     else if (!cp.birth && (cp.species === "سگ" || cp.species === "گربه")) pl.innerHTML = '<div class="hb-plan-c"><b>برنامهٔ واکسن توله و بچه‌گربه</b><p>با نوشتن تاریخ تولد، برنامهٔ پیشنهادی ساخته می‌شود.</p><button type="button" class="btn small" data-hb-edit-pet>نوشتن تاریخ تولد</button></div>';
     else pl.innerHTML = hasPlan ? '<div class="hb-plan-c ok"><span>برنامهٔ واکسن ' + (cp.species === "سگ" ? "توله‌سگ" : "بچه‌گربه") + ' فعال است.</span><button type="button" class="hb-lnk" data-hb-delplan>حذف برنامه</button></div>' : "";
-    var rem = allRem().filter(function (r) { return r.pet === cp.id; }), lim = showAll ? rem.length : 3, rh = rem.slice(0, lim).map(function (r) {
-      var p = db.pets.filter(function (x) { return x.id === r.pet; })[0]; if (!p) return ""; var n = days(r.date), k = cfg(r.type);
-      return '<div class="hb-r' + (n < 0 ? " late" : n <= 7 ? " soon" : "") + '"><span class="hb-r-ic">' + k.ic + '</span><div><b>' + esc(r.type.replace(" (کک و کنه)", "")) + (r.label ? " · " + esc(r.label) : "") + "</b><small>" + fd(r.date) + " · " + when(n) + (r.kind === "plan" ? " · برنامه" : "") + '</small></div><span class="hb-r-b"><button type="button" data-hb-ics="' + r.kind + ":" + r.id + '">تقویم</button><button type="button" data-hb-done="' + r.kind + ":" + r.id + '">انجام شد</button></span></div>';
-    }).join("");
-    q("[data-hb-rem]").innerHTML = rem.length ? "<h3>🔔 یادآوری‌های " + esc(cp.name) + "</h3>" + rh + (rem.length > 3 ? '<div class="hb-more"><button type="button" class="hb-lnk" data-hb-more>' + (showAll ? "نمایش کمتر" : "نمایش همه (" + toolFa(rem.length) + ")") + "</button></div>" : "") : "";
+    var cpRem = allRem().filter(function (r) { return r.pet === cp.id; }), stat = STAT.filter(function (t) { return !(t === "واکسن" && (cp.species === "پرنده" || cp.species === "دیگر")); }), sh = "";
+    stat.forEach(function (t) {
+      var k = cfg(t), last = db.recs.filter(function (r) { return r.pet === cp.id && r.type === t; }).sort(function (x, y) { return x.date < y.date ? 1 : -1; })[0];
+      var nx = cpRem.filter(function (r) { return r.type === t; })[0], ln = last ? days(last.date) : 0, nn = nx ? days(nx.date) : 0;
+      sh += '<div class="hb-st"><div class="hb-st-h"><span>' + k.ic + "</span><b>" + esc(t.replace(" (کک و کنه)", "")) + "</b></div>" +
+        '<div class="hb-st-r"><i>آخرین</i><span>' + (last ? fd(last.date) + ' <small>' + when(ln) + (last.name ? " · " + esc(last.name) : "") + "</small>" : '<em>ثبت نشده</em>') + "</span></div>" +
+        '<div class="hb-st-r nx' + (nx ? (nn < 0 ? " late" : nn <= 7 ? " soon" : "") : "") + '"><i>نوبت بعدی</i><span>' + (nx ? fd(nx.date) + " <small>" + when(nn) + "</small>" : '<em>تعیین نشده</em>') + "</span></div>" +
+        '<div class="hb-st-b">' + (nx ? '<button type="button" data-hb-ics="' + nx.kind + ":" + nx.id + '">تقویم</button><button type="button" data-hb-done="' + nx.kind + ":" + nx.id + '">انجام شد</button>' : '<button type="button" data-hb-open-type="' + esc(t) + '">＋ ثبت ' + (last ? "نوبت بعدی" : "اولین مورد") + "</button>") + "</div></div>";
+    });
+    var plans = cpRem.filter(function (r) { return r.kind === "plan"; });
+    q("[data-hb-rem]").innerHTML = "<h3>🔔 یادآوری‌ها و نوبت‌ها · " + esc(cp.name) + "</h3>" + sh + (plans.length > 1 ? '<div class="hb-more"><button type="button" class="hb-lnk" data-hb-more>' + (showAll ? "بستن برنامهٔ کامل" : "برنامهٔ کامل نوبت‌ها (" + toolFa(plans.length) + ")") + "</button></div>" : "") + (showAll ? plans.map(function (r) {
+      var n = days(r.date), k = cfg(r.type);
+      return '<div class="hb-r' + (n < 0 ? " late" : n <= 7 ? " soon" : "") + '"><span class="hb-r-ic">' + k.ic + '</span><div><b>' + esc(r.type.replace(" (کک و کنه)", "")) + (r.label ? " · " + esc(r.label) : "") + "</b><small>" + fd(r.date) + " · " + when(n) + '</small></div><span class="hb-r-b"><button type="button" data-hb-ics="' + r.kind + ":" + r.id + '">تقویم</button><button type="button" data-hb-done="' + r.kind + ":" + r.id + '">انجام شد</button></span></div>';
+    }).join("") : "");
     q("[data-hb-tabs]").innerHTML = TABS.map(function (t, i) { return '<button type="button" class="chip' + (i === curTab ? " on" : "") + '" data-hb-tab="' + i + '">' + t[0] + "</button>"; }).join("");
-    var mine = db.recs.filter(function (r) { return r.pet === cp.id; }).sort(function (a, b) { return a.date < b.date ? 1 : -1; });
-    var ks = TABS[curTab][1], shown = ks ? mine.filter(function (r) { return ks.indexOf(cfg(r.type).k) > -1; }) : mine;
-    q("[data-hb-list]").innerHTML = shown.length ? shown.map(function (r) {
-      var k = cfg(r.type);
-      return '<li class="hb-e k-' + k.k + '"><span class="hb-dot">' + k.ic + '</span><div class="hb-ec"><div class="hb-eh"><span class="hb-t">' + esc(r.type.replace(" (کک و کنه)", "")) + "</span><time>" + fd(r.date) + "</time></div>" + (r.name ? "<b>" + esc(r.name) + "</b>" : "") + (r.extra ? "<span>" + esc(r.extra) + "</span>" : "") + (r.weight ? "<span>" + toolFa(r.weight) + " کیلوگرم</span>" : "") + '</div><button type="button" class="hb-del" data-hb-del="' + r.id + '" aria-label="حذف">×</button></li>';
-    }).join("") : '<li class="hb-empty">اینجا هنوز چیزی ثبت نشده است.<br>با «ثبت در دفترچه» اولین مورد را بنویسید.</li>';
+    q("[data-hb-sort]").textContent = asc ? "قدیمی‌ترین اول ⇅" : "تازه‌ترین اول ⇅";
+    var mine = db.recs.filter(function (r) { return r.pet === cp.id; }).sort(function (a, b) { return (a.date < b.date ? 1 : -1) * (asc ? -1 : 1); });
+    function recLi(r) { var k = cfg(r.type); return '<li class="hb-e k-' + k.k + '"><span class="hb-dot">' + k.ic + '</span><div class="hb-ec"><div class="hb-eh"><span class="hb-t">' + esc(r.type.replace(" (کک و کنه)", "")) + "</span><time>" + fd(r.date) + "</time></div>" + (r.name ? "<b>" + esc(r.name) + "</b>" : "") + (r.extra ? "<span>" + esc(r.extra) + "</span>" : "") + (r.weight ? "<span>" + toolFa(r.weight) + " کیلوگرم</span>" : "") + '</div><button type="button" class="hb-del" data-hb-del="' + r.id + '" aria-label="حذف">×</button></li>'; }
+    var ts = TABS[curTab][1], shown = ts ? mine.filter(function (r) { return ts.indexOf(r.type) > -1; }) : mine, lh = "";
+    if (!ts) ORDER.forEach(function (t) { var g = mine.filter(function (r) { return r.type === t; }); if (g.length) lh += '<li class="hb-grp">' + cfg(t).ic + " " + esc(t.replace(" (کک و کنه)", "")) + " <small>(" + toolFa(g.length) + ")</small></li>" + g.map(recLi).join(""); });
+    else lh = shown.map(recLi).join("");
+    q("[data-hb-list]").innerHTML = shown.length ? lh : '<li class="hb-empty">اینجا هنوز چیزی ثبت نشده است.<br>با «ثبت در دفترچه» اولین مورد را بنویسید.</li>';
     var ws = mine.filter(function (r) { return r.weight; }).reverse(), wb = q("[data-hb-weight]");
-    if (ws.length >= 2 && (curTab === 0 || curTab === 3)) {
+    if (ws.length >= 2 && (curTab === 0 || curTab === 7)) {
       var vals = ws.map(function (r) { return r.weight; }), mn = Math.min.apply(null, vals), mx = Math.max.apply(null, vals), rg = (mx - mn) || 1;
       var pts = ws.map(function (r, i) { return (10 + i * (280 / (ws.length - 1))).toFixed(1) + "," + (60 - ((r.weight - mn) / rg) * 46).toFixed(1); }).join(" ");
       wb.innerHTML = '<svg viewBox="0 0 300 70" aria-hidden="true"><polyline points="' + pts + '" fill="none" stroke="#1f5ea6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg><small>روند وزن: از ' + toolFa(vals[0]) + " به " + toolFa(vals[vals.length - 1]) + " کیلوگرم</small>";
@@ -1228,11 +1249,13 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   }
   function petForm(p) {
     editId = p ? p.id : null; q("[data-hb-pf-title]").textContent = p ? "ویرایش شناسنامه" : "شناسنامهٔ پت";
-    q("#hb-pn").value = p ? p.name : ""; q("#hb-pe").value = p && p.en || ""; q("#hb-pbr").value = p && p.breed || ""; JD.pb.set(p ? p.birth : ""); formPhoto = p && p.photo || ""; showPhoto();
+    q("#hb-pn").value = p ? p.name : ""; q("#hb-pe").value = p && p.en || ""; q("#hb-pbr").value = p && p.breed || ""; q("#hb-pbe").value = p && p.breedEn || ""; q("#hb-pbe").setAttribute("data-auto", p && p.breedEn ? "" : "1"); JD.pb.set(p ? p.birth : ""); formPhoto = p && p.photo || ""; showPhoto();
     var segs = q('[data-seg="hbsp"]').children; [].forEach.call(segs, function (b) { b.classList.toggle("on", p ? b.getAttribute("data-v") === p.species : b.getAttribute("data-v") === "سگ"); });
     q("[data-hb-petform]").hidden = false; q("[data-hb-main]").hidden = true;
   }
   JD.pb = initJd(q('[data-jd="pb"]'), { optional: true, minY: -30, maxY: 0 });
+  q("#hb-pbr").addEventListener("input", function () { var e = q("#hb-pbe"); if (e.getAttribute("data-auto") === "1") e.value = breedEn(this.value); });
+  q("#hb-pbe").addEventListener("input", function () { this.setAttribute("data-auto", ""); });
   q("[data-hb-file]").addEventListener("change", function () { readPhoto(this.files[0]); this.value = ""; });
   // جمع‌شدن سربرگ سایت هنگام پایین رفتن
   (function () { var hd = document.querySelector("header.top"), ly = window.scrollY; if (!hd || !document.body.classList.contains("hb-page")) return; window.addEventListener("scroll", function () { var y = window.scrollY; if (y > ly + 6 && y > 90) hd.classList.add("fold"); else if (y < ly - 6 || y < 40) hd.classList.remove("fold"); ly = y; }, { passive: true }); })();
@@ -1255,12 +1278,14 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (t.closest("[data-hb-save-pet]")) {
       var n2 = q("#hb-pn").value.trim(); if (!n2) { q("#hb-pn").focus(); return; }
       var sp = q('[data-seg="hbsp"] .on'), spv = sp ? sp.getAttribute("data-v") : "", bd = JD.pb.get();
-      if (editId) { var ep = db.pets.filter(function (x) { return x.id === editId; })[0]; if (ep) { ep.name = n2; ep.en = q("#hb-pe").value.trim(); ep.breed = q("#hb-pbr").value.trim(); ep.species = spv; ep.birth = bd; ep.photo = formPhoto; } }
-      else { var p = { id: uid(), name: n2, en: q("#hb-pe").value.trim(), breed: q("#hb-pbr").value.trim(), species: spv, birth: bd, photo: formPhoto, plan: [] }; db.pets.push(p); db.cur = p.id; }
+      if (editId) { var ep = db.pets.filter(function (x) { return x.id === editId; })[0]; if (ep) { ep.name = n2; ep.en = q("#hb-pe").value.trim(); ep.breed = q("#hb-pbr").value.trim(); ep.breedEn = q("#hb-pbe").value.trim(); ep.species = spv; ep.birth = bd; ep.photo = formPhoto; } }
+      else { var p = { id: uid(), name: n2, en: q("#hb-pe").value.trim(), breed: q("#hb-pbr").value.trim(), breedEn: q("#hb-pbe").value.trim(), species: spv, birth: bd, photo: formPhoto, plan: [] }; db.pets.push(p); db.cur = p.id; }
       editId = null; q("[data-hb-petform]").hidden = true; save(); return render();
     }
     if (t.closest("[data-hb-mkplan]")) { var cp2 = curPet(); cp2.plan = buildPlan(cp2); save(); return render(); }
     if (t.closest("[data-hb-delplan]")) { if (confirm("برنامهٔ پیشنهادی حذف شود؟")) { curPet().plan = []; save(); render(); } return; }
+    if ((b = t.closest("[data-hb-open-type]"))) { curType = b.getAttribute("data-hb-open-type"); openSheet(); return; }
+    if (t.closest("[data-hb-sort]")) { asc = !asc; return render(); }
     if (t.closest("[data-hb-more]")) { showAll = !showAll; return render(); }
     if (t.closest("[data-hb-save]")) {
       var cp = curPet(); if (!cp) return; var d = JD.d.get(); if (!d) return;

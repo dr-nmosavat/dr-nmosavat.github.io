@@ -1511,3 +1511,14 @@ body.hb-page header.top .brand span { font-size: 16px; }
 nav a[href="tools.html"] { color: #12766a; font-weight: 700; }
 .hb-rem:empty { display: none; }
 .tb-card { flex-wrap: nowrap; } .tb-card > div { flex: 1; min-width: 0; } .tb-go { display: none; } .tb-card::after { content: "‹"; font-size: 26px; color: var(--blue); line-height: 1; }
+
+.hb-st { background: var(--bg); border-radius: 14px; padding: 10px 12px; margin-bottom: 8px; }
+.hb-st-h { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; font-size: 15px; }
+.hb-st-r { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 3px 0; font-size: 14px; }
+.hb-st-r i { font-style: normal; color: var(--muted); flex: none; } .hb-st-r span { text-align: left; font-weight: 600; } .hb-st-r small { font-weight: 400; color: var(--muted); display: block; }
+.hb-st-r em { font-style: normal; color: var(--muted); font-weight: 400; }
+.hb-st-r.nx span { color: var(--blue); } .hb-st-r.soon span { color: #a86a00; } .hb-st-r.late span { color: #b3382c; }
+.hb-st-b { display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px; } .hb-st-b button { font: inherit; font-size: 13px; padding: 3px 12px; border-radius: 999px; border: 1px solid var(--line); background: #fff; color: var(--blue); cursor: pointer; }
+.hb-sech { display: flex; justify-content: space-between; align-items: center; margin: 14px 0 6px; } .hb-sech h3 { margin: 0; font-size: 16px; }
+.hb-grp { list-style: none; font-weight: 800; margin: 14px 0 4px; color: var(--blue-deep); } .hb-grp small { font-weight: 400; color: var(--muted); }
+.hb-last { margin-top: 6px; border-top: 1px solid rgba(232,200,120,.5); padding-top: 6px; }
