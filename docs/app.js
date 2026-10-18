@@ -1169,7 +1169,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     function line(r) { return "- " + [r.brand, r.name || tl(r.type)].filter(Boolean).join(" · ") + (r.serial ? " Lot:" + r.serial : "") + (r.extra && !r.serial ? " (" + String(r.extra).slice(0, 24) + ")" : "") + ": " + fl(r.date) + " / " + r.date; }
     function nextOf(t) { var n = allRem().filter(function (r) { return r.pet === cp.id && r.type === t; })[0]; return n ? n.date : ""; }
     var lw = last("وزن", 1)[0], be = cp.breedEn || breedEn(cp.breed), o = [];
-    o.push("HEALTH RECORD | شناسنامه سلامت", cp.name + (cp.en ? " / " + cp.en : "") + (cp.owner ? " | Owner/صاحب: " + cp.owner : ""), (SPEN[cp.species] || cp.species || "") + (cp.breed ? " | " + cp.breed + (be ? " / " + be : "") : ""));
+    o.push("HEALTH RECORD | شناسنامه سلامت", cp.name + (cp.en ? " / " + cp.en : "") + (cp.owner ? " | Guardian/سرپرست: " + cp.owner : ""), (SPEN[cp.species] || cp.species || "") + (cp.breed ? " | " + cp.breed + (be ? " / " + be : "") : ""));
     if (cp.birth) o.push("Birth/تولد: " + fl(cp.birth) + " (" + cp.birth + ")");
     if (lw) o.push("Weight/وزن: " + lw.weight + " kg (" + lw.date + ")");
     [["واکسن", "Vaccines/واکسن", 3], ["ضدانگل داخلی", "Deworming/ضدانگل داخلی", 2], ["ضدانگل خارجی (کک و کنه)", "Flea-tick/ضدانگل خارجی", 2]].forEach(function (x) {
@@ -1188,7 +1188,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   }
   function renderCover(cp) {
     var lw = db.recs.filter(function (r) { return r.pet === cp.id && r.weight; }).sort(function (a, b) { return a.date < b.date ? 1 : -1; })[0], rows = [];
-    if (cp.owner) rows.push(["صاحب پت / Owner", esc(cp.owner)]);
+    if (cp.owner) rows.push(["سرپرست پت / Guardian", esc(cp.owner)]);
     if (cp.species) rows.push(["گونه / Species", esc(cp.species) + (SPEN[cp.species] ? '<br><span class="en">' + SPEN[cp.species] + "</span>" : "")]);
     var be = cp.breedEn || breedEn(cp.breed);
     if (cp.breed) rows.push(["نژاد / Breed", esc(cp.breed) + (be ? '<br><span class="en">' + esc(be) + "</span>" : "")]);
