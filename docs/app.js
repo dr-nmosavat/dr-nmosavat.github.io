@@ -1212,7 +1212,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (cp.birth) rows.push(["تولد / Birth", esc(fd(cp.birth)) + enp(enDate(cp.birth))]);
     if (cp.birth && ageText(cp.birth)) rows.push(["سن / Age", esc(ageText(cp.birth))]);
     if (lw) rows.push(["وزن / Weight", toolFa(lw.weight) + " کیلوگرم" + enp(lw.weight + " kg")]);
-    q("[data-hb-cover]").innerHTML = '<button type="button" class="hb-qr" data-hb-qr aria-label="نمایش QR شناسنامه">' + qrSvg(qrText(cp)) + '</button><small class="hb-cv-t">شناسنامهٔ سلامت<br><i>Health Record</i></small><div class="hb-cv-ic">' + avatar(cp, "hb-cv-img") + '</div><b>' + esc(cp.name) + "</b>" + (cp.en ? '<span class="hb-cv-en" dir="ltr">' + esc(cp.en) + "</span>" : "") + (rows.length ? '<dl class="hb-id">' + rows.map(function (r) { return "<div><dt>" + r[0] + "</dt><dd>" + r[1] + "</dd></div>"; }).join("") + "</dl>" : "");
+    q("[data-hb-cover]").innerHTML = '<button type="button" class="hb-qr" data-hb-qr aria-label="نمایش QR شناسنامه">' + qrSvg(qrText(cp)) + '</button><small class="hb-cv-t">شناسنامهٔ سلامت<br><i>Health Record</i></small><div class="hb-cv-ic"><button type="button" class="hb-cv-icb" data-hb-cover-photo aria-label="تغییر عکس پت">' + avatar(cp, "hb-cv-img") + '<span class="hb-cam" aria-hidden="true">📷</span></button></div><b>' + esc(cp.name) + "</b>" + (cp.en ? '<span class="hb-cv-en" dir="ltr">' + esc(cp.en) + "</span>" : "") + (rows.length ? '<dl class="hb-id">' + rows.map(function (r) { return "<div><dt>" + r[0] + "</dt><dd>" + r[1] + "</dd></div>"; }).join("") + "</dl>" : "");
   }
   // همهٔ یادآوری‌ها: نوبت‌های بعدی + برنامهٔ واکسن
   function allRem() {
@@ -1407,6 +1407,11 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function closeSheet() { editRecId = null; q("[data-hb-sheet]").hidden = true; document.documentElement.classList.remove("gift-open"); }
   var formPhoto = "";
   function showPhoto() { var b = q("[data-hb-photo]"); b.innerHTML = formPhoto ? '<img src="' + formPhoto + '" alt="">' : "🐾"; q("[data-hb-photo-del]").hidden = !formPhoto; }
+  function resizePhoto(f, cb) {
+    if (!f) return; var rd = new FileReader();
+    rd.onload = function () { var im = new Image(); im.onload = function () { var s = 320, w = im.width, h = im.height, m = Math.min(w, h), cv = document.createElement("canvas"); cv.width = cv.height = s; cv.getContext("2d").drawImage(im, (w - m) / 2, (h - m) / 2, m, m, 0, 0, s, s); cb(cv.toDataURL("image/jpeg", .82)); }; im.src = rd.result; };
+    rd.readAsDataURL(f);
+  }
   function readPhoto(f) {
     if (!f) return; var rd = new FileReader();
     rd.onload = function () { var im = new Image(); im.onload = function () { var s = 320, w = im.width, h = im.height, m = Math.min(w, h), cv = document.createElement("canvas"); cv.width = cv.height = s; cv.getContext("2d").drawImage(im, (w - m) / 2, (h - m) / 2, m, m, 0, 0, s, s); formPhoto = cv.toDataURL("image/jpeg", .82); showPhoto(); }; im.src = rd.result; };
@@ -1420,6 +1425,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   }
   function getBreed() { var s = q("#hb-pbr"); return s.value === "__o" ? q("#hb-pbro").value.trim() : s.value; }
   function petForm(p) {
+    q("[data-hb-petform]").classList.remove("photoonly");
     editId = p ? p.id : null; q("[data-hb-pf-title]").textContent = p ? "ویرایش شناسنامه" : "شناسنامهٔ پت";
     q("#hb-pn").value = p ? p.name : ""; q("#hb-pe").value = p && p.en || ""; q("#hb-po").value = p && p.owner || ""; q("#hb-pg").value = p && p.guardian || "";  q("#hb-pbe").value = p && p.breedEn || ""; q("#hb-pbe").setAttribute("data-auto", p && p.breedEn ? "" : "1"); JD.pb.set(p ? p.birth : ""); formPhoto = p && p.photo || ""; showPhoto();
     var segs = q('[data-seg="hbsp"]').children; [].forEach.call(segs, function (b) { b.classList.toggle("on", p ? b.getAttribute("data-v") === p.species : b.getAttribute("data-v") === "سگ"); });
@@ -1439,6 +1445,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   document.addEventListener("click", function (e) { if (e.target.closest && e.target.closest('[data-seg="hbsp"] button')) setTimeout(function () { var on = q('[data-seg="hbsp"] .on'); fillBreeds(on ? on.getAttribute("data-v") : "سگ", ""); q("#hb-pbe").value = ""; q("#hb-pbe").setAttribute("data-auto", "1"); }, 0); });
   q("#hb-pbe").addEventListener("input", function () { this.setAttribute("data-auto", ""); });
   q("[data-hb-file]").addEventListener("change", function () { readPhoto(this.files[0]); this.value = ""; });
+  q("[data-hb-file2]").addEventListener("change", function () { var inp = this; resizePhoto(inp.files[0], function (d) { var cp = curPet(); if (cp) { cp.photo = d; save(); render(); } }); inp.value = ""; });
   // جمع‌شدن سربرگ سایت هنگام پایین رفتن
   (function () { var hd = document.querySelector("header.top"), ly = window.scrollY; if (!hd || !document.body.classList.contains("hb-page")) return; window.addEventListener("scroll", function () { var y = window.scrollY; if (y > ly + 6 && y > 90) hd.classList.add("fold"); else if (y < ly - 6 || y < 40) hd.classList.remove("fold"); ly = y; }, { passive: true }); })();
   // ---- ارسال شناسنامه برای صاحب پت (لینک) و دریافت ----
@@ -1488,7 +1495,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function faDigits(s) { return String(s || "").replace(/[۰-۹]/g, function (c) { return c.charCodeAt(0) - 1776; }).replace(/[٠-٩]/g, function (c) { return c.charCodeAt(0) - 1632; }).replace(/\D/g, ""); }
   function waNum(s) { var d = faDigits(s); if (!d) return ""; if (d.indexOf("00") === 0) d = d.slice(2); if (d.charAt(0) === "0") d = "98" + d.slice(1); else if (d.length === 10 && d.charAt(0) === "9") d = "98" + d; return d; }
   var shareLink = "";
-  function shareMsg() { var cp = curPet(); return "سلام، شناسنامهٔ سلامت «" + cp.name + "» از طرف دکتر نیلوفر مساوات آماده شد. با این لینک در گوشی‌تان باز و ذخیره کنید:\n" + shareLink; }
+  function shareMsg() { var cp = curPet(); return "📒 شناسنامهٔ سلامت «" + cp.name + "»\nدکتر نیلوفر مساوات\n\nبا این لینک باز کنید و «افزودن به دفترچهٔ من» را بزنید:\n" + shareLink; }
   function qrFromText(text) {
     try { var qq = qrLib(0, "L"); qq.addData(text, "Byte"); qq.make(); var n = qq.getModuleCount(), d = "", r, c; for (r = 0; r < n; r++) for (c = 0; c < n; c++) if (qq.isDark(r, c)) d += "M" + (c + 3) + " " + (r + 3) + "h1v1h-1z"; return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + (n + 6) + " " + (n + 6) + '" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#fff"/><path d="' + d + '" fill="#000"/></svg>'; } catch (e) { return ""; }
   }
@@ -1499,7 +1506,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   }
   function openShare() {
     var cp = curPet(); if (!cp) return; shareLink = ""; q("[data-hb-shqr]").innerHTML = ""; q("[data-hb-shlink]").value = "در حال ساخت لینک…"; q("[data-hb-shm]").hidden = false; document.documentElement.classList.add("gift-open");
-    if (srvOf(cp) && srvOn()) { shareLink = location.href.replace(/#.*$/, "") + "#p=" + cp.srv.code + "." + cp.srv.key; q("[data-hb-shlink]").value = shareLink; q("[data-hb-shlen]").textContent = toolFa(shareLink.length) + " نویسه · لینک زنده (همیشه آخرین وضعیت)"; q("[data-hb-shqr]").innerHTML = qrFromText(shareLink); return; }
+    if (srvOf(cp) && srvOn()) { shareLink = (/^https?:/.test(location.protocol) ? location.href.replace(/[^\/?#]*([?#].*)?$/, "") + "p#" + cp.srv.code + "." + cp.srv.key : location.href.replace(/#.*$/, "") + "#p=" + cp.srv.code + "." + cp.srv.key); q("[data-hb-shlink]").value = shareLink; q("[data-hb-shlen]").textContent = toolFa(shareLink.length) + " نویسه · لینک زنده (همیشه آخرین وضعیت)"; q("[data-hb-shqr]").innerHTML = qrFromText(shareLink); return; }
     packShare(shareData(cp)).then(function (s) { shareLink = location.href.replace(/#.*$/, "") + "#share=" + s; q("[data-hb-shlink]").value = shareLink; q("[data-hb-shlen]").textContent = toolFa(shareLink.length) + " نویسه"; var qs = qrFromText(shareLink); q("[data-hb-shqr]").innerHTML = qs || "<p class=\"hb-shnote\">لینک برای QR بیش از حد بلند است؛ از لینک یا واتساپ استفاده کنید.</p>"; }).catch(function () { q("[data-hb-shlink]").value = "ساخت لینک در این مرورگر ممکن نشد."; });
   }
   function closeModal(sel) { q(sel).hidden = true; document.documentElement.classList.remove("gift-open"); }
@@ -1538,8 +1545,9 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if ((b = t.closest("[data-hb-tab]"))) { curTab = Number(b.getAttribute("data-hb-tab")); return render(); }
     if ((b = t.closest("[data-hb-pet]"))) { db.cur = b.getAttribute("data-hb-pet"); q("[data-hb-petform]").hidden = true; save(); render(); return syncCur(); }
     if (t.closest("[data-hb-newpet]")) return petForm(null);
-    if (t.closest("[data-hb-edit-pet]")) return petForm(curPet());
+    if (t.closest("[data-hb-edit-pet]")) { var pe = curPet(); petForm(pe); q("[data-hb-petform]").classList.toggle("photoonly", srvOn() && !isDr()); q("[data-hb-pf-title]").textContent = srvOn() && !isDr() ? "تغییر عکس پت" : "ویرایش شناسنامه"; return; }
     if (t.closest("[data-hb-cancel-pet]")) { q("[data-hb-petform]").hidden = true; return render(); }
+    if (t.closest("[data-hb-cover-photo]")) return q("[data-hb-file2]").click();
     if (t.closest("[data-hb-photo]") || t.closest("[data-hb-photo-add]")) return q("[data-hb-file]").click();
     if (t.closest("[data-hb-photo-del]")) { formPhoto = ""; return showPhoto(); }
     if (t.closest("[data-hb-save-pet]")) {
@@ -1548,7 +1556,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       var fv = { name: n2, en: q("#hb-pe").value.trim(), owner: q("#hb-po").value.trim(), guardian: q("#hb-pg").value.trim(), breed: getBreed(), breedEn: q("#hb-pbe").value.trim(), species: spv, birth: bd };
       var perr = q("[data-hb-perr]"); perr.hidden = true;
       var useSrv = srvOn() && isDr() && (!ep0 || srvOf(ep0));
-      if (srvOn() && ep0 && srvOf(ep0) && !isDr()) {   // صاحب پت روی پت سرور فقط عکس را عوض می‌کند
+      if (srvOn() && ep0 && !isDr()) {   // صاحب پت فقط عکس را عوض می‌کند
         ep0.photo = formPhoto; editId = null; q("[data-hb-petform]").hidden = true; save(); return render();
       }
       if (useSrv) {

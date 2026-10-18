@@ -189,7 +189,7 @@ function savePet_(b) {
   var species = ['سگ', 'گربه', 'پرنده', 'دیگر'].indexOf(pin.species) > -1 ? pin.species : 'دیگر';
   var plan = []; (Array.isArray(pin.plan) ? pin.plan : []).slice(0, 60).forEach(function (x) { if (x && H.allTypes.indexOf(x.type) > -1 && date_(x.date)) plan.push({ id: /^[A-Za-z0-9]{3,30}$/.test(x.id || '') ? x.id : rnd_(8), type: x.type, date: x.date, label: clip_(x.label, 90), done: !!x.done }); });
   var cur = null, i; if (pin.code) for (i = 0; i < all.length; i++) if (all[i].code === String(pin.code).toUpperCase() && all[i].deleted !== '1') cur = all[i];
-  var o = cur || { code: newCode_(all), key: rnd_(20), created: nowIso_(), deleted: '' };
+  var o = cur || { code: newCode_(all), key: rnd_(14), created: nowIso_(), deleted: '' };
   o.name = name; o.en = clip_(pin.en, 30); o.owner = clip_(pin.owner, 40); o.guardian = clip_(pin.guardian, 40); o.species = species;
   o.breed = clip_(pin.breed, 40); o.breedEn = clip_(pin.breedEn, 40); o.birth = date_(pin.birth); o.plan = JSON.stringify(plan);
   o.consent = pin.consent ? '1' : (cur ? cur.consent : ''); o.updated = nowIso_();
@@ -237,7 +237,7 @@ function delRec_(b, asDr) {
 }
 
 function touchPet_(pet) { var sh = hsheet_('Pets', PET_COLS); pet.updated = nowIso_(); writeRow_(sh, PET_COLS, pet, pet._row); }
-function rotate_(b) { var p = findPet_(b.code); if (!p || p.deleted === '1') return { ok: false, err: 'notfound' }; p.key = rnd_(20); p.updated = nowIso_(); writeRow_(hsheet_('Pets', PET_COLS), PET_COLS, p, p._row); return { ok: true, pet: petOut_(p, true) }; }
+function rotate_(b) { var p = findPet_(b.code); if (!p || p.deleted === '1') return { ok: false, err: 'notfound' }; p.key = rnd_(14); p.updated = nowIso_(); writeRow_(hsheet_('Pets', PET_COLS), PET_COLS, p, p._row); return { ok: true, pet: petOut_(p, true) }; }
 function deletePet_(b) { var p = findPet_(b.code); if (!p) return { ok: false, err: 'notfound' }; p.deleted = '1'; p.updated = nowIso_(); writeRow_(hsheet_('Pets', PET_COLS), PET_COLS, p, p._row); return { ok: true }; }
 
 function doPost(e) {
