@@ -1207,7 +1207,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   }
   function render() {
     var pets = q("[data-hb-pets]"), main = q("[data-hb-main]"), pf = q("[data-hb-petform]");
-    if (!db.pets.length) { pets.innerHTML = ""; main.hidden = true; pf.hidden = false; return; }
+    if (!db.pets.length) { pets.innerHTML = ""; main.hidden = true; pf.hidden = false; document.documentElement.classList.remove("hb-has-pet"); return; }
     var cp = curPet(); db.cur = cp.id;
     pets.innerHTML = db.pets.map(function (p) { return '<button type="button" class="chip' + (p.id === cp.id ? " on" : "") + '" data-hb-pet="' + p.id + '">' + avatar(p, "hb-mini") + " " + esc(p.name) + "</button>"; }).join("") + '<button type="button" class="chip" data-hb-newpet>＋ پت جدید</button>';
     main.hidden = !pf.hidden; if (!pf.hidden) return;
@@ -1225,19 +1225,20 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       extra += items.length - shown.length;
       if (!shown.length) {
         var had = db.recs.some(function (r) { return r.pet === cp.id && r.type === t; });
-        rl += '<div class="hb-r none"><span class="hb-r-ic">' + k.ic + '</span><div><b>' + esc(tl(t)) + (had ? ": نوبت بعدی تعیین نشده" : " ثبت نشده") + '</b>' + (locked(t) ? "<small>توسط دکتر ثبت می‌شود</small>" : "") + '</div>' + (locked(t) ? "" : '<span class="hb-r-b"><button type="button" data-hb-open-type="' + esc(t) + '">＋ ثبت</button></span>') + '</div>';
+        rl += '<div class="hb-r none"><span class="hb-r-ic">' + k.ic + '</span><div><b>' + esc(tl(t)) + (had ? ": نوبت بعدی تعیین نشده" : " ثبت نشده") + (locked(t) ? " (ثبت توسط دکتر)" : "") + '</b>' + "" + '</div>' + (locked(t) ? "" : '<span class="hb-r-b"><button type="button" data-hb-open-type="' + esc(t) + '">＋ ثبت</button></span>') + '</div>';
         return;
       }
       shown.forEach(function (r) {
         var n = days(r.date);
-        rl += '<div class="hb-r' + (n < 0 ? " late" : n <= 7 ? " soon" : "") + '"><span class="hb-r-ic">' + k.ic + '</span><div><b>' + esc(tl(r.type)) + (r.label ? " · " + (r.html ? r.label : esc(r.label)) : "") + "</b><small>" + fd(r.date) + " · " + when(n) + '</small></div><span class="hb-r-b"><button type="button" data-hb-ics="' + r.kind + ":" + r.id + '">تقویم</button>' + (locked(r.type) ? "" : '<button type="button" data-hb-done="' + r.kind + ":" + r.id + '">انجام شد</button>') + "</span></div>";
+        rl += '<div class="hb-r' + (n < 0 ? " late" : n <= 7 ? " soon" : "") + '"><span class="hb-r-ic">' + k.ic + '</span><div><b>' + esc(r.type === "واکسن" ? "واکسن" : tl(r.type)) + (r.label ? " · " + (r.html ? r.label : esc(r.label)) : "") + "</b><small>" + fd(r.date) + (n <= 30 ? " · " + (n < 0 ? toolFa(-n) + " روز گذشته" : n === 0 ? "امروز" : toolFa(n) + " روز") : "") + '</small></div><span class="hb-r-b"><button type="button" data-hb-ics="' + r.kind + ":" + r.id + '" title="افزودن به تقویم" aria-label="افزودن به تقویم">📅</button>' + (locked(r.type) ? "" : '<button type="button" data-hb-done="' + r.kind + ":" + r.id + '" title="انجام شد" aria-label="انجام شد">✔</button>') + "</span></div>";
       });
     });
     q("[data-hb-rem]").innerHTML = "<h3>🔔 یادآور</h3>" + rl + (extra > 0 || showAll ? '<div class="hb-more"><button type="button" class="hb-lnk" data-hb-more>' + (showAll ? "فقط نوبت بعدی هر مورد" : "برنامهٔ کامل نوبت‌ها") + "</button></div>" : "");
     renderPages(cp);
+    document.documentElement.classList.add("hb-has-pet");
     q("[data-hb-editlist]").textContent = editList ? "پایان ویرایش فهرست" : "ویرایش فهرست"; q("[data-hb-edithint]").hidden = !editList;
   }
-  var OWNER_LOCKED = ["واکسن"];   // انواعی که فقط دکتر ثبت می‌کند
+  var OWNER_LOCKED = ["واکسن", "ویزیت", "آزمایش", "عقیم‌سازی"];   // انواعی که فقط دکتر ثبت می‌کند
   var DR_SALT = "GnOd3U5koVp1Ozi8RTcLbA==", DR_HASH = "b4Ba9BSekt9YN0YQ3iruqAzem9RYjTbLV4PClSZjdFs=";
   function isDr() { try { return localStorage.getItem("dm_hb_dr") === "1"; } catch (e) { return false; } }
   function locked(t) { return !isDr() && OWNER_LOCKED.indexOf(t) > -1; }
@@ -1260,7 +1261,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
         return '<div class="hb-pr">' + recDel(r) + '<div class="hb-pn"><b>' + main + "</b>" + (mode === "par" ? "<span>" + (r.type === "ضدانگل داخلی" ? "داخلی" : "خارجی") + "</span>" : "") + (r.serial ? '<small dir="ltr">Lot: ' + esc(r.serial) + "</small>" : "") + '</div><div class="hb-pd"><span><i>' + (mode === "vax" ? "تزریق" : "مصرف") + "</i>" + fd(r.date) + "</span><span><i>تکرار</i>" + (r.next ? fd(r.next) : "—") + "</span></div></div>";
       }
       var det = [r.name, r.place, r.extra].filter(Boolean).map(esc).join(" · ") + (r.weight ? (r.name || r.place || r.extra ? " · " : "") + toolFa(r.weight) + " کیلوگرم" : "");
-      return '<div class="hb-pr">' + recDel(r) + '<div class="hb-pn"><b>' + k.ic + " " + tl(r.type) + "</b>" + (det ? "<small>" + det + "</small>" : "") + '</div><div class="hb-pd"><span>' + fd(r.date) + "</span></div></div>";
+      return '<div class="hb-pr">' + recDel(r) + '<div class="hb-pn"><b>' + k.ic + " " + tl(r.type) + "</b>" + (!r.dr && (r.type === "سایر" || r.type === "دارو") ? "<span>ثبت صاحب پت</span>" : "") + (det ? "<small>" + det + "</small>" : "") + '</div><div class="hb-pd"><span>' + fd(r.date) + "</span></div></div>";
     }).join("");
   }
   function weightChart(cp) {
@@ -1388,7 +1389,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       q("[data-hb-impm]").hidden = false; document.documentElement.classList.add("gift-open");
     }).catch(function () { alert("این لینک شناسنامه معتبر نیست یا در این مرورگر باز نمی‌شود."); });
   }
-  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !q("[data-hb-sheet]").hidden) closeSheet(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && document.documentElement.classList.contains("hb-present")) { document.documentElement.classList.remove("hb-present"); render(); } if (e.key === "Escape" && !q("[data-hb-sheet]").hidden) closeSheet(); });
 
   root.addEventListener("click", function (e) {
     var t = e.target, b;
@@ -1416,6 +1417,8 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if ((b = t.closest("[data-hb-open-type]"))) { if (locked(b.getAttribute("data-hb-open-type"))) return; curType = b.getAttribute("data-hb-open-type"); openSheet(); return; }
     if (t.closest("[data-hb-sort]")) { asc = !asc; return render(); }
     if ((b = t.closest("[data-hb-pgo]"))) { curPg = Number(b.getAttribute("data-hb-pgo")); goPg(curPg); [].forEach.call(q("[data-hb-ptabs]").children, function (c, n) { c.classList.toggle("on", n === curPg); }); [].forEach.call(q("[data-hb-dots]").children, function (c, n) { c.classList.toggle("on", n === curPg); }); return; }
+    if (t.closest("[data-hb-present]")) { editList = false; document.documentElement.classList.add("hb-present"); render(); window.scrollTo(0, 0); return; }
+    if (t.closest("[data-hb-present-x]")) { document.documentElement.classList.remove("hb-present"); render(); return; }
     if (t.closest("[data-hb-editlist]")) { editList = !editList; return render(); }
     if (t.closest("[data-hb-share]")) return isDr() ? openShare() : undefined;
     if (t.closest("[data-hb-drbtn]")) {
