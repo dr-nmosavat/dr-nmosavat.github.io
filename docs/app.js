@@ -10,8 +10,8 @@ var INFO = {
   homeVisit: "منظریه، اختیاریه، پاسداران، بلوار کاوه، قیطریه (با هماهنگی قبلی)",
   neshan: "https://nshn.ir/d6sbvrTDWxOVnZ",
   balad: "",
-  wheelApi: "",   // آدرس Apps Script چرخ؛ خالی یعنی چرخ محلی
-  sheetApi: ""    // همان آدرس برای همگام‌سازی شناسنامه؛ خالی یعنی فقط روی خود گوشی
+  wheelApi: "https://script.google.com/macros/s/AKfycbzo2VYI-uF9SoyoMkgMbCnM5s5-zOvsPJDp4Ea9C2GHmeBEsJMoVhlbccVgtnpqx_TM/exec",   // آدرس Apps Script چرخ؛ خالی یعنی چرخ محلی
+  sheetApi: "https://script.google.com/macros/s/AKfycbzo2VYI-uF9SoyoMkgMbCnM5s5-zOvsPJDp4Ea9C2GHmeBEsJMoVhlbccVgtnpqx_TM/exec"    // همان آدرس برای همگام‌سازی شناسنامه؛ خالی یعنی فقط روی خود گوشی
 };
 var mapQuery = "مرکز تخصصی دامپزشکی ونک، شیخ بهایی شمالی، برج مرمر";
 var gmaps = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(mapQuery);
