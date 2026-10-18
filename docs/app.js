@@ -10,7 +10,8 @@ var INFO = {
   homeVisit: "منظریه، اختیاریه، پاسداران، بلوار کاوه، قیطریه (با هماهنگی قبلی)",
   neshan: "https://nshn.ir/d6sbvrTDWxOVnZ",
   balad: "",
-  wheelApi: ""   // آدرس Apps Script چرخ؛ خالی یعنی چرخ محلی
+  wheelApi: "",   // آدرس Apps Script چرخ؛ خالی یعنی چرخ محلی
+  sheetApi: ""    // همان آدرس برای همگام‌سازی شناسنامه؛ خالی یعنی فقط روی خود گوشی
 };
 var mapQuery = "مرکز تخصصی دامپزشکی ونک، شیخ بهایی شمالی، برج مرمر";
 var gmaps = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(mapQuery);
@@ -1181,7 +1182,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     function line(r) { return "- " + [r.brand, r.name || tl(r.type)].filter(Boolean).join(" · ") + (r.serial ? " Lot:" + r.serial : "") + (r.extra && !r.serial ? " (" + String(r.extra).slice(0, 24) + ")" : "") + ": " + fl(r.date) + " / " + r.date; }
     function nextOf(t) { var n = allRem().filter(function (r) { return r.pet === cp.id && r.type === t; })[0]; return n ? n.date : ""; }
     var lw = last("وزن", 1)[0], be = cp.breedEn || breedEn(cp.breed), o = [];
-    o.push("HEALTH RECORD | شناسنامه سلامت", cp.name + (cp.en ? " / " + cp.en : "") + (cp.owner ? " | Owner/صاحب: " + cp.owner : "") + (cp.guardian ? " | Guardian/سرپرست: " + cp.guardian : ""), (SPEN[cp.species] || cp.species || "") + (cp.breed ? " | " + cp.breed + (be ? " / " + be : "") : ""));
+    o.push("HEALTH RECORD | شناسنامه سلامت" + (srvOf(cp) ? " | ID " + cp.srv.code : ""), cp.name + (cp.en ? " / " + cp.en : "") + (cp.owner ? " | Owner/صاحب: " + cp.owner : "") + (cp.guardian ? " | Guardian/سرپرست: " + cp.guardian : ""), (SPEN[cp.species] || cp.species || "") + (cp.breed ? " | " + cp.breed + (be ? " / " + be : "") : ""));
     if (cp.birth) o.push("Birth/تولد: " + fl(cp.birth) + " (" + cp.birth + ")");
     if (lw) o.push("Weight/وزن: " + lw.weight + " kg (" + lw.date + ")");
     [["واکسن", "Vaccines/واکسن", 3], ["ضدانگل داخلی", "Deworming/ضدانگل داخلی", 2], ["ضدانگل خارجی (کک و کنه)", "Flea-tick/ضدانگل خارجی", 2]].forEach(function (x) {
@@ -1200,6 +1201,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   }
   function renderCover(cp) {
     var lw = db.recs.filter(function (r) { return r.pet === cp.id && r.weight; }).sort(function (a, b) { return a.date < b.date ? 1 : -1; })[0], rows = [];
+    if (srvOf(cp)) rows.push(["کد پت / ID", '<bdi dir="ltr">' + esc(cp.srv.code) + "</bdi>"]);
     rows.push(["صاحب پت / Owner", cp.owner ? esc(cp.owner) : '<span class="nil">—</span>']);
     if (cp.guardian) rows.push(["سرپرست / Guardian", esc(cp.guardian)]);
     function enp(s) { return s ? ' <span class="en">· ' + esc(s) + "</span>" : ""; }
@@ -1214,8 +1216,9 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   // همهٔ یادآوری‌ها: نوبت‌های بعدی + برنامهٔ واکسن
   function allRem() {
     var out = [];
-    db.recs.forEach(function (r) { if (r.next && !r.closed && r.type !== "وزن") out.push({ id: r.id, kind: "rec", pet: r.pet, type: r.type, label: [r.brand ? "<bdi>" + esc(r.brand) + "</bdi>" : "", r.name ? esc(r.name) : ""].filter(Boolean).join(" · "), html: 1, date: r.next }); });
-    db.pets.forEach(function (p) { (p.plan || []).forEach(function (x) { if (!x.done) out.push({ id: x.id, kind: "plan", pet: p.id, type: x.type, label: x.label, date: x.date }); }); });
+    var pm = {}; db.pets.forEach(function (p) { pm[p.id] = p; });
+    db.recs.forEach(function (r) { var lc = ((pm[r.pet] || {}).lc || {})[r.id]; if (r.next && !r.closed && !lc && r.type !== "وزن" && !db.recs.some(function (x) { return x.pet === r.pet && x.type === r.type && x.id !== r.id && x.date >= r.next; })) out.push({ id: r.id, kind: "rec", pet: r.pet, type: r.type, label: [r.brand ? "<bdi>" + esc(r.brand) + "</bdi>" : "", r.name ? esc(r.name) : ""].filter(Boolean).join(" · "), html: 1, date: r.next }); });
+    db.pets.forEach(function (p) { (p.plan || []).forEach(function (x) { if (!x.done && !(p.lc || {})[x.id]) out.push({ id: x.id, kind: "plan", pet: p.id, type: x.type, label: x.label, date: x.date }); }); });
     return out.sort(function (a, b) { return a.date < b.date ? -1 : 1; });
   }
   function render() {
@@ -1249,12 +1252,45 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     q("[data-hb-rem]").innerHTML = "<h3>🔔 یادآور</h3>" + rl + (extra > 0 || showAll ? '<div class="hb-more"><button type="button" class="hb-lnk" data-hb-more>' + (showAll ? "فقط نوبت بعدی هر مورد" : "برنامهٔ کامل نوبت‌ها") + "</button></div>" : "");
     renderPages(cp);
     document.documentElement.classList.add("hb-has-pet");
+    document.documentElement.classList.toggle("hb-need-srv", srvOn() && !srvOf(cp));
   }
   var OWNER_LOCKED = ["واکسن", "ویزیت", "آزمایش", "عقیم‌سازی"];   // انواعی که فقط دکتر ثبت می‌کند
   var DR_SALT = "GnOd3U5koVp1Ozi8RTcLbA==", DR_HASH = "b4Ba9BSekt9YN0YQ3iruqAzem9RYjTbLV4PClSZjdFs=";
-  function isDr() { try { return localStorage.getItem("dm_hb_dr") === "1"; } catch (e) { return false; } }
+  function srvOn() { return !!INFO.sheetApi && !!window.fetch; }
+  function api(body) {
+    var ctl = window.AbortController ? new AbortController() : null, tm = ctl ? setTimeout(function () { ctl.abort(); }, 20000) : 0;
+    return fetch(INFO.sheetApi, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(body), signal: ctl ? ctl.signal : undefined })
+      .then(function (r) { return r.json(); }).then(function (j) { clearTimeout(tm); return j; }).catch(function () { clearTimeout(tm); return { ok: false, err: "net" }; });
+  }
+  function tokGet() { try { var o = JSON.parse(localStorage.getItem("dm_hb_tok") || "null"); return o && o.exp > Date.now() ? o.t : ""; } catch (e) { return ""; } }
+  function tokSet(t) { try { if (t) localStorage.setItem("dm_hb_tok", JSON.stringify({ t: t, exp: Date.now() + 3 * 86400000 - 60000 })); else localStorage.removeItem("dm_hb_tok"); } catch (e) {} }
+  function isDr() { try { var f = localStorage.getItem("dm_hb_dr") === "1"; if (f && srvOn() && !tokGet()) { localStorage.removeItem("dm_hb_dr"); return false; } return f; } catch (e) { return false; } }
+  function srvOf(p) { return p && p.srv && p.srv.code ? p.srv : null; }
+  function errMsg(e) { return e === "net" ? "اتصال با سرور برقرار نشد. اینترنت را بررسی کنید." : e === "auth" ? "دسترسی مجاز نیست (دوباره وارد شوید یا لینک را بررسی کنید)." : e === "forbidden" ? "این مورد را فقط دکتر ثبت یا تغییر می‌دهد." : e === "locked" ? "ورود موقتاً قفل شد؛ چند دقیقه بعد دوباره تلاش کنید." : "خطای سرور؛ دوباره تلاش کنید."; }
+  function toSrvPet(p) { return { code: p.srv && p.srv.code, name: p.name, en: p.en, owner: p.owner, guardian: p.guardian, species: p.species, breed: p.breed, breedEn: p.breedEn, birth: p.birth, plan: p.plan || [], consent: p.consent ? 1 : 0 }; }
+  function toSrvRec(r) { var o = {}; ["id", "type", "date", "name", "brand", "serial", "place", "extra", "freq", "how", "dur", "end", "weight", "next", "closed"].forEach(function (k) { if (r[k]) o[k] = r[k]; }); return o; }
+  function normRec(r) { var o = {}; for (var k in r) o[k] = r[k]; o.dr = r.dr ? 1 : 0; o.closed = !!r.closed; return o; }
+  function upsertSrv(sp, recs, key) {
+    var p = db.pets.filter(function (x) { return (x.srv && x.srv.code === sp.code) || x.id === sp.code; })[0];
+    if (!p) { p = { id: sp.code, plan: [] }; db.pets.push(p); }
+    ["name", "en", "owner", "guardian", "species", "breed", "breedEn", "birth"].forEach(function (k) { p[k] = sp[k] || ""; });
+    p.plan = sp.plan || []; p.consent = !!sp.consent; p.srv = { code: sp.code, key: key || (p.srv && p.srv.key) || sp.key || "" };
+    db.recs = db.recs.filter(function (r) { return r.pet !== p.id; }).concat((recs || []).map(function (r) { var o = normRec(r); o.pet = p.id; return o; }));
+    return p;
+  }
+  var syncing = false;
+  function syncCur() {
+    var cp = curPet(); if (!cp || !srvOf(cp) || !srvOn() || syncing) return; syncing = true;
+    var s = srvOf(cp), dr = isDr();
+    api(dr ? { a: "get", t: tokGet(), code: s.code } : { a: "getOwner", code: s.code, key: s.key }).then(function (j) {
+      syncing = false; if (!j.ok) return;
+      var snap = function () { return JSON.stringify([db.pets.filter(function (x) { return x.id === cp.id; }), db.recs.filter(function (r) { return r.pet === cp.id; })]); }, before = snap();
+      upsertSrv(j.pet, j.recs, s.key || j.pet.key);
+      if (snap() !== before) { save(); render(); }
+    });
+  }
   function locked(t) { return !isDr() && OWNER_LOCKED.indexOf(t) > -1; }
-  function applyRole() { document.documentElement.classList.toggle("hb-dr", isDr()); var b = q("[data-hb-drbtn]"); if (b) b.textContent = isDr() ? "خروج از حالت دکتر" : "ورود دکتر"; var bd = q("[data-hb-drbadge]"); if (bd) bd.hidden = !isDr(); }
+  function applyRole() { document.documentElement.classList.toggle("hb-dr", isDr()); var b = q("[data-hb-drbtn]"); if (b) b.textContent = isDr() ? "خروج از حالت دکتر" : "ورود دکتر"; var bd = q("[data-hb-drbadge]"); if (bd) bd.hidden = !isDr(); var sb = q("[data-hb-searchbox]"); if (sb) sb.hidden = !(srvOn() && isDr()); }
   function checkDrPass(pw) {
     if (!window.crypto || !crypto.subtle) return Promise.resolve(false);
     var s = atob(DR_SALT), salt = new Uint8Array(s.length), i; for (i = 0; i < s.length; i++) salt[i] = s.charCodeAt(i);
@@ -1389,6 +1425,12 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   JD.pb = initJd(q('[data-jd="pb"]'), { optional: true, minY: -30, maxY: 0 });
   root.addEventListener("change", function (e) { var s = e.target; if (s && s.hasAttribute && s.hasAttribute("data-hb-tsel")) { curType = s.value; xTouched = false; renderFields(); return; } if (s && s.hasAttribute && s.hasAttribute("data-hb-sel")) { var o = q("#" + s.id + "-o"); if (o) { o.hidden = s.value !== "__o"; if (!o.hidden) o.focus(); } } });
   q("#hb-pbr").addEventListener("change", function () { var o = q("#hb-pbro"); o.hidden = this.value !== "__o"; if (!o.hidden) o.focus(); var e = q("#hb-pbe"); if (e.getAttribute("data-auto") === "1") e.value = breedEn(getBreed()); });
+  (function () {
+    var sq = q("[data-hb-q]"), tm = 0; if (!sq) return;
+    function run() { var box = q("[data-hb-qres]"); box.innerHTML = '<p class="hb-qmsg">در حال جستجو…</p>'; api({ a: "search", t: tokGet(), q: sq.value }).then(function (j) { if (!j.ok) { box.innerHTML = '<p class="hb-qmsg">' + esc(errMsg(j.err)) + "</p>"; return; } box.innerHTML = j.pets.length ? j.pets.map(function (p) { return '<button type="button" class="hb-qr1" data-hb-qopen="' + esc(p.code) + '"><b>' + esc(p.name) + (p.en ? " · " + esc(p.en) : "") + "</b><small>" + esc((p.owner ? p.owner + " · " : "") + p.code) + "</small></button>"; }).join("") : '<p class="hb-qmsg">موردی پیدا نشد.</p>'; }); }
+    sq.addEventListener("input", function () { clearTimeout(tm); tm = setTimeout(run, 350); });
+    sq.addEventListener("focus", function () { if (!q("[data-hb-qres]").innerHTML) run(); });
+  })();
   q("#hb-pbro").addEventListener("input", function () { var e = q("#hb-pbe"); if (e.getAttribute("data-auto") === "1") e.value = breedEn(this.value); });
   document.addEventListener("click", function (e) { if (e.target.closest && e.target.closest('[data-seg="hbsp"] button')) setTimeout(function () { var on = q('[data-seg="hbsp"] .on'); fillBreeds(on ? on.getAttribute("data-v") : "سگ", ""); q("#hb-pbe").value = ""; q("#hb-pbe").setAttribute("data-auto", "1"); }, 0); });
   q("#hb-pbe").addEventListener("input", function () { this.setAttribute("data-auto", ""); });
@@ -1453,11 +1495,25 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   }
   function openShare() {
     var cp = curPet(); if (!cp) return; shareLink = ""; q("[data-hb-shqr]").innerHTML = ""; q("[data-hb-shlink]").value = "در حال ساخت لینک…"; q("[data-hb-shm]").hidden = false; document.documentElement.classList.add("gift-open");
+    if (srvOf(cp) && srvOn()) { shareLink = location.href.replace(/#.*$/, "") + "#p=" + cp.srv.code + "." + cp.srv.key; q("[data-hb-shlink]").value = shareLink; q("[data-hb-shlen]").textContent = toolFa(shareLink.length) + " نویسه · لینک زنده (همیشه آخرین وضعیت)"; q("[data-hb-shqr]").innerHTML = qrFromText(shareLink); return; }
     packShare(shareData(cp)).then(function (s) { shareLink = location.href.replace(/#.*$/, "") + "#share=" + s; q("[data-hb-shlink]").value = shareLink; q("[data-hb-shlen]").textContent = toolFa(shareLink.length) + " نویسه"; var qs = qrFromText(shareLink); q("[data-hb-shqr]").innerHTML = qs || "<p class=\"hb-shnote\">لینک برای QR بیش از حد بلند است؛ از لینک یا واتساپ استفاده کنید.</p>"; }).catch(function () { q("[data-hb-shlink]").value = "ساخت لینک در این مرورگر ممکن نشد."; });
   }
   function closeModal(sel) { q(sel).hidden = true; document.documentElement.classList.remove("gift-open"); }
   var pendingImport = null;
   function checkImport() {
+    var ml = /^#p=([A-Za-z0-9\-]{3,20})\.([A-Za-z0-9]{10,40})$/.exec(location.hash || "");
+    if (ml) {
+      if (!srvOn()) { alert("این لینک زنده به سرور نیاز دارد که هنوز فعال نشده است."); return; }
+      api({ a: "getOwner", code: ml[1], key: ml[2] }).then(function (j) {
+        if (!j.ok) { alert(j.err === "auth" ? "این لینک معتبر نیست یا باطل شده است. از دکتر لینک تازه بخواهید." : errMsg(j.err)); return; }
+        pendingImport = { live: { code: j.pet.code, key: ml[2], pet: j.pet, recs: j.recs } };
+        var cn = function (t) { return j.recs.filter(function (r) { return r.type === t; }).length; };
+        var inf = [cn("واکسن") ? toolFa(cn("واکسن")) + " واکسیناسیون" : "", (cn("ضدانگل داخلی") + cn("ضدانگل خارجی (کک و کنه)")) ? toolFa(cn("ضدانگل داخلی") + cn("ضدانگل خارجی (کک و کنه)")) + " ضدانگل" : "", cn("ویزیت") ? toolFa(cn("ویزیت")) + " ویزیت" : ""].filter(Boolean).join("، ") || "بدون سابقهٔ ثبت‌شده";
+        q("[data-hb-impinfo]").innerHTML = "<b>" + esc(j.pet.name) + "</b>" + (j.pet.owner ? "<small>صاحب: " + esc(j.pet.owner) + "</small>" : "") + "<small>" + esc(inf) + "</small>";
+        q("[data-hb-impm]").hidden = false; document.documentElement.classList.add("gift-open");
+      });
+      return;
+    }
     var m = /^#share=([\w-]+)$/.exec(location.hash || ""); if (!m) return;
     unpackShare(m[1]).then(sanitizeShare).then(function (x) {
       pendingImport = x; var cnt = function (t) { return x.recs.filter(function (r) { return r.type === t; }).length; };
@@ -1476,7 +1532,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if ((b = t.closest("[data-hb-goto]")) && !t.closest("button")) { var gt = b.getAttribute("data-hb-goto"); setPg(gt === "واکسن" ? 1 : /ضدانگل/.test(gt) ? 2 : 3); q("[data-hb-ptabs]").scrollIntoView({ behavior: "smooth", block: "start" }); return; }
     if ((b = t.closest("[data-hb-opt]"))) { [].forEach.call(b.parentNode.children, function (x) { x.classList.toggle("on", x === b); }); var n = q("#hb-n"); if (n) n.value = b.getAttribute("data-hb-opt"); return; }
     if ((b = t.closest("[data-hb-tab]"))) { curTab = Number(b.getAttribute("data-hb-tab")); return render(); }
-    if ((b = t.closest("[data-hb-pet]"))) { db.cur = b.getAttribute("data-hb-pet"); q("[data-hb-petform]").hidden = true; save(); return render(); }
+    if ((b = t.closest("[data-hb-pet]"))) { db.cur = b.getAttribute("data-hb-pet"); q("[data-hb-petform]").hidden = true; save(); render(); return syncCur(); }
     if (t.closest("[data-hb-newpet]")) return petForm(null);
     if (t.closest("[data-hb-edit-pet]")) return petForm(curPet());
     if (t.closest("[data-hb-cancel-pet]")) { q("[data-hb-petform]").hidden = true; return render(); }
@@ -1484,9 +1540,26 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (t.closest("[data-hb-photo-del]")) { formPhoto = ""; return showPhoto(); }
     if (t.closest("[data-hb-save-pet]")) {
       var n2 = q("#hb-pn").value.trim(); if (!n2) { q("#hb-pn").focus(); return; }
-      var sp = q('[data-seg="hbsp"] .on'), spv = sp ? sp.getAttribute("data-v") : "", bd = JD.pb.get();
-      if (editId) { var ep = db.pets.filter(function (x) { return x.id === editId; })[0]; if (ep) { ep.name = n2; ep.en = q("#hb-pe").value.trim(); ep.owner = q("#hb-po").value.trim(); ep.guardian = q("#hb-pg").value.trim(); ep.breed = getBreed(); ep.breedEn = q("#hb-pbe").value.trim(); ep.species = spv; ep.birth = bd; ep.photo = formPhoto; } }
-      else { var p = { id: uid(), name: n2, en: q("#hb-pe").value.trim(), owner: q("#hb-po").value.trim(), guardian: q("#hb-pg").value.trim(), breed: getBreed(), breedEn: q("#hb-pbe").value.trim(), species: spv, birth: bd, photo: formPhoto, plan: [] }; db.pets.push(p); db.cur = p.id; }
+      var sp = q('[data-seg="hbsp"] .on'), spv = sp ? sp.getAttribute("data-v") : "", bd = JD.pb.get(), ep0 = editId ? db.pets.filter(function (x) { return x.id === editId; })[0] : null;
+      var fv = { name: n2, en: q("#hb-pe").value.trim(), owner: q("#hb-po").value.trim(), guardian: q("#hb-pg").value.trim(), breed: getBreed(), breedEn: q("#hb-pbe").value.trim(), species: spv, birth: bd };
+      var perr = q("[data-hb-perr]"); perr.hidden = true;
+      var useSrv = srvOn() && isDr() && (!ep0 || srvOf(ep0));
+      if (srvOn() && ep0 && srvOf(ep0) && !isDr()) {   // صاحب پت روی پت سرور فقط عکس را عوض می‌کند
+        ep0.photo = formPhoto; editId = null; q("[data-hb-petform]").hidden = true; save(); return render();
+      }
+      if (useSrv) {
+        var cons = q("#hb-pcons").checked; if (!ep0 && !cons) { perr.textContent = "گرفتن رضایت صاحب پت لازم است."; perr.hidden = false; return; }
+        var pin = {}; for (var kp in fv) pin[kp] = fv[kp]; pin.code = ep0 ? ep0.srv.code : ""; pin.plan = ep0 ? ep0.plan || [] : []; pin.consent = cons || (ep0 && ep0.consent) ? 1 : 0;
+        var sbtn = t.closest("[data-hb-save-pet]"); sbtn.disabled = true;
+        api({ a: "savePet", t: tokGet(), pet: pin }).then(function (j) {
+          sbtn.disabled = false; if (!j.ok) { perr.textContent = errMsg(j.err); perr.hidden = false; return; }
+          var recs = ep0 ? db.recs.filter(function (r) { return r.pet === ep0.id; }) : [], pp = upsertSrv(j.pet, recs, j.pet.key);
+          pp.photo = formPhoto || (ep0 && ep0.photo) || ""; db.cur = pp.id; editId = null; q("[data-hb-petform]").hidden = true; save(); render();
+        });
+        return;
+      }
+      if (ep0) { for (var k4 in fv) ep0[k4] = fv[k4]; ep0.photo = formPhoto; }
+      else { var p = { id: uid(), plan: [], photo: formPhoto }; for (var k5 in fv) p[k5] = fv[k5]; db.pets.push(p); db.cur = p.id; }
       editId = null; q("[data-hb-petform]").hidden = true; save(); return render();
     }
     if (t.closest("[data-hb-mkplan]")) { var cp2 = curPet(); cp2.plan = buildPlan(cp2); save(); return render(); }
@@ -1496,18 +1569,46 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if ((b = t.closest("[data-hb-pgo]"))) return setPg(Number(b.getAttribute("data-hb-pgo")));
     if (t.closest("[data-hb-present]")) { editList = false; document.documentElement.classList.add("hb-present"); render(); window.scrollTo(0, 0); return; }
     if (t.closest("[data-hb-present-x]")) { document.documentElement.classList.remove("hb-present"); render(); return; }
+    if ((b = t.closest("[data-hb-qopen]"))) {
+      var qc = b.getAttribute("data-hb-qopen"); b.disabled = true;
+      api({ a: "get", t: tokGet(), code: qc }).then(function (j) { b.disabled = false; if (!j.ok) return alert(errMsg(j.err)); var p = upsertSrv(j.pet, j.recs, j.pet.key); db.cur = p.id; q("[data-hb-petform]").hidden = true; q("[data-hb-qres]").innerHTML = ""; q("[data-hb-q]").value = ""; save(); render(); });
+      return;
+    }
+    if (t.closest("[data-hb-tosrv]")) {
+      var cpm = curPet(); if (!cpm || srvOf(cpm) || !srvOn() || !isDr()) return;
+      if (!confirm("رضایت صاحب پت برای ذخیرهٔ اطلاعات روی سرور گرفته شده است؟")) return;
+      var btn = t.closest("[data-hb-tosrv]"); btn.disabled = true; btn.textContent = "در حال ذخیره…";
+      var pin = toSrvPet(cpm); pin.consent = 1;
+      api({ a: "savePet", t: tokGet(), pet: pin }).then(function (j) {
+        if (!j.ok) { btn.disabled = false; btn.textContent = "☁️ ذخیره روی سرور"; return alert(errMsg(j.err)); }
+        var recs = db.recs.filter(function (r) { return r.pet === cpm.id; }), i = 0;
+        (function next() {
+          if (i >= recs.length) { cpm.srv = { code: j.pet.code, key: j.pet.key }; cpm.consent = true; save(); btn.disabled = false; btn.textContent = "☁️ ذخیره روی سرور"; return render(); }
+          api({ a: "saveRec", t: tokGet(), code: j.pet.code, rec: toSrvRec(recs[i++]) }).then(function (r) { if (!r.ok) { btn.disabled = false; return alert(errMsg(r.err)); } next(); });
+        })();
+      });
+      return;
+    }
     if (t.closest("[data-hb-share]")) return isDr() ? openShare() : undefined;
     if (t.closest("[data-hb-drbtn]")) {
-      if (isDr()) { try { localStorage.removeItem("dm_hb_dr"); } catch (x) {} applyRole(); return render(); }
+      if (isDr()) { try { localStorage.removeItem("dm_hb_dr"); } catch (x) {} tokSet(""); applyRole(); return render(); }
       q("[data-hb-drm]").hidden = false; document.documentElement.classList.add("gift-open"); q("[data-hb-drpw]").value = ""; q("[data-hb-drerr]").hidden = true; q("[data-hb-drpw]").focus(); return;
     }
     if (t.closest("[data-hb-dr-close]") || t === q("[data-hb-drm]")) return closeModal("[data-hb-drm]");
-    if (t.closest("[data-hb-dr-ok]")) { var pw = q("[data-hb-drpw]").value.trim(); checkDrPass(pw).then(function (ok) { if (!ok) { q("[data-hb-drerr]").hidden = false; return; } try { localStorage.setItem("dm_hb_dr", "1"); } catch (x) {} closeModal("[data-hb-drm]"); curType = "واکسن"; applyRole(); render(); }); return; }
+    if (t.closest("[data-hb-dr-ok]")) {
+      var pw = q("[data-hb-drpw]").value.trim(), er0 = q("[data-hb-drerr]"), fin0 = function () { try { localStorage.setItem("dm_hb_dr", "1"); } catch (x) {} closeModal("[data-hb-drm]"); curType = "واکسن"; applyRole(); render(); syncCur(); };
+      if (srvOn()) api({ a: "drLogin", pass: pw }).then(function (j) { if (!j.ok) { er0.textContent = j.err === "auth" ? "رمز درست نیست." : errMsg(j.err); er0.hidden = false; return; } tokSet(j.t); fin0(); });
+      else checkDrPass(pw).then(function (ok) { if (!ok) { er0.textContent = "رمز درست نیست."; er0.hidden = false; return; } fin0(); });
+      return;
+    }
     if (t.closest("[data-hb-sh-close]") || t === q("[data-hb-shm]")) return closeModal("[data-hb-shm]");
     if (t.closest("[data-hb-sh-copy]")) { if (!shareLink) return; var ta = q("[data-hb-shlink]"); ta.select(); try { navigator.clipboard.writeText(shareLink); } catch (x) { document.execCommand("copy"); } t.closest("[data-hb-sh-copy]").textContent = "کپی شد ✓"; return; }
     if (t.closest("[data-hb-sh-wa]")) { if (!shareLink) return; var num = waNum(q("[data-hb-shnum]").value); window.open("https://wa.me/" + num + "?text=" + encodeURIComponent(shareMsg()), "_blank", "noopener"); return; }
     if (t.closest("[data-hb-imp-no]") || t === q("[data-hb-impm]")) { pendingImport = null; closeModal("[data-hb-impm]"); try { history.replaceState(null, "", location.pathname); } catch (x) {} return; }
     if (t.closest("[data-hb-imp-yes]")) {
+      if (pendingImport && pendingImport.live) {
+        var lv = pendingImport.live, pl0 = upsertSrv(lv.pet, lv.recs, lv.key); db.cur = pl0.id; q("[data-hb-petform]").hidden = true; save(); pendingImport = null; closeModal("[data-hb-impm]"); try { history.replaceState(null, "", location.pathname); } catch (x) {} return render();
+      }
       if (!pendingImport) return; var pi = pendingImport, ex = db.pets.filter(function (p) { return p.id === pi.pet.id; })[0];
       if (ex && !confirm("این پت قبلاً در دفترچهٔ شما هست. با اطلاعات جدید به‌روز شود؟")) return;
       if (ex) { pi.pet.photo = ex.photo || ""; db.pets = db.pets.map(function (p) { return p.id === pi.pet.id ? pi.pet : p; }); db.recs = db.recs.filter(function (r) { return r.pet !== pi.pet.id; }); } else db.pets.push(pi.pet);
@@ -1529,26 +1630,63 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       db.mem = db.mem || {};
       c.f.forEach(function (f) { var el = q("#hb-f-" + f.id); if (el && el.tagName === "SELECT" && el.value === "__o" && vals[f.id]) { var mk = curType + "|" + f.id; if (f.sel(cp.species).indexOf(vals[f.id]) < 0) { db.mem[mk] = db.mem[mk] || []; if (db.mem[mk].indexOf(vals[f.id]) < 0) db.mem[mk].push(vals[f.id]); } } });
       var fields = { date: d, name: nm, brand: vals.brand || "", serial: vals.serial || "", place: vals.place || "", extra: vals.extra || "", freq: vals.freq || "", how: vals.how || "", dur: vals.dur || "", end: end, weight: w || 0, next: nx };
-      if (ed) { for (var kf in fields) ed[kf] = fields[kf]; ed.closed = false; }
-      else {
-        db.recs.forEach(function (r) { if (r.pet === cp.id && r.type === curType && r.next && !r.closed && r.next <= d) r.closed = true; });
-        (cp.plan || []).forEach(function (x) {
-          if (x.done || x.type !== curType || Math.abs(days(x.date) - days(d)) > 10) return;
-          if (curType === "ضدانگل داخلی" || (/گانه/.test(nm) && /گانه/.test(x.label)) || (/هاری/.test(nm) && /هاری/.test(x.label))) x.done = true;
-        });
-        var rec = { id: uid(), pet: cp.id, type: curType, dr: isDr() ? 1 : 0 }; for (var k2 in fields) rec[k2] = fields[k2]; db.recs.push(rec);
+      function commit(srvRec) {
+        if (ed) { for (var kf in fields) ed[kf] = fields[kf]; ed.closed = false; }
+        else {
+          db.recs.forEach(function (r) { if (r.pet === cp.id && r.type === curType && r.next && !r.closed && r.next <= d) r.closed = true; });
+          (cp.plan || []).forEach(function (x) {
+            if (x.done || x.type !== curType || Math.abs(days(x.date) - days(d)) > 10) return;
+            if (curType === "ضدانگل داخلی" || (/گانه/.test(nm) && /گانه/.test(x.label)) || (/هاری/.test(nm) && /هاری/.test(x.label))) x.done = true;
+          });
+          var rec = srvRec || { id: uid(), pet: cp.id, type: curType, dr: isDr() ? 1 : 0 }; if (!srvRec) for (var k2 in fields) rec[k2] = fields[k2]; db.recs.push(rec);
+        }
+        editRecId = null; save(); closeSheet(); render();
       }
-      editRecId = null; save(); closeSheet(); return render();
+      var sv = srvOf(cp);
+      if (sv && srvOn()) {
+        var tmp = ed ? JSON.parse(JSON.stringify(ed)) : { id: uid(), type: curType }; for (var k3 in fields) tmp[k3] = fields[k3]; tmp.closed = false;
+        q("[data-hb-save]").disabled = true;
+        api(isDr() ? { a: "saveRec", t: tokGet(), code: sv.code, rec: toSrvRec(tmp) } : { a: "ownerAddRec", code: sv.code, key: sv.key, rec: toSrvRec(tmp) }).then(function (j) {
+          q("[data-hb-save]").disabled = false;
+          if (!j.ok) { er.textContent = errMsg(j.err); er.hidden = false; return; }
+          var srec = normRec(j.rec); srec.pet = cp.id; commit(ed ? null : srec);
+        });
+        return;
+      }
+      commit(null); return;
+    }
+    if (false) {      editRecId = null; save(); closeSheet(); return render();
     }
     if ((b = t.closest("[data-hb-stab]"))) { editRecId = null; if (b.getAttribute("data-hb-stab") === "new") { renderTypes(); renderFields(); q("[data-hb-save]").textContent = "ثبت"; } return showTab(b.getAttribute("data-hb-stab")); }
     if ((b = t.closest("[data-hb-redit]"))) return startEdit(b.getAttribute("data-hb-redit"));
-    if ((b = t.closest("[data-hb-rdel]"))) { var rid2 = b.getAttribute("data-hb-rdel"), r2 = db.recs.filter(function (r) { return r.id === rid2; })[0]; if (r2 && (isDr() || !r2.dr) && confirm("این مورد حذف شود؟")) { db.recs = db.recs.filter(function (r) { return r.id !== rid2; }); save(); renderHist(); render(); } return; }
+    if ((b = t.closest("[data-hb-rdel]"))) { var rid2 = b.getAttribute("data-hb-rdel"), r2 = db.recs.filter(function (r) { return r.id === rid2; })[0]; if (r2 && (isDr() || !r2.dr) && confirm("این مورد حذف شود؟")) {
+        var fin = function () { db.recs = db.recs.filter(function (r) { return r.id !== rid2; }); save(); renderHist(); render(); }, svd = srvOf(curPet());
+        if (svd && srvOn()) api(isDr() ? { a: "delRec", t: tokGet(), code: svd.code, id: rid2 } : { a: "ownerDelRec", code: svd.code, key: svd.key, id: rid2 }).then(function (j) { if (j.ok) fin(); else alert(errMsg(j.err)); });
+        else fin();
+      } return; }
     if ((b = t.closest("[data-hb-add]"))) { xTouched = true; JD.x.set(addMonths(JD.d.get(), Number(b.getAttribute("data-hb-add")))); return; }
     if ((b = t.closest("[data-hb-usesug]"))) { xTouched = true; JD.x.set(b.getAttribute("data-hb-usesug")); return; }
     if (t.closest("[data-hb-clear]")) { xTouched = true; JD.x.set(""); return; }
     if ((b = t.closest("[data-hb-del]"))) { var dr0 = db.recs.filter(function (r) { return r.id === b.getAttribute("data-hb-del"); })[0]; if (dr0 && dr0.dr && !isDr()) return; if (confirm("این مورد حذف شود؟")) { var id = b.getAttribute("data-hb-del"); db.recs = db.recs.filter(function (r) { return r.id !== id; }); save(); render(); } return; }
     if ((b = t.closest("[data-hb-done]"))) {
       var pr = b.getAttribute("data-hb-done").split(":"), kd = pr[0], rid = pr[1]; var dn = allRem().filter(function (r) { return r.kind === kd && r.id === rid; })[0]; if (dn && locked(dn.type)) return;
+      var cpd = curPet(), svn = srvOf(cpd);
+      if (svn && srvOn()) {
+        if (kd === "rec") {
+          var r0 = db.recs.filter(function (r) { return r.id === rid; })[0]; if (!r0) return;
+          if (!isDr()) { cpd.lc = cpd.lc || {}; cpd.lc[rid] = 1; save(); return render(); }
+          var t0 = JSON.parse(JSON.stringify(r0)); t0.closed = true;
+          api({ a: "saveRec", t: tokGet(), code: svn.code, rec: toSrvRec(t0) }).then(function (j) { if (!j.ok) return alert(errMsg(j.err)); r0.closed = true; save(); render(); }); return;
+        }
+        var px = (cpd.plan || []).filter(function (x) { return x.id === rid; })[0]; if (!px) return;
+        var nr = { id: uid(), type: px.type, date: ymd(new Date()), name: px.label || "" };
+        api(isDr() ? { a: "saveRec", t: tokGet(), code: svn.code, rec: nr } : { a: "ownerAddRec", code: svn.code, key: svn.key, rec: nr }).then(function (j) {
+          if (!j.ok) return alert(errMsg(j.err));
+          var f2 = normRec(j.rec); f2.pet = cpd.id; db.recs.push(f2);
+          if (isDr()) { px.done = true; api({ a: "savePet", t: tokGet(), pet: toSrvPet(cpd) }); } else { cpd.lc = cpd.lc || {}; cpd.lc[rid] = 1; }
+          save(); render();
+        }); return;
+      }
       if (kd === "rec") db.recs.forEach(function (r) { if (r.id === rid) r.closed = true; });
       else db.pets.forEach(function (p) { (p.plan || []).forEach(function (x) { if (x.id === rid) { x.done = true; db.recs.push({ id: uid(), pet: p.id, type: x.type, date: ymd(new Date()), name: x.label, brand: "", serial: "", place: "", extra: "", weight: 0, next: "" }); } }); });
       save(); return render();
@@ -1562,7 +1700,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (t.closest("[data-hb-export]")) return dl("daftarche-salamat-pet.json", JSON.stringify(db), "application/json");
     if (t.closest("[data-hb-print]")) return window.print();
     if (t.closest("[data-hb-del-pet]")) {
-      var c = curPet(); if (c && confirm("پت «" + c.name + "» و همهٔ سابقه‌اش حذف شود؟")) { db.recs = db.recs.filter(function (r) { return r.pet !== c.id; }); db.pets = db.pets.filter(function (p) { return p.id !== c.id; }); db.cur = db.pets[0] ? db.pets[0].id : null; save(); render(); }
+      var c = curPet(), svc = srvOf(c); if (c && confirm(svc && isDr() ? "پت «" + c.name + "» از سرور هم برای همیشه حذف شود؟" : "پت «" + c.name + "» و همهٔ سابقه‌اش از این گوشی حذف شود؟")) { if (svc && isDr() && srvOn()) api({ a: "deletePet", t: tokGet(), code: svc.code }); db.recs = db.recs.filter(function (r) { return r.pet !== c.id; }); db.pets = db.pets.filter(function (p) { return p.id !== c.id; }); db.cur = db.pets[0] ? db.pets[0].id : null; save(); render(); }
     }
   });
   q("[data-hb-import]").addEventListener("change", function (e) {
@@ -1576,6 +1714,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   if (/iphone|ipad/i.test(navigator.userAgent) && !window.navigator.standalone) q("[data-hb-ios]").hidden = false;
   applyRole();
   checkImport();
+  syncCur();
   if ("serviceWorker" in navigator && /^https?:/.test(location.protocol)) { try { navigator.serviceWorker.register("sw.js"); } catch (e) {} }
   render();
 })();

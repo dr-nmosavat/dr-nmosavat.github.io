@@ -1674,3 +1674,11 @@ html.hb-present .hb-px { position: fixed; bottom: 18px; inset-inline: auto; left
 @media print { .hb-id, .hb-pg-b { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
 .hb-track { align-items: stretch; } .hb-slide { align-self: stretch; }
 .hb-id, .hb-pg-b { background-size: 96px; }
+
+.hb-search { margin-bottom: 10px; } .hb-search input { width: 100%; box-sizing: border-box; min-height: 44px; border: 1.5px solid var(--line); border-radius: 12px; padding: 8px 12px; font: inherit; background: #fff; }
+.hb-qres { display: grid; gap: 6px; margin-top: 6px; }
+.hb-qr1 { text-align: right; border: 1px solid var(--line); background: #fff; border-radius: 12px; padding: 8px 12px; font: inherit; cursor: pointer; } .hb-qr1 b { display: block; font-size: 14px; } .hb-qr1 small { color: var(--muted); font-size: 12px; }
+.hb-qmsg { text-align: center; color: var(--muted); font-size: 13px; margin: 6px 0; }
+.hb-cons { font-size: 13px; display: none; align-items: center; gap: 8px; margin: 8px 0; } html.hb-dr .hb-cons { display: flex; }
+.hb-tosrv { display: none; } html.hb-dr.hb-need-srv .hb-tosrv { display: inline-flex; }
+.hb-actions .hb-tosrv { display: none; } html.hb-dr.hb-need-srv .hb-actions .hb-tosrv { display: inline-flex; }

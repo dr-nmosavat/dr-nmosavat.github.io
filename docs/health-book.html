@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=202610181305">
+<link rel="stylesheet" href="style.css?v=202610182043">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="icon" href="favicon.ico" sizes="48x48">
 <link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png">
@@ -49,6 +49,10 @@
     <section class="tool hb" data-hb>
       <div class="hb-install" data-hb-install hidden><button type="button" class="btn small" data-hb-do-install>نصب روی صفحهٔ اصلی گوشی</button></div>
       <p class="hb-ios" data-hb-ios hidden>برای نصب روی آیفون: دکمهٔ اشتراک‌گذاری مرورگر را بزنید و «Add to Home Screen» را انتخاب کنید.</p>
+      <div class="hb-search" data-hb-searchbox hidden>
+        <input type="search" data-hb-q autocomplete="off" placeholder="🔎 جستجوی پت: نام، صاحب یا کد (مثل NM-1234)">
+        <div class="hb-qres" data-hb-qres></div>
+      </div>
       <div class="hb-pets" data-hb-pets role="tablist" aria-label="پت‌ها"></div>
 
       <form class="hb-petform" data-hb-petform hidden onsubmit="return false">
@@ -63,6 +67,8 @@
         <div class="fld"><label for="hb-pbr">نژاد <small>(اختیاری)</small></label><select id="hb-pbr"></select><input id="hb-pbro" type="text" maxlength="40" hidden placeholder="نام نژاد را بنویسید"></div>
         <div class="fld"><label for="hb-pbe">نژاد به انگلیسی <small>(خودکار برای نژادهای رایج)</small></label><input id="hb-pbe" data-auto="1" type="text" dir="ltr" maxlength="40" placeholder="e.g. Persian"></div>
         <div class="fld"><label>تاریخ تولد <small>(اختیاری، شمسی؛ میلادی خودکار نوشته می‌شود)</small></label><div class="jd" data-jd="pb"></div></div>
+        <label class="hb-cons hb-doc-only"><input type="checkbox" id="hb-pcons"> رضایت صاحب پت برای ذخیرهٔ این اطلاعات روی سرور گرفته شد</label>
+        <p class="hb-err" data-hb-perr hidden></p>
         <div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-save-pet>ذخیره</button><button type="button" class="btn small ghost" data-hb-cancel-pet>انصراف</button></div>
       </form>
 
@@ -84,7 +90,7 @@
         <div class="hb-actions">
           <button type="button" class="btn primary hb-add" data-hb-open>＋ ثبت در دفترچه</button>
           <div class="hb-arow"><button type="button" class="btn small" data-hb-edit-pet>ویرایش پت</button><button type="button" class="btn small hb-danger" data-hb-del-pet>حذف پت</button></div>
-          <div class="hb-arow hb-doc-only"><button type="button" class="btn small hb-sendbtn" data-hb-share>📤 ارسال برای صاحب پت</button></div>
+          <div class="hb-arow hb-doc-only"><button type="button" class="btn small hb-sendbtn" data-hb-share>📤 ارسال برای صاحب پت</button><button type="button" class="btn small hb-sendbtn hb-tosrv" data-hb-tosrv>☁️ ذخیره روی سرور</button></div>
           <div class="hb-arow hb-tools"><button type="button" class="btn small ghost" data-hb-print>چاپ</button><button type="button" class="btn small ghost" data-hb-export>پشتیبان</button><label class="btn small ghost hb-import">بازیابی<input type="file" accept="application/json" data-hb-import hidden></label></div>
         </div>
       </div>
@@ -200,7 +206,7 @@
   </div>
 </div>
 <a class="fab" aria-label="نیاز به مشاوره؟" data-consult href="contact.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4V5z"/></svg><span><i class="l-long">نیاز به مشاوره؟</i><i class="l-short">مشاوره</i></span></a>
-<script src="app.js?v=202610181305"></script>
+<script src="app.js?v=202610182043"></script>
     </body>
     </html>
     
