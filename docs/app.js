@@ -1200,7 +1200,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   // همهٔ یادآوری‌ها: نوبت‌های بعدی + برنامهٔ واکسن
   function allRem() {
     var out = [];
-    db.recs.forEach(function (r) { if (r.next && !r.closed) out.push({ id: r.id, kind: "rec", pet: r.pet, type: r.type, label: [r.brand ? "<bdi>" + esc(r.brand) + "</bdi>" : "", r.name ? esc(r.name) : ""].filter(Boolean).join(" · "), html: 1, date: r.next }); });
+    db.recs.forEach(function (r) { if (r.next && !r.closed && r.type !== "وزن") out.push({ id: r.id, kind: "rec", pet: r.pet, type: r.type, label: [r.brand ? "<bdi>" + esc(r.brand) + "</bdi>" : "", r.name ? esc(r.name) : ""].filter(Boolean).join(" · "), html: 1, date: r.next }); });
     db.pets.forEach(function (p) { (p.plan || []).forEach(function (x) { if (!x.done) out.push({ id: x.id, kind: "plan", pet: p.id, type: x.type, label: x.label, date: x.date }); }); });
     return out.sort(function (a, b) { return a.date < b.date ? -1 : 1; });
   }
@@ -1216,15 +1216,23 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (young && !hasPlan) pl.innerHTML = '<div class="hb-plan-c"><b>برنامهٔ واکسن ' + (cp.species === "سگ" ? "توله‌سگ" : "بچه‌گربه") + "</b><p>با زدن دکمهٔ زیر، تاریخ نوبت‌های واکسن و کرم‌کشی بر اساس تاریخ تولد حساب می‌شود و به «یادآوری‌ها» اضافه می‌شود. تاریخ‌ها تقریبی‌اند و طبق نظر دامپزشک تنظیم کنید.</p><button type=\"button\" class=\"btn small primary\" data-hb-mkplan>📅 ساخت برنامهٔ واکسن و کرم‌کشی</button><details class=\"hb-det\"><summary>برنامه شامل چه چیزی است؟</summary><p>واکسن در هفتهٔ ۸، ۱۲ و ۱۶ (" + (cp.species === "سگ" ? "چندگانه سگ" : "سه‌گانه گربه") + ")، هاری در هفتهٔ ۱۶ و یادآور سالانه؛ ضدانگل داخلی در هفته‌های ۲، ۴، ۶، ۸، ۱۲، ۱۶، ۲۰ و ۲۴. بعد از ساخت، هر نوبت با «انجام شد» در دفترچه ثبت می‌شود و می‌توانید آن را به تقویم گوشی اضافه کنید. هر زمان خواستید «حذف برنامه» را بزنید.</p></details></div>";
     else if (!cp.birth && (cp.species === "سگ" || cp.species === "گربه")) pl.innerHTML = '<div class="hb-plan-c"><b>برنامهٔ واکسن توله و بچه‌گربه</b><p>با نوشتن تاریخ تولد، برنامهٔ پیشنهادی ساخته می‌شود.</p><button type="button" class="btn small" data-hb-edit-pet>نوشتن تاریخ تولد</button></div>';
     else pl.innerHTML = hasPlan ? '<div class="hb-plan-c ok"><span>برنامهٔ واکسن ' + (cp.species === "سگ" ? "توله‌سگ" : "بچه‌گربه") + ' فعال است.</span><button type="button" class="hb-lnk" data-hb-delplan>حذف برنامه</button></div>' : "";
-    var cpRem = allRem().filter(function (r) { return r.pet === cp.id; }), seen = {}, rl = "", nTypes = 0;
-    cpRem.forEach(function (r) { var k0 = r.type + "|" + (r.kind === "rec" ? r.label : "plan"); if (!seen[k0]) { seen[k0] = 1; nTypes++; } });
-    seen = {};
-    cpRem.forEach(function (r) {
-      var sk = r.type + "|" + (r.kind === "rec" ? r.label : "plan"); if (!showAll && seen[sk]) return; seen[sk] = 1;
-      var n = days(r.date), k = cfg(r.type);
-      rl += '<div class="hb-r' + (n < 0 ? " late" : n <= 7 ? " soon" : "") + '"><span class="hb-r-ic">' + k.ic + '</span><div><b>' + esc(tl(r.type)) + (r.label ? " · " + (r.html ? r.label : esc(r.label)) : "") + "</b><small>" + fd(r.date) + " · " + when(n) + '</small></div><span class="hb-r-b"><button type="button" data-hb-ics="' + r.kind + ":" + r.id + '">تقویم</button><button type="button" data-hb-done="' + r.kind + ":" + r.id + '">انجام شد</button></span></div>';
+    var cpRem = allRem().filter(function (r) { return r.pet === cp.id; }), rl = "", skipV = cp.species === "پرنده" || cp.species === "دیگر", extra = 0;
+    STAT.forEach(function (t) {
+      if (t === "واکسن" && skipV) return;
+      var k = cfg(t), items = cpRem.filter(function (r) { return r.type === t; }), seen = {}, shown = [];
+      items.forEach(function (r) { var sk = r.kind === "rec" ? r.label : "plan"; if (showAll || !seen[sk]) { seen[sk] = 1; shown.push(r); } });
+      extra += items.length - shown.length;
+      if (!shown.length) {
+        var had = db.recs.some(function (r) { return r.pet === cp.id && r.type === t; });
+        rl += '<div class="hb-r none"><span class="hb-r-ic">' + k.ic + '</span><div><b>' + esc(tl(t)) + (had ? ": نوبت بعدی تعیین نشده" : " ثبت نشده") + '</b></div><span class="hb-r-b"><button type="button" data-hb-open-type="' + esc(t) + '">＋ ثبت</button></span></div>';
+        return;
+      }
+      shown.forEach(function (r) {
+        var n = days(r.date);
+        rl += '<div class="hb-r' + (n < 0 ? " late" : n <= 7 ? " soon" : "") + '"><span class="hb-r-ic">' + k.ic + '</span><div><b>' + esc(tl(r.type)) + (r.label ? " · " + (r.html ? r.label : esc(r.label)) : "") + "</b><small>" + fd(r.date) + " · " + when(n) + '</small></div><span class="hb-r-b"><button type="button" data-hb-ics="' + r.kind + ":" + r.id + '">تقویم</button><button type="button" data-hb-done="' + r.kind + ":" + r.id + '">انجام شد</button></span></div>';
+      });
     });
-    q("[data-hb-rem]").innerHTML = rl ? "<h3>🔔 یادآور</h3>" + rl + (cpRem.length > nTypes ? '<div class="hb-more"><button type="button" class="hb-lnk" data-hb-more>' + (showAll ? "فقط نوبت بعدی هر مورد" : "برنامهٔ کامل نوبت‌ها (" + toolFa(cpRem.length) + ")") + "</button></div>" : "") : "";
+    q("[data-hb-rem]").innerHTML = "<h3>🔔 یادآور</h3>" + rl + (extra > 0 || showAll ? '<div class="hb-more"><button type="button" class="hb-lnk" data-hb-more>' + (showAll ? "فقط نوبت بعدی هر مورد" : "برنامهٔ کامل نوبت‌ها") + "</button></div>" : "");
     renderPages(cp);
     q("[data-hb-editlist]").textContent = editList ? "پایان ویرایش فهرست" : "ویرایش فهرست";
   }
@@ -1249,7 +1257,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (ws.length < 2) return "";
     var vals = ws.map(function (r) { return r.weight; }), mn = Math.min.apply(null, vals), mx = Math.max.apply(null, vals), rg = (mx - mn) || 1;
     var pts = ws.map(function (r, i) { return (10 + i * (280 / (ws.length - 1))).toFixed(1) + "," + (60 - ((r.weight - mn) / rg) * 46).toFixed(1); }).join(" ");
-    return '<div class="hb-weight"><svg viewBox="0 0 300 70" aria-hidden="true"><polyline points="' + pts + '" fill="none" stroke="#f1dca0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg><small>روند وزن: از ' + toolFa(vals[0]) + " به " + toolFa(vals[vals.length - 1]) + " کیلوگرم</small></div>";
+    return '<div class="hb-weight"><svg viewBox="0 0 300 70" aria-hidden="true"><polyline points="' + pts + '" fill="none" stroke="#1f5ea6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg><small>روند وزن: از ' + toolFa(vals[0]) + " به " + toolFa(vals[vals.length - 1]) + " کیلوگرم</small></div>";
   }
   function renderPages(cp) {
     function pg(i, title, body) { return '<div class="hb-pg-h">' + title + '</div><div class="hb-pg-b">' + body + "</div>"; }
