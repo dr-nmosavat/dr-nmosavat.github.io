@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=202610180021">
+<link rel="stylesheet" href="style.css?v=202610181048">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="icon" href="favicon.ico" sizes="48x48">
 <link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png">
@@ -65,13 +65,19 @@
       </form>
 
       <div data-hb-main hidden>
-        <div class="hb-cover" data-hb-cover></div>
+        <div class="hb-ptabs" data-hb-ptabs role="tablist" aria-label="صفحه‌های شناسنامه"></div>
+        <div class="hb-card">
+          <div class="hb-track" data-hb-track>
+            <section class="hb-slide hb-cover" data-hb-cover aria-label="مشخصات"></section>
+            <section class="hb-slide hb-pg" data-hb-pg="1" aria-label="واکسیناسیون"></section>
+            <section class="hb-slide hb-pg" data-hb-pg="2" aria-label="ضدانگل"></section>
+            <section class="hb-slide hb-pg" data-hb-pg="3" aria-label="سایر"></section>
+          </div>
+          <div class="hb-dots" data-hb-dots aria-hidden="true"></div>
+        </div>
+        <div class="hb-editrow"><button type="button" class="hb-lnk" data-hb-editlist>ویرایش فهرست</button></div>
         <div class="hb-rem" data-hb-rem></div>
         <div class="hb-plan" data-hb-plan></div>
-        <div class="hb-sech"><h3>📋 کارهای انجام‌شده</h3><button type="button" class="hb-lnk" data-hb-sort></button></div>
-        <div class="hb-tabs" data-hb-tabs role="tablist" aria-label="بخش‌های دفترچه"></div>
-        <div class="hb-weight" data-hb-weight></div>
-        <ol class="hb-book" data-hb-list></ol>
         <div class="hb-actions">
           <button type="button" class="btn primary hb-add" data-hb-open>＋ ثبت در دفترچه</button>
           <div class="hb-arow"><button type="button" class="btn small" data-hb-edit-pet>ویرایش پت</button><button type="button" class="btn small hb-danger" data-hb-del-pet>حذف پت</button></div>
@@ -94,6 +100,7 @@
           <h2>ثبت در دفترچه</h2>
           <div class="hb-types" data-hb-types></div>
           <div class="hb-sf" data-hb-sf></div>
+          <p class="hb-err" data-hb-err hidden></p>
           <div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-save>ثبت</button></div>
         </div>
       </div>
@@ -155,7 +162,7 @@
   </div>
 </div>
 <a class="fab" aria-label="نیاز به مشاوره؟" data-consult href="contact.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4V5z"/></svg><span><i class="l-long">نیاز به مشاوره؟</i><i class="l-short">مشاوره</i></span></a>
-<script src="app.js?v=202610180021"></script>
+<script src="app.js?v=202610181048"></script>
     </body>
     </html>
     

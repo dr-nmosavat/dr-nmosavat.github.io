@@ -1533,3 +1533,42 @@ nav a[href="tools.html"] { color: #12766a; font-weight: 700; }
 @media print { .hb-qr { box-shadow: none; } .hb-qrm { display: none !important; } }
 .hb-cv-t i { font-style: normal; font-size: 11px; letter-spacing: 1.5px; opacity: .85; }
 .hb-cover .hb-cv-t::before, .hb-cover .hb-cv-t::after { display: none; }
+
+/* شناسنامهٔ صفحه‌ای */
+.hb-ptabs { display: flex; gap: 6px; justify-content: center; margin: 0 0 8px; flex-wrap: wrap; }
+.hb-ptabs .chip { padding: 5px 13px; font-size: 13px; }
+.hb-card { position: relative; border-radius: 22px; color: #fff; background: linear-gradient(160deg, #15406f, #1f5ea6); box-shadow: 0 10px 24px rgba(23,64,111,.28), inset 0 0 0 4px #1a4f8c, inset 0 0 0 5px rgba(232,200,120,.85), inset 0 0 0 9px #1a4f8c, inset 0 0 0 10px rgba(232,200,120,.45); margin-bottom: 6px; overflow: hidden; }
+.hb-track { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.hb-track::-webkit-scrollbar { display: none; }
+.hb-slide { flex: 0 0 100%; scroll-snap-align: start; scroll-snap-stop: always; min-width: 0; box-sizing: border-box; padding: 16px 18px 26px; }
+.hb-card .hb-cover { background: none; box-shadow: none; border-radius: 0; margin: 0; overflow: visible; position: relative; }
+.hb-card .hb-cover::before { display: none; }
+.hb-dots { position: absolute; bottom: 12px; inset-inline: 0; display: flex; gap: 6px; justify-content: center; pointer-events: none; }
+.hb-dots i { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,.35); } .hb-dots i.on { background: #f1dca0; width: 18px; border-radius: 4px; }
+.hb-pg-h { text-align: center; font-weight: 800; font-size: 16px; color: #f1dca0; margin: 2px 0 10px; }
+.hb-pg-b { max-height: 360px; overflow-y: auto; scrollbar-width: thin; }
+.hb-pr { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed rgba(255,255,255,.3); }
+.hb-pr:last-child { border-bottom: 0; }
+.hb-pn { min-width: 0; flex: 1; } .hb-pn b { display: block; font-size: 14.5px; } .hb-pn span { font-size: 12px; opacity: .75; margin-inline-end: 6px; } .hb-pn small { display: block; font-size: 12px; opacity: .8; direction: rtl; }
+.hb-pn small[dir="ltr"] { text-align: right; }
+.hb-pd { display: flex; flex-direction: column; gap: 2px; font-size: 12.5px; text-align: left; flex: none; white-space: nowrap; }
+.hb-pd i { font-style: normal; opacity: .75; margin-inline-end: 6px; }
+.hb-pe { text-align: center; opacity: .8; padding: 26px 0; font-size: 14px; }
+.hb-pdel { border: 0; background: rgba(255,255,255,.18); color: #fff; width: 26px; height: 26px; border-radius: 50%; cursor: pointer; flex: none; }
+.hb-card .hb-weight { background: rgba(255,255,255,.08); border-radius: 12px; padding: 6px 8px; margin-bottom: 8px; } .hb-card .hb-weight small { color: #fff; opacity: .85; }
+.hb-card .hb-weight svg { width: 100%; height: 56px; }
+.hb-editrow { text-align: center; margin: 0 0 12px; } .hb-editrow .hb-lnk { font-size: 13px; }
+.hb-svg { width: 1.15em; height: 1.15em; vertical-align: -.2em; color: #1f5ea6; }
+.hb-card .hb-svg { color: inherit; }
+.hb-rq { color: #b3382c; }
+.hb-err { color: #b3382c; font-weight: 700; font-size: 13.5px; text-align: center; margin: 0; }
+.hb-fld select, .fld select { width: 100%; }
+/* باکس‌های ثبت، جمع‌وجور */
+.hb-types { gap: 6px; }
+.hb-ty { padding: 6px 2px; border-radius: 12px; font-size: 12px; gap: 0; } .hb-ty span { font-size: 18px; line-height: 1.3; } .hb-ty .hb-svg { width: 20px; height: 20px; }
+.hb-install { margin-bottom: 8px; } .hb-install .btn { width: 100%; min-height: 34px; font-size: 13px; padding: 4px 12px; }
+.hb-r-ic .hb-svg, .hb-dot .hb-svg { width: 1.2em; height: 1.2em; }
+@media print { .hb-track { display: block; overflow: visible; } .hb-slide { break-inside: avoid; } .hb-dots, .hb-ptabs, .hb-editrow { display: none !important; } .hb-card { background: #17406f !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; } .hb-pg-b { max-height: none; } }
+.hb-ptabs { flex-wrap: nowrap; gap: 5px; } .hb-ptabs .chip { padding: 5px 10px; font-size: 12.5px; white-space: nowrap; }
+.hb-r { flex-wrap: wrap; } .hb-r > div { flex: 1; min-width: 0; } .hb-r-b { width: 100%; justify-content: flex-end; }
+.hb-r .hb-r-b { display: flex; flex-direction: row; gap: 8px; justify-content: flex-end; width: 100%; } .hb-r .hb-r-b button { width: auto; flex: none; padding: 4px 14px; }
