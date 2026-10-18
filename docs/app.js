@@ -1225,24 +1225,34 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       extra += items.length - shown.length;
       if (!shown.length) {
         var had = db.recs.some(function (r) { return r.pet === cp.id && r.type === t; });
-        rl += '<div class="hb-r none"><span class="hb-r-ic">' + k.ic + '</span><div><b>' + esc(tl(t)) + (had ? ": نوبت بعدی تعیین نشده" : " ثبت نشده") + '</b></div><span class="hb-r-b"><button type="button" data-hb-open-type="' + esc(t) + '">＋ ثبت</button></span></div>';
+        rl += '<div class="hb-r none"><span class="hb-r-ic">' + k.ic + '</span><div><b>' + esc(tl(t)) + (had ? ": نوبت بعدی تعیین نشده" : " ثبت نشده") + '</b>' + (locked(t) ? "<small>توسط دکتر ثبت می‌شود</small>" : "") + '</div>' + (locked(t) ? "" : '<span class="hb-r-b"><button type="button" data-hb-open-type="' + esc(t) + '">＋ ثبت</button></span>') + '</div>';
         return;
       }
       shown.forEach(function (r) {
         var n = days(r.date);
-        rl += '<div class="hb-r' + (n < 0 ? " late" : n <= 7 ? " soon" : "") + '"><span class="hb-r-ic">' + k.ic + '</span><div><b>' + esc(tl(r.type)) + (r.label ? " · " + (r.html ? r.label : esc(r.label)) : "") + "</b><small>" + fd(r.date) + " · " + when(n) + '</small></div><span class="hb-r-b"><button type="button" data-hb-ics="' + r.kind + ":" + r.id + '">تقویم</button><button type="button" data-hb-done="' + r.kind + ":" + r.id + '">انجام شد</button></span></div>';
+        rl += '<div class="hb-r' + (n < 0 ? " late" : n <= 7 ? " soon" : "") + '"><span class="hb-r-ic">' + k.ic + '</span><div><b>' + esc(tl(r.type)) + (r.label ? " · " + (r.html ? r.label : esc(r.label)) : "") + "</b><small>" + fd(r.date) + " · " + when(n) + '</small></div><span class="hb-r-b"><button type="button" data-hb-ics="' + r.kind + ":" + r.id + '">تقویم</button>' + (locked(r.type) ? "" : '<button type="button" data-hb-done="' + r.kind + ":" + r.id + '">انجام شد</button>') + "</span></div>";
       });
     });
     q("[data-hb-rem]").innerHTML = "<h3>🔔 یادآور</h3>" + rl + (extra > 0 || showAll ? '<div class="hb-more"><button type="button" class="hb-lnk" data-hb-more>' + (showAll ? "فقط نوبت بعدی هر مورد" : "برنامهٔ کامل نوبت‌ها") + "</button></div>" : "");
     renderPages(cp);
     q("[data-hb-editlist]").textContent = editList ? "پایان ویرایش فهرست" : "ویرایش فهرست"; q("[data-hb-edithint]").hidden = !editList;
   }
+  var OWNER_LOCKED = ["واکسن"];   // انواعی که فقط دکتر ثبت می‌کند
+  var DR_SALT = "GnOd3U5koVp1Ozi8RTcLbA==", DR_HASH = "b4Ba9BSekt9YN0YQ3iruqAzem9RYjTbLV4PClSZjdFs=";
+  function isDr() { try { return localStorage.getItem("dm_hb_dr") === "1"; } catch (e) { return false; } }
+  function locked(t) { return !isDr() && OWNER_LOCKED.indexOf(t) > -1; }
+  function applyRole() { document.documentElement.classList.toggle("hb-dr", isDr()); var b = q("[data-hb-drbtn]"); if (b) b.textContent = isDr() ? "خروج از حالت دکتر" : "ورود دکتر"; var bd = q("[data-hb-drbadge]"); if (bd) bd.hidden = !isDr(); }
+  function checkDrPass(pw) {
+    if (!window.crypto || !crypto.subtle) return Promise.resolve(false);
+    var s = atob(DR_SALT), salt = new Uint8Array(s.length), i; for (i = 0; i < s.length; i++) salt[i] = s.charCodeAt(i);
+    return crypto.subtle.importKey("raw", new TextEncoder().encode(pw), "PBKDF2", false, ["deriveBits"]).then(function (k) { return crypto.subtle.deriveBits({ name: "PBKDF2", salt: salt, iterations: 100000, hash: "SHA-256" }, k, 256); }).then(function (bits) { return btoa(String.fromCharCode.apply(null, new Uint8Array(bits))) === DR_HASH; }).catch(function () { return false; });
+  }
   var curPg = 0, editList = false;
   var PGS = ["مشخصات", "واکسیناسیون", "ضدانگل", "سایر"];
-  function recDel(r) { return editList ? '<button type="button" class="hb-pdel" data-hb-del="' + r.id + '" aria-label="حذف">✕</button>' : ""; }
+  function recDel(r) { return editList && (isDr() || !r.dr) ? '<button type="button" class="hb-pdel" data-hb-del="' + r.id + '" aria-label="حذف">✕</button>' : ""; }
   function pageRows(cp, types, mode) {
     var rs = db.recs.filter(function (r) { return r.pet === cp.id && types.indexOf(r.type) > -1; }).sort(function (x, y) { return x.date < y.date ? 1 : -1; });
-    if (!rs.length) return '<p class="hb-pe">هنوز موردی ثبت نشده است.</p>';
+    if (!rs.length) return '<p class="hb-pe">' + (mode === "vax" && !isDr() ? "واکسن‌ها توسط دکتر ثبت می‌شود." : "هنوز موردی ثبت نشده است.") + "</p>";
     return rs.map(function (r) {
       var k = cfg(r.type);
       if (mode === "vax" || mode === "par") {
@@ -1281,7 +1291,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   })();
   // ---- برگهٔ ثبت: فیلدها بر پایهٔ نوع ----
   function renderTypes() {
-    q("[data-hb-types]").innerHTML = ORDER.map(function (t) { return '<button type="button" class="hb-ty' + (t === curType ? " on" : "") + '" data-hb-type="' + esc(t) + '"><span>' + cfg(t).ic + "</span>" + tl(t) + "</button>"; }).join("");
+    q("[data-hb-types]").innerHTML = ORDER.filter(function (t) { return !locked(t); }).map(function (t) { return '<button type="button" class="hb-ty' + (t === curType ? " on" : "") + '" data-hb-type="' + esc(t) + '"><span>' + cfg(t).ic + "</span>" + tl(t) + "</button>"; }).join("");
   }
   function fieldHtml(f, sp) {
     var opts = f.sel ? f.sel(sp) : [], id = "hb-f-" + f.id, lab = f.label + (f.req ? ' <b class="hb-rq">*</b>' : ' <small>(اختیاری)</small>');
@@ -1307,7 +1317,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     el.innerHTML = "پیشنهاد: " + fd(nd) + " (" + s.t + "؛ تقریبی و طبق نظر دامپزشک)" + (s.manual ? ' <button type="button" data-hb-usesug="' + nd + '">یادآوری بگذار</button>' : "");
     if (!xTouched && !s.manual) JD.x.set(nd);
   }
-  function openSheet() { xTouched = false; renderTypes(); renderFields(); q("[data-hb-sheet]").hidden = false; document.documentElement.classList.add("gift-open"); }
+  function openSheet() { if (locked(curType)) curType = ORDER.filter(function (t) { return !locked(t); })[0]; xTouched = false; renderTypes(); renderFields(); q("[data-hb-sheet]").hidden = false; document.documentElement.classList.add("gift-open"); }
   function closeSheet() { q("[data-hb-sheet]").hidden = true; document.documentElement.classList.remove("gift-open"); }
   var formPhoto = "";
   function showPhoto() { var b = q("[data-hb-photo]"); b.innerHTML = formPhoto ? '<img src="' + formPhoto + '" alt="">' : "🐾"; q("[data-hb-photo-del]").hidden = !formPhoto; }
@@ -1346,7 +1356,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function shareData(cp) {
     var p = {}; ["id", "name", "en", "owner", "guardian", "species", "breed", "breedEn", "birth"].forEach(function (k) { if (cp[k]) p[k] = cp[k]; });
     p.plan = cp.plan || [];
-    var r = db.recs.filter(function (x) { return x.pet === cp.id; }).map(function (x) { var o = {}; ["id", "type", "date", "name", "brand", "serial", "place", "extra", "weight", "next", "closed"].forEach(function (k) { if (x[k]) o[k] = x[k]; }); return o; });
+    var r = db.recs.filter(function (x) { return x.pet === cp.id; }).map(function (x) { var o = {}; ["id", "type", "date", "name", "brand", "serial", "place", "extra", "weight", "next", "closed"].forEach(function (k) { if (x[k]) o[k] = x[k]; }); if (isDr()) o.d = 1; return o; });
     return { v: 1, p: p, r: r };
   }
   function cleanStr(v, n) { return typeof v === "string" ? v.slice(0, n || 120) : ""; }
@@ -1356,7 +1366,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     var p = d.p, pet = { id: /^[a-z0-9]{3,30}$/.test(p.id || "") ? p.id : uid(), name: cleanStr(p.name, 30), en: cleanStr(p.en, 30), owner: cleanStr(p.owner, 40), guardian: cleanStr(p.guardian, 40), species: SPE[p.species] ? p.species : "دیگر", breed: cleanStr(p.breed, 40), breedEn: cleanStr(p.breedEn, 40), birth: cleanDate(p.birth), plan: [] };
     if (!pet.name) throw new Error("bad");
     (Array.isArray(p.plan) ? p.plan : []).slice(0, 60).forEach(function (x) { if (x && CFG[x.type] && cleanDate(x.date)) pet.plan.push({ id: /^[a-z0-9]{3,30}$/.test(x.id || "") ? x.id : uid(), type: x.type, label: cleanStr(x.label, 90), date: x.date, done: !!x.done }); });
-    var recs = []; d.r.slice(0, 400).forEach(function (x) { if (!x || !CFG[x.type] || !cleanDate(x.date)) return; var w = Number(x.weight) || 0; recs.push({ id: /^[a-z0-9]{3,30}$/.test(x.id || "") ? x.id : uid(), pet: pet.id, type: x.type, date: x.date, name: cleanStr(x.name, 90), brand: cleanStr(x.brand, 60), serial: cleanStr(x.serial, 60), place: cleanStr(x.place, 90), extra: cleanStr(x.extra, 90), weight: w > 0 && w < 200 ? w : 0, next: cleanDate(x.next), closed: !!x.closed }); });
+    var recs = []; d.r.slice(0, 400).forEach(function (x) { if (!x || !CFG[x.type] || !cleanDate(x.date)) return; var w = Number(x.weight) || 0; recs.push({ id: /^[a-z0-9]{3,30}$/.test(x.id || "") ? x.id : uid(), pet: pet.id, type: x.type, date: x.date, name: cleanStr(x.name, 90), brand: cleanStr(x.brand, 60), serial: cleanStr(x.serial, 60), place: cleanStr(x.place, 90), extra: cleanStr(x.extra, 90), weight: w > 0 && w < 200 ? w : 0, next: cleanDate(x.next), closed: !!x.closed, dr: x.d === 1 ? 1 : 0 }); });
     return { pet: pet, recs: recs };
   }
   function faDigits(s) { return String(s || "").replace(/[۰-۹]/g, function (c) { return c.charCodeAt(0) - 1776; }).replace(/[٠-٩]/g, function (c) { return c.charCodeAt(0) - 1632; }).replace(/\D/g, ""); }
@@ -1403,11 +1413,17 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     }
     if (t.closest("[data-hb-mkplan]")) { var cp2 = curPet(); cp2.plan = buildPlan(cp2); save(); return render(); }
     if (t.closest("[data-hb-delplan]")) { if (confirm("برنامهٔ پیشنهادی حذف شود؟")) { curPet().plan = []; save(); render(); } return; }
-    if ((b = t.closest("[data-hb-open-type]"))) { curType = b.getAttribute("data-hb-open-type"); openSheet(); return; }
+    if ((b = t.closest("[data-hb-open-type]"))) { if (locked(b.getAttribute("data-hb-open-type"))) return; curType = b.getAttribute("data-hb-open-type"); openSheet(); return; }
     if (t.closest("[data-hb-sort]")) { asc = !asc; return render(); }
     if ((b = t.closest("[data-hb-pgo]"))) { curPg = Number(b.getAttribute("data-hb-pgo")); goPg(curPg); [].forEach.call(q("[data-hb-ptabs]").children, function (c, n) { c.classList.toggle("on", n === curPg); }); [].forEach.call(q("[data-hb-dots]").children, function (c, n) { c.classList.toggle("on", n === curPg); }); return; }
     if (t.closest("[data-hb-editlist]")) { editList = !editList; return render(); }
-    if (t.closest("[data-hb-share]")) return openShare();
+    if (t.closest("[data-hb-share]")) return isDr() ? openShare() : undefined;
+    if (t.closest("[data-hb-drbtn]")) {
+      if (isDr()) { try { localStorage.removeItem("dm_hb_dr"); } catch (x) {} applyRole(); return render(); }
+      q("[data-hb-drm]").hidden = false; document.documentElement.classList.add("gift-open"); q("[data-hb-drpw]").value = ""; q("[data-hb-drerr]").hidden = true; q("[data-hb-drpw]").focus(); return;
+    }
+    if (t.closest("[data-hb-dr-close]") || t === q("[data-hb-drm]")) return closeModal("[data-hb-drm]");
+    if (t.closest("[data-hb-dr-ok]")) { var pw = q("[data-hb-drpw]").value.trim(); checkDrPass(pw).then(function (ok) { if (!ok) { q("[data-hb-drerr]").hidden = false; return; } try { localStorage.setItem("dm_hb_dr", "1"); } catch (x) {} closeModal("[data-hb-drm]"); curType = "واکسن"; applyRole(); render(); }); return; }
     if (t.closest("[data-hb-sh-close]") || t === q("[data-hb-shm]")) return closeModal("[data-hb-shm]");
     if (t.closest("[data-hb-sh-copy]")) { if (!shareLink) return; var ta = q("[data-hb-shlink]"); ta.select(); try { navigator.clipboard.writeText(shareLink); } catch (x) { document.execCommand("copy"); } t.closest("[data-hb-sh-copy]").textContent = "کپی شد ✓"; return; }
     if (t.closest("[data-hb-sh-wa]")) { if (!shareLink) return; var num = waNum(q("[data-hb-shnum]").value); window.open("https://wa.me/" + num + "?text=" + encodeURIComponent(shareMsg()), "_blank", "noopener"); return; }
@@ -1427,7 +1443,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     }
     if (t.closest("[data-hb-more]")) { showAll = !showAll; return render(); }
     if (t.closest("[data-hb-save]")) {
-      var cp = curPet(); if (!cp) return; var d = JD.d.get(); if (!d) return; var c = cfg(curType), er = q("[data-hb-err]"), vals = {};
+      if (locked(curType)) return; var cp = curPet(); if (!cp) return; var d = JD.d.get(); if (!d) return; var c = cfg(curType), er = q("[data-hb-err]"), vals = {};
       var w = c.weight ? toolNum((q("#hb-w") || {}).value) : 0;
       if (c.weight && !(w > 0)) { er.textContent = "وزن را وارد کنید."; er.hidden = false; q("#hb-w").focus(); return; }
       for (var fi = 0; fi < c.f.length; fi++) { var ff = c.f[fi]; vals[ff.id] = fieldVal(ff); if (ff.req && !vals[ff.id]) { er.textContent = "«" + ff.label.replace(" (Lot / Batch)", "") + "» الزامی است."; er.hidden = false; var el0 = q("#hb-f-" + ff.id); if (el0) { el0.focus(); if (el0.tagName === "SELECT" && el0.value === "__o") q("#" + el0.id + "-o").focus(); } return; } }
@@ -1438,15 +1454,15 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
         if (x.done || x.type !== curType || Math.abs(days(x.date) - days(d)) > 10) return;
         if (curType === "ضدانگل داخلی" || (/گانه/.test(nm) && /گانه/.test(x.label)) || (/هاری/.test(nm) && /هاری/.test(x.label))) x.done = true;
       });
-      db.recs.push({ id: uid(), pet: cp.id, type: curType, date: d, name: nm, brand: vals.brand || "", serial: vals.serial || "", place: vals.place || "", extra: vals.extra || "", weight: w || 0, next: nx });
+      db.recs.push({ id: uid(), pet: cp.id, type: curType, dr: isDr() ? 1 : 0, date: d, name: nm, brand: vals.brand || "", serial: vals.serial || "", place: vals.place || "", extra: vals.extra || "", weight: w || 0, next: nx });
       save(); closeSheet(); return render();
     }
     if ((b = t.closest("[data-hb-add]"))) { xTouched = true; JD.x.set(addMonths(JD.d.get(), Number(b.getAttribute("data-hb-add")))); return; }
     if ((b = t.closest("[data-hb-usesug]"))) { xTouched = true; JD.x.set(b.getAttribute("data-hb-usesug")); return; }
     if (t.closest("[data-hb-clear]")) { xTouched = true; JD.x.set(""); return; }
-    if ((b = t.closest("[data-hb-del]"))) { if (confirm("این مورد حذف شود؟")) { var id = b.getAttribute("data-hb-del"); db.recs = db.recs.filter(function (r) { return r.id !== id; }); save(); render(); } return; }
+    if ((b = t.closest("[data-hb-del]"))) { var dr0 = db.recs.filter(function (r) { return r.id === b.getAttribute("data-hb-del"); })[0]; if (dr0 && dr0.dr && !isDr()) return; if (confirm("این مورد حذف شود؟")) { var id = b.getAttribute("data-hb-del"); db.recs = db.recs.filter(function (r) { return r.id !== id; }); save(); render(); } return; }
     if ((b = t.closest("[data-hb-done]"))) {
-      var pr = b.getAttribute("data-hb-done").split(":"), kd = pr[0], rid = pr[1];
+      var pr = b.getAttribute("data-hb-done").split(":"), kd = pr[0], rid = pr[1]; var dn = allRem().filter(function (r) { return r.kind === kd && r.id === rid; })[0]; if (dn && locked(dn.type)) return;
       if (kd === "rec") db.recs.forEach(function (r) { if (r.id === rid) r.closed = true; });
       else db.pets.forEach(function (p) { (p.plan || []).forEach(function (x) { if (x.id === rid) { x.done = true; db.recs.push({ id: uid(), pet: p.id, type: x.type, date: ymd(new Date()), name: x.label, brand: "", serial: "", place: "", extra: "", weight: 0, next: "" }); } }); });
       save(); return render();
@@ -1472,6 +1488,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   window.addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); dp = e; q("[data-hb-install]").hidden = false; });
   q("[data-hb-do-install]").addEventListener("click", function () { if (dp) { dp.prompt(); dp = null; q("[data-hb-install]").hidden = true; } });
   if (/iphone|ipad/i.test(navigator.userAgent) && !window.navigator.standalone) q("[data-hb-ios]").hidden = false;
+  applyRole();
   checkImport();
   if ("serviceWorker" in navigator && /^https?:/.test(location.protocol)) { try { navigator.serviceWorker.register("sw.js"); } catch (e) {} }
   render();
