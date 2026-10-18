@@ -1545,8 +1545,8 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   }
   function openShare() {
     var cp = curPet(); if (!cp) return; shareLink = ""; q("[data-hb-shqr]").innerHTML = ""; q("[data-hb-shlink]").value = "در حال ساخت لینک…"; q("[data-hb-shm]").hidden = false; document.documentElement.classList.add("gift-open");
-    if (srvOf(cp) && srvOn()) { shareLink = (/^https?:/.test(location.protocol) ? location.href.replace(/[^\/?#]*([?#].*)?$/, "") + "p#" + cp.srv.code + "." + cp.srv.key : location.href.replace(/#.*$/, "") + "#p=" + cp.srv.code + "." + cp.srv.key); q("[data-hb-shlink]").value = shareLink; q("[data-hb-shlen]").textContent = toolFa(shareLink.length) + " نویسه · لینک زنده (همیشه آخرین وضعیت)"; q("[data-hb-shqr]").innerHTML = qrFromText(shareLink); return; }
-    packShare(shareData(cp)).then(function (s) { shareLink = location.href.replace(/#.*$/, "") + "#share=" + s; q("[data-hb-shlink]").value = shareLink; q("[data-hb-shlen]").textContent = toolFa(shareLink.length) + " نویسه"; var qs = qrFromText(shareLink); q("[data-hb-shqr]").innerHTML = qs || "<p class=\"hb-shnote\">لینک برای QR بیش از حد بلند است؛ از لینک یا واتساپ استفاده کنید.</p>"; }).catch(function () { q("[data-hb-shlink]").value = "ساخت لینک در این مرورگر ممکن نشد."; });
+    if (srvOf(cp) && srvOn()) { shareLink = (/^https?:/.test(location.protocol) ? location.href.replace(/[^\/?#]*([?#].*)?$/, "") + "p#" + cp.srv.code + "." + cp.srv.key : location.href.replace(/#.*$/, "") + "#p=" + cp.srv.code + "." + cp.srv.key); q("[data-hb-shlink]").value = shareMsg(); q("[data-hb-shlen]").textContent = toolFa(shareLink.length) + " نویسه · لینک زنده (همیشه آخرین وضعیت)"; q("[data-hb-shqr]").innerHTML = qrFromText(shareLink); return; }
+    packShare(shareData(cp)).then(function (s) { shareLink = location.href.replace(/#.*$/, "") + "#share=" + s; q("[data-hb-shlink]").value = shareMsg(); q("[data-hb-shlen]").textContent = toolFa(shareLink.length) + " نویسه"; var qs = qrFromText(shareLink); q("[data-hb-shqr]").innerHTML = qs || "<p class=\"hb-shnote\">لینک برای QR بیش از حد بلند است؛ از لینک یا واتساپ استفاده کنید.</p>"; }).catch(function () { q("[data-hb-shlink]").value = "ساخت لینک در این مرورگر ممکن نشد."; });
   }
   function closeModal(sel) { q(sel).hidden = true; document.documentElement.classList.remove("gift-open"); }
   var pendingImport = null;
@@ -1657,7 +1657,11 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       return;
     }
     if (t.closest("[data-hb-sh-close]") || t === q("[data-hb-shm]")) return closeModal("[data-hb-shm]");
-    if (t.closest("[data-hb-sh-copy]")) { if (!shareLink) return; var ta = q("[data-hb-shlink]"); ta.select(); try { navigator.clipboard.writeText(shareLink); } catch (x) { document.execCommand("copy"); } t.closest("[data-hb-sh-copy]").textContent = "کپی شد ✓"; return; }
+    if (t.closest("[data-hb-sh-copy]") || t.closest("[data-hb-sh-copylink]")) {
+      if (!shareLink) return; var onlyLink = !!t.closest("[data-hb-sh-copylink]"), txt = onlyLink ? shareLink : shareMsg(), bt = t.closest("button");
+      var tmp = q("[data-hb-shlink]"); try { navigator.clipboard.writeText(txt).catch(function () { tmp.select(); document.execCommand("copy"); }); } catch (x) { tmp.select(); document.execCommand("copy"); }
+      var old = bt.textContent; bt.textContent = "کپی شد ✓"; setTimeout(function () { bt.textContent = old; }, 1800); return;
+    }
     if (t.closest("[data-hb-sh-wa]")) { if (!shareLink) return; var num = waNum(q("[data-hb-shnum]").value); window.open("https://wa.me/" + num + "?text=" + encodeURIComponent(shareMsg()), "_blank", "noopener"); return; }
     if (t.closest("[data-hb-imp-no]") || t === q("[data-hb-impm]")) { pendingImport = null; closeModal("[data-hb-impm]"); try { history.replaceState(null, "", location.pathname); } catch (x) {} return; }
     if (t.closest("[data-hb-imp-yes]")) {
