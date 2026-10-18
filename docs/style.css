@@ -1572,3 +1572,7 @@ nav a[href="tools.html"] { color: #12766a; font-weight: 700; }
 .hb-ptabs { flex-wrap: nowrap; gap: 5px; } .hb-ptabs .chip { padding: 5px 10px; font-size: 12.5px; white-space: nowrap; }
 .hb-r { flex-wrap: wrap; } .hb-r > div { flex: 1; min-width: 0; } .hb-r-b { width: 100%; justify-content: flex-end; }
 .hb-r .hb-r-b { display: flex; flex-direction: row; gap: 8px; justify-content: flex-end; width: 100%; } .hb-r .hb-r-b button { width: auto; flex: none; padding: 4px 14px; }
+.hb-ptabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; } .hb-ptabs .chip { padding: 6px 2px; font-size: 12px; text-align: center; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.hb-card, .hb-track, .hb-slide { max-width: 100%; }
+.hb-id dd { overflow-wrap: anywhere; } .hb-id dt { max-width: 48%; }
+.hb-id dt { font-size: 13px; max-width: 55%; }

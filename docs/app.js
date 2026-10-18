@@ -1169,7 +1169,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     function line(r) { return "- " + [r.brand, r.name || tl(r.type)].filter(Boolean).join(" · ") + (r.serial ? " Lot:" + r.serial : "") + (r.extra && !r.serial ? " (" + String(r.extra).slice(0, 24) + ")" : "") + ": " + fl(r.date) + " / " + r.date; }
     function nextOf(t) { var n = allRem().filter(function (r) { return r.pet === cp.id && r.type === t; })[0]; return n ? n.date : ""; }
     var lw = last("وزن", 1)[0], be = cp.breedEn || breedEn(cp.breed), o = [];
-    o.push("HEALTH RECORD | شناسنامه سلامت", cp.name + (cp.en ? " / " + cp.en : ""), (SPEN[cp.species] || cp.species || "") + (cp.breed ? " | " + cp.breed + (be ? " / " + be : "") : ""));
+    o.push("HEALTH RECORD | شناسنامه سلامت", cp.name + (cp.en ? " / " + cp.en : "") + (cp.owner ? " | Owner/صاحب: " + cp.owner : ""), (SPEN[cp.species] || cp.species || "") + (cp.breed ? " | " + cp.breed + (be ? " / " + be : "") : ""));
     if (cp.birth) o.push("Birth/تولد: " + fl(cp.birth) + " (" + cp.birth + ")");
     if (lw) o.push("Weight/وزن: " + lw.weight + " kg (" + lw.date + ")");
     [["واکسن", "Vaccines/واکسن", 3], ["ضدانگل داخلی", "Deworming/ضدانگل داخلی", 2], ["ضدانگل خارجی (کک و کنه)", "Flea-tick/ضدانگل خارجی", 2]].forEach(function (x) {
@@ -1188,6 +1188,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   }
   function renderCover(cp) {
     var lw = db.recs.filter(function (r) { return r.pet === cp.id && r.weight; }).sort(function (a, b) { return a.date < b.date ? 1 : -1; })[0], rows = [];
+    if (cp.owner) rows.push(["صاحب پت / Owner", esc(cp.owner)]);
     if (cp.species) rows.push(["گونه / Species", esc(cp.species) + (SPEN[cp.species] ? '<br><span class="en">' + SPEN[cp.species] + "</span>" : "")]);
     var be = cp.breedEn || breedEn(cp.breed);
     if (cp.breed) rows.push(["نژاد / Breed", esc(cp.breed) + (be ? '<br><span class="en">' + esc(be) + "</span>" : "")]);
@@ -1308,7 +1309,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   }
   function petForm(p) {
     editId = p ? p.id : null; q("[data-hb-pf-title]").textContent = p ? "ویرایش شناسنامه" : "شناسنامهٔ پت";
-    q("#hb-pn").value = p ? p.name : ""; q("#hb-pe").value = p && p.en || ""; q("#hb-pbr").value = p && p.breed || ""; q("#hb-pbe").value = p && p.breedEn || ""; q("#hb-pbe").setAttribute("data-auto", p && p.breedEn ? "" : "1"); JD.pb.set(p ? p.birth : ""); formPhoto = p && p.photo || ""; showPhoto();
+    q("#hb-pn").value = p ? p.name : ""; q("#hb-pe").value = p && p.en || ""; q("#hb-po").value = p && p.owner || ""; q("#hb-pbr").value = p && p.breed || ""; q("#hb-pbe").value = p && p.breedEn || ""; q("#hb-pbe").setAttribute("data-auto", p && p.breedEn ? "" : "1"); JD.pb.set(p ? p.birth : ""); formPhoto = p && p.photo || ""; showPhoto();
     var segs = q('[data-seg="hbsp"]').children; [].forEach.call(segs, function (b) { b.classList.toggle("on", p ? b.getAttribute("data-v") === p.species : b.getAttribute("data-v") === "سگ"); });
     q("[data-hb-petform]").hidden = false; q("[data-hb-main]").hidden = true;
   }
@@ -1338,8 +1339,8 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (t.closest("[data-hb-save-pet]")) {
       var n2 = q("#hb-pn").value.trim(); if (!n2) { q("#hb-pn").focus(); return; }
       var sp = q('[data-seg="hbsp"] .on'), spv = sp ? sp.getAttribute("data-v") : "", bd = JD.pb.get();
-      if (editId) { var ep = db.pets.filter(function (x) { return x.id === editId; })[0]; if (ep) { ep.name = n2; ep.en = q("#hb-pe").value.trim(); ep.breed = q("#hb-pbr").value.trim(); ep.breedEn = q("#hb-pbe").value.trim(); ep.species = spv; ep.birth = bd; ep.photo = formPhoto; } }
-      else { var p = { id: uid(), name: n2, en: q("#hb-pe").value.trim(), breed: q("#hb-pbr").value.trim(), breedEn: q("#hb-pbe").value.trim(), species: spv, birth: bd, photo: formPhoto, plan: [] }; db.pets.push(p); db.cur = p.id; }
+      if (editId) { var ep = db.pets.filter(function (x) { return x.id === editId; })[0]; if (ep) { ep.name = n2; ep.en = q("#hb-pe").value.trim(); ep.owner = q("#hb-po").value.trim(); ep.breed = q("#hb-pbr").value.trim(); ep.breedEn = q("#hb-pbe").value.trim(); ep.species = spv; ep.birth = bd; ep.photo = formPhoto; } }
+      else { var p = { id: uid(), name: n2, en: q("#hb-pe").value.trim(), owner: q("#hb-po").value.trim(), breed: q("#hb-pbr").value.trim(), breedEn: q("#hb-pbe").value.trim(), species: spv, birth: bd, photo: formPhoto, plan: [] }; db.pets.push(p); db.cur = p.id; }
       editId = null; q("[data-hb-petform]").hidden = true; save(); return render();
     }
     if (t.closest("[data-hb-mkplan]")) { var cp2 = curPet(); cp2.plan = buildPlan(cp2); save(); return render(); }
