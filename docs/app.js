@@ -1296,7 +1296,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     q("[data-hb-dots]").innerHTML = PGS.map(function (t, i) { return '<i class="' + (i === curPg ? "on" : "") + '"></i>'; }).join("");
     var tr = q("[data-hb-track]"); tr.scrollTo({ left: (getComputedStyle(tr).direction === "rtl" ? -1 : 1) * curPg * tr.clientWidth, behavior: "auto" }); fitTrack();
   }
-  function fitTrack() { var tr = q("[data-hb-track]"), s = tr && tr.children[curPg]; if (s) tr.style.height = s.offsetHeight + "px"; }
+  function fitTrack() { var tr = q("[data-hb-track]"); if (!tr) return; var h = 0; [].forEach.call(tr.children, function (s) { h = Math.max(h, s.scrollHeight); }); tr.style.height = h + "px"; }
   window.addEventListener("resize", function () { if (q("[data-hb-track]")) fitTrack(); });
   function setPg(i) { curPg = i; goPg(i); [].forEach.call(q("[data-hb-ptabs]").children, function (c, n) { c.classList.toggle("on", n === i); }); [].forEach.call(q("[data-hb-dots]").children, function (c, n) { c.classList.toggle("on", n === i); }); fitTrack(); }
   function goPg(i) { var tr = q("[data-hb-track]"); tr.scrollTo({ left: (getComputedStyle(tr).direction === "rtl" ? -1 : 1) * i * tr.clientWidth, behavior: "smooth" }); }

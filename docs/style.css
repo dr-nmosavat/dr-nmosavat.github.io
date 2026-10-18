@@ -1664,3 +1664,5 @@ html.hb-present .hb-px { position: fixed; bottom: 18px; inset-inline: auto; left
 .hb-r .hb-r-t small { display: block; margin: 0; font-size: 11px; line-height: 1.5; }
 .hb-ptabs { scroll-margin-top: 70px; }
 .hb-shqr { margin: 6px auto; } .hb-shqrnote { font-size: 12px; color: var(--muted); text-align: center; margin: 0 0 8px; }
+.hb-track { transition: none; }
+.hb-pg-b { max-height: 300px; }
