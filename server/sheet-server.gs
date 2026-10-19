@@ -281,7 +281,7 @@ function doGet(e) {
   var p = (e && e.parameter) || {};
   if (p.action === 'spin') return json_(spin_(p));
   if (p.action === 'verify') return verifyPage_(p);
-  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true });
+  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v3-keys14-verifycode' });
 }
 
 // ======================= چرخ هدیه =======================
