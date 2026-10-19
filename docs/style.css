@@ -1756,3 +1756,28 @@ html:not(.hb-dr) .hb-actions .hb-pair .btn { background: #1f5aa6; color: #fff; }
 .hb-pwf { position: relative; } .hb-pwf input { padding-inline-end: 48px; }
 .hb-eye { position: absolute; inset-inline-end: 6px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border: 0; background: transparent; font-size: 20px; cursor: pointer; }
 html.hb-dr .hb-pets .chip[data-hb-newpet] { display: none; }
+
+/* doctor page: top bar, tabs, views */
+.hb-drbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 14px; padding: 8px 10px; border-radius: 14px; background: #eef4fb; border: 1px solid #cfdff1; text-align: initial; }
+.hb-drbar[hidden] { display: none !important; }
+.hb-drbar .hb-drbadge { background: #e2f4ea; color: #12684a; border: 1px solid #b6dccf; font-weight: 700; font-size: 14px; padding: 6px 12px; border-radius: 999px; }
+.hb-drbar .hb-drbtn { min-height: 38px; padding: 6px 16px; font-size: 14px; margin-inline-start: auto; }
+.hb-drbar .hb-drbtn::before { content: none; }
+html.hb-dr .hb-drbtn { background: #fff; color: #b3382c; border: 1.5px solid #e6b9b3; }
+.hb-drtabs { display: none; } html.hb-dr .hb-drtabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 12px; }
+.hb-drtabs button { min-height: 44px; border: 1.5px solid var(--line); background: #fff; border-radius: 12px; font: inherit; font-size: 13.5px; font-weight: 700; color: #1f5aa6; cursor: pointer; padding: 4px 4px; }
+.hb-drtabs button.on { background: #1f5aa6; color: #fff; border-color: #1f5aa6; }
+.hb-back { display: none; margin-bottom: 10px; }
+html.hb-dr [data-dview="pet"] .hb-back { display: inline-flex; }
+html.hb-dr .hb-pets { display: none; }
+html.hb-dr [data-dview="list"] [data-hb-verifybox], html.hb-dr [data-dview="list"] [data-hb-petform], html.hb-dr [data-dview="list"] [data-hb-main] { display: none !important; }
+html.hb-dr [data-dview="new"] [data-hb-searchbox], html.hb-dr [data-dview="new"] [data-hb-verifybox], html.hb-dr [data-dview="new"] [data-hb-main] { display: none !important; }
+html.hb-dr [data-dview="code"] [data-hb-searchbox], html.hb-dr [data-dview="code"] [data-hb-petform], html.hb-dr [data-dview="code"] [data-hb-main] { display: none !important; }
+html.hb-dr [data-dview="pet"] [data-hb-searchbox], html.hb-dr [data-dview="pet"] [data-hb-verifybox], html.hb-dr [data-dview="pet"] .hb-drtabs { display: none !important; }
+html.hb-dr .hb-editrow:has([data-hb-present]) { display: none; }
+.hb-sendrow { justify-content: center; margin: 14px 0 4px; } .hb-sendrow .btn { width: 100%; min-height: 52px; font-size: 16px; }
+.hb-actions > .hb-tosrv { width: 100%; }
+.hb-qr1 { display: block; width: 100%; position: relative; padding-inline-end: 30px; }
+.hb-qr1::after { content: "‹"; position: absolute; inset-inline-end: 12px; top: 50%; transform: translateY(-50%); font-size: 22px; color: #9ab; }
+.hb-qlo { margin-top: 10px; font-weight: 700; }
+.hb-drtabs button { font-size: 12.5px; white-space: nowrap; }

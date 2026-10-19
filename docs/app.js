@@ -1225,6 +1225,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function render() {
     var pets = q("[data-hb-pets]"), main = q("[data-hb-main]"), pf = q("[data-hb-petform]");
     var noAcct = q("[data-hb-noacct]"), gate = q("[data-hb-drgate]");
+    var dbar = q("[data-hb-drbar]"); if (dbar) dbar.hidden = DRPAGE && !isDr() && !db.pets.length;
     if (!db.pets.length) { var guest = srvOn() && !isDr(); pets.innerHTML = ""; main.hidden = true; pf.hidden = guest; if (noAcct) noAcct.hidden = !(guest && !DRPAGE); if (gate) gate.hidden = !(guest && DRPAGE); document.documentElement.classList.remove("hb-has-pet"); return; }
     if (noAcct) noAcct.hidden = true; if (gate) gate.hidden = true;
     var cp = curPet(); db.cur = cp.id;
@@ -1268,6 +1269,8 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function tokGet() { try { var o = JSON.parse(localStorage.getItem("dm_hb_tok") || "null"); return o && o.exp > Date.now() ? o.t : ""; } catch (e) { return ""; } }
   function tokSet(t) { try { if (t) localStorage.setItem("dm_hb_tok", JSON.stringify({ t: t, exp: (Number(String(t).split(".")[0]) || Date.now() + 3 * 86400000) - 60000 })); else localStorage.removeItem("dm_hb_tok"); } catch (e) {} }
   var DRPAGE = document.body.classList.contains("hb-drpage");
+  var drListRun = null;
+  function dview(v) { root.setAttribute("data-dview", v); [].forEach.call(root.querySelectorAll("[data-hb-dtab]"), function (b) { b.classList.toggle("on", b.getAttribute("data-hb-dtab") === v); }); if (v === "list" && isDr() && srvOn() && drListRun) drListRun(); }
   function drDrop(msg) { try { localStorage.removeItem("dm_hb_dr"); } catch (e) {} tokSet(""); setTimeout(function () { applyRole(); render(); toast(msg); }, 0); }
   function isDr() { if (!DRPAGE) return false; try { var f = localStorage.getItem("dm_hb_dr") === "1"; if (f && srvOn() && !tokGet()) { drDrop("مدت اعتبار ورود تمام شد؛ لطفاً دوباره وارد شوید."); return false; } return f; } catch (e) { return false; } }
   function srvOf(p) { return p && p.srv && p.srv.code ? p.srv : null; }
@@ -1296,7 +1299,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   }
   function locked(t) { return !isDr() && OWNER_LOCKED.indexOf(t) > -1; }
   function toast(msg) { var t = document.createElement("div"); t.className = "hb-toast"; t.textContent = msg; document.body.appendChild(t); setTimeout(function () { t.classList.add("off"); }, 3200); setTimeout(function () { t.remove(); }, 3800); }
-  function applyRole() { document.documentElement.classList.toggle("hb-dr", isDr()); var b = q("[data-hb-drbtn]"); if (b) b.textContent = isDr() ? "خروج از حالت دکتر" : "ورود دکتر"; var bd = q("[data-hb-drbadge]"); if (bd) bd.hidden = !isDr(); if (!editId) { var nw = srvOn() && isDr(); q("[data-hb-pf-title]").textContent = nw ? "صدور شناسنامهٔ جدید" : "شناسنامهٔ پت"; q("[data-hb-save-pet]").textContent = nw ? "صدور شناسنامه" : "ذخیره"; } var nb = q("[data-hb-newbox]"); if (nb) nb.hidden = !(srvOn() && isDr()); var sb = q("[data-hb-searchbox]"); if (sb) sb.hidden = !(srvOn() && isDr()); var vb = q("[data-hb-verifybox]"); if (vb) vb.hidden = !(srvOn() && isDr()); }
+  function applyRole() { document.documentElement.classList.toggle("hb-dr", isDr()); var b = q("[data-hb-drbtn]"); if (b) b.textContent = isDr() ? "خروج" : "ورود دکتر"; var bd = q("[data-hb-drbadge]"); if (bd) bd.hidden = !isDr(); if (!editId) { var nw = srvOn() && isDr(); q("[data-hb-pf-title]").textContent = nw ? "صدور شناسنامهٔ جدید" : "شناسنامهٔ پت"; q("[data-hb-save-pet]").textContent = nw ? "صدور شناسنامه" : "ذخیره"; } var nb = q("[data-hb-newbox]"); if (nb) nb.hidden = !(srvOn() && isDr()); var sb = q("[data-hb-searchbox]"); if (sb) sb.hidden = !(srvOn() && isDr()); var vb = q("[data-hb-verifybox]"); if (vb) vb.hidden = !(srvOn() && isDr()); }
   function checkDrPass(pw) {
     if (!window.crypto || !crypto.subtle) return Promise.resolve(false);
     var s = atob(DR_SALT), salt = new Uint8Array(s.length), i; for (i = 0; i < s.length; i++) salt[i] = s.charCodeAt(i);
@@ -1478,7 +1481,8 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   q("#hb-pbr").addEventListener("change", function () { var o = q("#hb-pbro"); o.hidden = this.value !== "__o"; if (!o.hidden) o.focus(); var e = q("#hb-pbe"); if (e.getAttribute("data-auto") === "1") e.value = breedEn(getBreed()); });
   (function () {
     var sq = q("[data-hb-q]"), tm = 0; if (!sq) return;
-    function run() { var box = q("[data-hb-qres]"); box.innerHTML = '<p class="hb-qmsg">در حال جستجو…</p>'; api({ a: "search", t: tokGet(), q: sq.value }).then(function (j) { if (!j.ok) { box.innerHTML = '<p class="hb-qmsg">' + esc(errMsg(j.err)) + "</p>"; return; } box.innerHTML = j.pets.length ? j.pets.map(function (p) { return '<button type="button" class="hb-qr1" data-hb-qopen="' + esc(p.code) + '"><b>' + esc(p.name) + (p.en ? " · " + esc(p.en) : "") + "</b><small>" + esc((p.owner ? p.owner + " · " : "") + p.code) + "</small></button>"; }).join("") : '<p class="hb-qmsg">موردی پیدا نشد.</p>'; }); }
+    function run() { var box = q("[data-hb-qres]"); box.innerHTML = '<p class="hb-qmsg">در حال جستجو…</p>'; api({ a: "search", t: tokGet(), q: sq.value }).then(function (j) { if (!j.ok) { box.innerHTML = '<p class="hb-qmsg">' + esc(errMsg(j.err)) + "</p>"; return; } box.innerHTML = j.pets.length ? j.pets.map(function (p) { return '<button type="button" class="hb-qr1" data-hb-qopen="' + esc(p.code) + '"><b>' + esc(p.name) + (p.en ? " · " + esc(p.en) : "") + "</b><small>" + esc((p.owner ? p.owner + " · " : "") + p.code) + "</small></button>"; }).join("") : '<p class="hb-qmsg">موردی پیدا نشد.</p>'; var lo = db.pets.filter(function (p) { return !srvOf(p); }); if (lo.length) box.innerHTML += '<p class="hb-qmsg hb-qlo">فقط روی این دستگاه (هنوز روی سرور ذخیره نشده):</p>' + lo.map(function (p) { return '<button type="button" class="hb-qr1" data-hb-lopen="' + esc(p.id) + '"><b>' + esc(p.name) + "</b><small>" + esc(p.owner || "") + "</small></button>"; }).join(""); }); }
+    drListRun = run;
     sq.addEventListener("input", function () { clearTimeout(tm); tm = setTimeout(run, 350); });
     sq.addEventListener("focus", function () { if (!q("[data-hb-qres]").innerHTML) run(); });
   })();
@@ -1585,10 +1589,13 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if ((b = t.closest("[data-hb-opt]"))) { [].forEach.call(b.parentNode.children, function (x) { x.classList.toggle("on", x === b); }); var n = q("#hb-n"); if (n) n.value = b.getAttribute("data-hb-opt"); return; }
     if ((b = t.closest("[data-hb-tab]"))) { curTab = Number(b.getAttribute("data-hb-tab")); return render(); }
     if ((b = t.closest("[data-hb-pet]"))) { db.cur = b.getAttribute("data-hb-pet"); q("[data-hb-petform]").hidden = true; save(); render(); return syncCur(); }
+    if ((b = t.closest("[data-hb-dtab]"))) { var dv = b.getAttribute("data-hb-dtab"); dview(dv); if (dv === "new") { petForm(null); } else q("[data-hb-petform]").hidden = true; return; }
+    if (t.closest("[data-hb-back]")) { q("[data-hb-petform]").hidden = true; dview("list"); return; }
+    if ((b = t.closest("[data-hb-lopen]"))) { db.cur = b.getAttribute("data-hb-lopen"); q("[data-hb-petform]").hidden = true; save(); render(); dview("pet"); return; }
     if (t.closest("[data-hb-newpet]")) { petForm(null); var pf0 = q("[data-hb-petform]"); if (pf0 && pf0.scrollIntoView) pf0.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
     if (t.closest("[data-hb-eye]")) { var pw0 = q("[data-hb-drpw]"); pw0.type = pw0.type === "password" ? "text" : "password"; return; }
     if (t.closest("[data-hb-edit-pet]")) { var pe = curPet(); petForm(pe); q("[data-hb-petform]").classList.toggle("photoonly", srvOn() && !isDr()); q("[data-hb-pf-title]").textContent = srvOn() && !isDr() ? "تغییر عکس پت" : "ویرایش شناسنامه"; return; }
-    if (t.closest("[data-hb-cancel-pet]")) { q("[data-hb-petform]").hidden = true; return render(); }
+    if (t.closest("[data-hb-cancel-pet]")) { var wasEd = !!editId; q("[data-hb-petform]").hidden = true; if (isDr()) dview(wasEd ? "pet" : "list"); return render(); }
     if (t.closest("[data-hb-cover-photo]")) { var cpp = curPet(); if (t.closest(".hb-cam") || !cpp || !cpp.photo) return q("[data-hb-file2]").click(); q("[data-hb-viewimg]").src = cpp.photo; q("[data-hb-viewm]").hidden = false; document.documentElement.classList.add("gift-open"); return; }
     if (t.closest("[data-hb-view-change]")) { q("[data-hb-viewm]").hidden = true; document.documentElement.classList.remove("gift-open"); return q("[data-hb-file2]").click(); }
     if (t.closest("[data-hb-view-close]") || t === q("[data-hb-viewm]")) { q("[data-hb-viewm]").hidden = true; document.documentElement.classList.remove("gift-open"); return; }
@@ -1612,7 +1619,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
         api({ a: "savePet", t: tokGet(), pet: pin }).then(function (j) {
           sbtn.disabled = false; if (!j.ok) { perr.textContent = errMsg(j.err); perr.hidden = false; return; }
           var recs = ep0 ? db.recs.filter(function (r) { return r.pet === ep0.id; }) : [], pp = upsertSrv(j.pet, recs, j.pet.key);
-          pp.photo = formPhoto || (ep0 && ep0.photo) || ""; db.cur = pp.id; editId = null; q("[data-hb-petform]").hidden = true; save(); render();
+          pp.photo = formPhoto || (ep0 && ep0.photo) || ""; db.cur = pp.id; editId = null; q("[data-hb-petform]").hidden = true; save(); render(); dview("pet");
         });
         return;
       }
@@ -1640,7 +1647,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     }
     if ((b = t.closest("[data-hb-qopen]"))) {
       var qc = b.getAttribute("data-hb-qopen"); b.disabled = true;
-      api({ a: "get", t: tokGet(), code: qc }).then(function (j) { b.disabled = false; if (!j.ok) return alert(errMsg(j.err)); var p = upsertSrv(j.pet, j.recs, j.pet.key); db.cur = p.id; q("[data-hb-petform]").hidden = true; q("[data-hb-qres]").innerHTML = ""; q("[data-hb-q]").value = ""; save(); render(); });
+      api({ a: "get", t: tokGet(), code: qc }).then(function (j) { b.disabled = false; if (!j.ok) return alert(errMsg(j.err)); var p = upsertSrv(j.pet, j.recs, j.pet.key); db.cur = p.id; q("[data-hb-petform]").hidden = true; save(); render(); dview("pet"); });
       return;
     }
     if (t.closest("[data-hb-tosrv]")) {
@@ -1665,7 +1672,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     }
     if (t.closest("[data-hb-dr-close]") || t === q("[data-hb-drm]")) return closeModal("[data-hb-drm]");
     if (t.closest("[data-hb-dr-ok]")) {
-      var pw = q("[data-hb-drpw]").value.trim(), er0 = q("[data-hb-drerr]"), fin0 = function () { try { localStorage.setItem("dm_hb_dr", "1"); } catch (x) {} closeModal("[data-hb-drm]"); curType = "واکسن"; applyRole(); render(); syncCur(); toast("خوش آمدید خانم دکتر 👩‍⚕️"); };
+      var pw = q("[data-hb-drpw]").value.trim(), er0 = q("[data-hb-drerr]"), fin0 = function () { try { localStorage.setItem("dm_hb_dr", "1"); } catch (x) {} closeModal("[data-hb-drm]"); curType = "واکسن"; applyRole(); render(); dview("list"); toast("خوش آمدید خانم دکتر 👩‍⚕️"); };
       if (srvOn()) api({ a: "drLogin", pass: pw, rem: q("[data-hb-remember]").checked ? 1 : 0 }).then(function (j) { if (!j.ok) { er0.textContent = j.err === "auth" ? "رمز درست نیست." : errMsg(j.err); er0.hidden = false; return; } tokSet(j.t); fin0(); });
       else checkDrPass(pw).then(function (ok) { if (!ok) { er0.textContent = "رمز درست نیست."; er0.hidden = false; return; } fin0(); });
       return;
@@ -1773,7 +1780,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (t.closest("[data-hb-export]")) return dl("daftarche-salamat-pet.json", JSON.stringify(db), "application/json");
     if (t.closest("[data-hb-print]")) return window.print();
     if (t.closest("[data-hb-del-pet]")) {
-      var c = curPet(), svc = srvOf(c); if (c && confirm(svc && isDr() ? "پت «" + c.name + "» از سرور هم برای همیشه حذف شود؟" : "پت «" + c.name + "» و همهٔ سابقه‌اش از این گوشی حذف شود؟")) { if (svc && isDr() && srvOn()) api({ a: "deletePet", t: tokGet(), code: svc.code }); db.recs = db.recs.filter(function (r) { return r.pet !== c.id; }); db.pets = db.pets.filter(function (p) { return p.id !== c.id; }); db.cur = db.pets[0] ? db.pets[0].id : null; save(); render(); }
+      var c = curPet(), svc = srvOf(c); if (c && confirm(svc && isDr() ? "پت «" + c.name + "» از سرور هم برای همیشه حذف شود؟" : "پت «" + c.name + "» و همهٔ سابقه‌اش از این گوشی حذف شود؟")) { if (svc && isDr() && srvOn()) api({ a: "deletePet", t: tokGet(), code: svc.code }); db.recs = db.recs.filter(function (r) { return r.pet !== c.id; }); db.pets = db.pets.filter(function (p) { return p.id !== c.id; }); db.cur = db.pets[0] ? db.pets[0].id : null; save(); render(); if (isDr()) dview("list"); }
     }
   });
   q("[data-hb-import]").addEventListener("change", function (e) {
@@ -1786,7 +1793,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   q("[data-hb-do-install]").addEventListener("click", function () { if (dp) { dp.prompt(); dp = null; q("[data-hb-install]").hidden = true; } });
   if (/iphone|ipad/i.test(navigator.userAgent) && !window.navigator.standalone) q("[data-hb-ios]").hidden = false;
   (function () { var w = q("[data-hb-wa]"); if (w && INFO.whatsapp) w.href = "https://wa.me/" + INFO.whatsapp + "?text=" + encodeURIComponent("سلام دکتر مساوات، می‌خواهم شناسنامهٔ سلامت پتم را بگیرم."); var vci = q("[data-hb-vcode]"); if (vci) vci.addEventListener("keydown", function (e) { if (e.key === "Enter") q("[data-hb-vgo]").click(); }); var pwi = q("[data-hb-drpw]"); if (pwi) pwi.addEventListener("keydown", function (e) { if (e.key === "Enter") q("[data-hb-dr-ok]").click(); }); })();
-  applyRole();
+  applyRole(); dview("list");
   checkImport();
   syncCur();
   if ("serviceWorker" in navigator && /^https?:/.test(location.protocol)) { try { navigator.serviceWorker.register("sw.js"); } catch (e) {} }
