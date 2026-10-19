@@ -1244,7 +1244,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       extra += items.length - shown.length;
       if (!shown.length) {
         var had = db.recs.some(function (r) { return r.pet === cp.id && r.type === t; });
-        rl += '<div class="hb-r none" data-hb-goto="' + esc(t) + '"><span class="hb-r-ic">' + k.ic + '</span><div class="hb-r-t"><b>' + esc(tl(t)) + (had ? ": نوبت بعدی تعیین نشده" : " ثبت نشده") + (locked(t) ? " (ثبت توسط دکتر)" : "") + "</b></div></div>";
+        rl += '<div class="hb-r none" data-hb-goto="' + esc(t) + '"><span class="hb-r-ic">' + k.ic + '</span><div class="hb-r-t"><b>' + esc(tl(t)) + (had ? ": نوبت بعدی تعیین نشده" : (locked(t) && t === "ویزیت" ? ": توسط دکتر ثبت می‌شود" : " ثبت نشده")) + "</b></div></div>";
         return;
       }
       shown.forEach(function (r) {
@@ -1537,10 +1537,10 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   var shareLink = "";
   function shareMsg() { var cp = curPet(); return "📒 شناسنامهٔ سلامت «" + cp.name + "»\nدکتر نیلوفر مساوات\n\nبا این لینک باز کنید و «افزودن به دفترچهٔ من» را بزنید:\n" + shareLink; }
   function qrFromText(text) {
-    try { var qq = qrLib(0, "L"); qq.addData(text, "Byte"); qq.make(); var n = qq.getModuleCount(), d = "", r, c; for (r = 0; r < n; r++) for (c = 0; c < n; c++) if (qq.isDark(r, c)) d += "M" + (c + 3) + " " + (r + 3) + "h1v1h-1z"; return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + (n + 6) + " " + (n + 6) + '" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#fff"/><path d="' + d + '" fill="#000"/></svg>'; } catch (e) { return ""; }
+    try { var qq = qrLib(0, "M"); qq.addData(text, "Byte"); qq.make(); var n = qq.getModuleCount(), d = "", r, c; for (r = 0; r < n; r++) for (c = 0; c < n; c++) if (qq.isDark(r, c)) d += "M" + (c + 4) + " " + (r + 4) + "h1v1h-1z"; return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + (n + 8) + " " + (n + 8) + '" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#fff"/><path d="' + d + '" fill="#000"/></svg>'; } catch (e) { return ""; }
   }
   function savePng(sv, name) {
-    if (!sv) return; var im2 = new Image(), url = URL.createObjectURL(new Blob([sv.outerHTML], { type: "image/svg+xml" }));
+    if (!sv) return; var im2 = new Image(), url = URL.createObjectURL(new Blob([sv.outerHTML.replace(/^<svg /, '<svg width="800" height="800" ')], { type: "image/svg+xml" }));
     im2.onload = function () { var cv = document.createElement("canvas"); cv.width = cv.height = 800; var cx = cv.getContext("2d"); cx.fillStyle = "#fff"; cx.fillRect(0, 0, 800, 800); cx.imageSmoothingEnabled = false; cx.drawImage(im2, 0, 0, 800, 800); cv.toBlob(function (bl) { var l = document.createElement("a"); l.href = URL.createObjectURL(bl); l.download = name; document.body.appendChild(l); l.click(); setTimeout(function () { l.remove(); }, 500); }); };
     im2.src = url;
   }

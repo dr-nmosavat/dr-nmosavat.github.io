@@ -1721,3 +1721,32 @@ body.hb-drpage .hb-drgate:not([hidden]) ~ .hb-drbar { display: none !important; 
 .hb-vrow { display: flex; gap: 8px; } .hb-vrow input { flex: 1; min-width: 0; min-height: 44px; border: 1.5px solid var(--line); border-radius: 12px; padding: 6px 12px; font: inherit; font-size: 16px; text-transform: uppercase; background: #fff; }
 .hb-vbox { margin-top: 8px; border-radius: 12px; padding: 10px 12px; } .hb-vbox b { font-size: 16px; display: block; } .hb-vbox p { margin: 4px 0 8px; font-size: 14px; }
 .hb-vbox.ok { background: #e3f6ec; color: #0f6b44; } .hb-vbox.bad { background: #fdeceb; color: #a02a20; }
+
+/* bottom of health book: symmetric groups, privacy line, install box, stamp */
+.hb-actions { align-items: stretch; gap: 12px; }
+.hb-actions .hb-add { width: 100%; min-width: 0; min-height: 48px; font-size: 16px; }
+.hb-actions .hb-arow { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.hb-actions .hb-arow.hb-tools { grid-template-columns: repeat(3, 1fr); margin-top: 0; }
+.hb-actions .hb-arow .btn { width: 100%; min-height: 42px; padding: 6px 8px; margin: 0; }
+.hb-actions .hb-arow.hb-tools .btn { min-height: 38px; font-size: 12.5px !important; padding: 4px 6px !important; border: 1px solid var(--line); }
+.hb-actions .hb-arow.hb-doc-only { display: none; } html.hb-dr .hb-actions .hb-arow.hb-doc-only { display: grid; }
+.hb-pair .hb-t-ow { display: inline; } .hb-pair .hb-t-dr { display: none; }
+html.hb-dr .hb-pair .hb-t-ow { display: none; } html.hb-dr .hb-pair .hb-t-dr { display: inline; }
+.hb-pair { grid-template-columns: 1fr 1fr; }
+.hb-pair:not(:has(.hb-dr-only:not([hidden]))) { grid-template-columns: 1fr; }
+.hb-dr-only { display: none !important; } html.hb-dr .hb-dr-only { display: inline-flex !important; }
+html.hb-dr .hb-pair { grid-template-columns: 1fr 1fr !important; }
+.hb-priv { text-align: center; margin: 18px 4px 0; font-size: 13px; color: var(--ink, #274156); line-height: 1.9; }
+.hb-priv small { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+.hb-installbox { margin-top: 14px; }
+.hb-installbox .hb-install, .hb-installbox .hb-ios { display: grid; justify-items: center; gap: 4px; text-align: center; padding: 14px; border-radius: 16px; background: #eef4fb; border: 1px dashed #b7cde6; margin: 0; font-size: 13px; }
+.hb-installbox .hb-install[hidden], .hb-installbox .hb-ios[hidden] { display: none; }
+.hb-installbox b { font-size: 14px; color: #1f5aa6; } .hb-installbox span { color: var(--muted); font-size: 12.5px; }
+.hb-installbox .hb-install .btn { width: auto; min-width: 150px; margin-top: 4px; }
+.hb-stamp { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 16px; padding-top: 12px; border-top: 1px solid #e3d3a8; font-size: 12.5px; color: #8a6d2b; font-weight: 700; }
+.hb-stamp svg { width: 20px; height: 20px; opacity: .85; }
+@media print { .hb-installbox { display: none !important; } }
+html:not(.hb-dr) .hb-actions .hb-pair { grid-template-columns: 1fr; }
+.hb-actions .hb-pair .btn:not(.hb-danger) { background: #fff; color: #1f5aa6; border: 1.5px solid #1f5aa6; }
+html:not(.hb-dr) .hb-actions .hb-pair .btn { background: #1f5aa6; color: #fff; }
+.hb-actions .btn.hb-sendbtn { background: #e7f4ef; color: #12766a; border: 1px solid #b6dccf; }
