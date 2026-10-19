@@ -1750,3 +1750,9 @@ html:not(.hb-dr) .hb-actions .hb-pair { grid-template-columns: 1fr; }
 .hb-actions .hb-pair .btn:not(.hb-danger) { background: #fff; color: #1f5aa6; border: 1.5px solid #1f5aa6; }
 html:not(.hb-dr) .hb-actions .hb-pair .btn { background: #1f5aa6; color: #fff; }
 .hb-actions .btn.hb-sendbtn { background: #e7f4ef; color: #12766a; border: 1px solid #b6dccf; }
+
+.hb-newbox { display: none; text-align: center; margin: 0 0 14px; } html.hb-dr .hb-newbox:not([hidden]) { display: grid; gap: 6px; }
+.hb-newbox .btn { width: 100%; min-height: 52px; font-size: 16.5px; } .hb-newbox small { color: var(--muted); font-size: 12.5px; }
+.hb-pwf { position: relative; } .hb-pwf input { padding-inline-end: 48px; }
+.hb-eye { position: absolute; inset-inline-end: 6px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border: 0; background: transparent; font-size: 20px; cursor: pointer; }
+html.hb-dr .hb-pets .chip[data-hb-newpet] { display: none; }

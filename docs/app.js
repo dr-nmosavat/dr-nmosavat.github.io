@@ -1263,12 +1263,13 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function api(body) {
     var ctl = window.AbortController ? new AbortController() : null, tm = ctl ? setTimeout(function () { ctl.abort(); }, 20000) : 0;
     return fetch(INFO.sheetApi, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(body), signal: ctl ? ctl.signal : undefined })
-      .then(function (r) { return r.json(); }).then(function (j) { clearTimeout(tm); return j; }).catch(function () { clearTimeout(tm); return { ok: false, err: "net" }; });
+      .then(function (r) { return r.json(); }).then(function (j) { clearTimeout(tm); if (j && j.ok === false && j.err === "auth" && body.t !== undefined && DRPAGE && localStorage.getItem("dm_hb_dr") === "1") drDrop("ورود شما از طرف سرور تأیید نشد؛ لطفاً دوباره وارد شوید."); return j; }).catch(function () { clearTimeout(tm); return { ok: false, err: "net" }; });
   }
   function tokGet() { try { var o = JSON.parse(localStorage.getItem("dm_hb_tok") || "null"); return o && o.exp > Date.now() ? o.t : ""; } catch (e) { return ""; } }
   function tokSet(t) { try { if (t) localStorage.setItem("dm_hb_tok", JSON.stringify({ t: t, exp: (Number(String(t).split(".")[0]) || Date.now() + 3 * 86400000) - 60000 })); else localStorage.removeItem("dm_hb_tok"); } catch (e) {} }
   var DRPAGE = document.body.classList.contains("hb-drpage");
-  function isDr() { if (!DRPAGE) return false; try { var f = localStorage.getItem("dm_hb_dr") === "1"; if (f && srvOn() && !tokGet()) { localStorage.removeItem("dm_hb_dr"); return false; } return f; } catch (e) { return false; } }
+  function drDrop(msg) { try { localStorage.removeItem("dm_hb_dr"); } catch (e) {} tokSet(""); setTimeout(function () { applyRole(); render(); toast(msg); }, 0); }
+  function isDr() { if (!DRPAGE) return false; try { var f = localStorage.getItem("dm_hb_dr") === "1"; if (f && srvOn() && !tokGet()) { drDrop("مدت اعتبار ورود تمام شد؛ لطفاً دوباره وارد شوید."); return false; } return f; } catch (e) { return false; } }
   function srvOf(p) { return p && p.srv && p.srv.code ? p.srv : null; }
   function errMsg(e) { return e === "net" ? "اتصال با سرور برقرار نشد. اینترنت را بررسی کنید." : e === "auth" ? "دسترسی مجاز نیست (دوباره وارد شوید یا لینک را بررسی کنید)." : e === "forbidden" ? "این مورد را فقط دکتر ثبت یا تغییر می‌دهد." : e === "locked" ? "ورود موقتاً قفل شد؛ چند دقیقه بعد دوباره تلاش کنید." : "خطای سرور؛ دوباره تلاش کنید."; }
   function toSrvPet(p) { return { code: p.srv && p.srv.code, name: p.name, en: p.en, owner: p.owner, guardian: p.guardian, species: p.species, breed: p.breed, breedEn: p.breedEn, birth: p.birth, plan: p.plan || [], consent: p.consent ? 1 : 0 }; }
@@ -1295,7 +1296,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   }
   function locked(t) { return !isDr() && OWNER_LOCKED.indexOf(t) > -1; }
   function toast(msg) { var t = document.createElement("div"); t.className = "hb-toast"; t.textContent = msg; document.body.appendChild(t); setTimeout(function () { t.classList.add("off"); }, 3200); setTimeout(function () { t.remove(); }, 3800); }
-  function applyRole() { document.documentElement.classList.toggle("hb-dr", isDr()); var b = q("[data-hb-drbtn]"); if (b) b.textContent = isDr() ? "خروج از حالت دکتر" : "ورود دکتر"; var bd = q("[data-hb-drbadge]"); if (bd) bd.hidden = !isDr(); var sb = q("[data-hb-searchbox]"); if (sb) sb.hidden = !(srvOn() && isDr()); var vb = q("[data-hb-verifybox]"); if (vb) vb.hidden = !(srvOn() && isDr()); }
+  function applyRole() { document.documentElement.classList.toggle("hb-dr", isDr()); var b = q("[data-hb-drbtn]"); if (b) b.textContent = isDr() ? "خروج از حالت دکتر" : "ورود دکتر"; var bd = q("[data-hb-drbadge]"); if (bd) bd.hidden = !isDr(); if (!editId) { var nw = srvOn() && isDr(); q("[data-hb-pf-title]").textContent = nw ? "صدور شناسنامهٔ جدید" : "شناسنامهٔ پت"; q("[data-hb-save-pet]").textContent = nw ? "صدور شناسنامه" : "ذخیره"; } var nb = q("[data-hb-newbox]"); if (nb) nb.hidden = !(srvOn() && isDr()); var sb = q("[data-hb-searchbox]"); if (sb) sb.hidden = !(srvOn() && isDr()); var vb = q("[data-hb-verifybox]"); if (vb) vb.hidden = !(srvOn() && isDr()); }
   function checkDrPass(pw) {
     if (!window.crypto || !crypto.subtle) return Promise.resolve(false);
     var s = atob(DR_SALT), salt = new Uint8Array(s.length), i; for (i = 0; i < s.length; i++) salt[i] = s.charCodeAt(i);
@@ -1466,7 +1467,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function getBreed() { var s = q("#hb-pbr"); return s.value === "__o" ? q("#hb-pbro").value.trim() : s.value; }
   function petForm(p) {
     q("[data-hb-petform]").classList.remove("photoonly");
-    editId = p ? p.id : null; q("[data-hb-pf-title]").textContent = p ? "ویرایش شناسنامه" : "شناسنامهٔ پت";
+    editId = p ? p.id : null; q("[data-hb-pf-title]").textContent = p ? "ویرایش شناسنامه" : srvOn() && isDr() ? "صدور شناسنامهٔ جدید" : "شناسنامهٔ پت"; q("[data-hb-save-pet]").textContent = !p && srvOn() && isDr() ? "صدور شناسنامه" : "ذخیره";
     q("#hb-pn").value = p ? p.name : ""; q("#hb-pe").value = p && p.en || ""; q("#hb-po").value = p && p.owner || ""; q("#hb-pg").value = p && p.guardian || "";  q("#hb-pbe").value = p && p.breedEn || ""; q("#hb-pbe").setAttribute("data-auto", p && p.breedEn ? "" : "1"); JD.pb.set(p ? p.birth : ""); formPhoto = p && p.photo || ""; showPhoto();
     var segs = q('[data-seg="hbsp"]').children; [].forEach.call(segs, function (b) { b.classList.toggle("on", p ? b.getAttribute("data-v") === p.species : b.getAttribute("data-v") === "سگ"); });
     fillBreeds(p ? p.species : "سگ", p ? p.breed : "");
@@ -1584,7 +1585,8 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if ((b = t.closest("[data-hb-opt]"))) { [].forEach.call(b.parentNode.children, function (x) { x.classList.toggle("on", x === b); }); var n = q("#hb-n"); if (n) n.value = b.getAttribute("data-hb-opt"); return; }
     if ((b = t.closest("[data-hb-tab]"))) { curTab = Number(b.getAttribute("data-hb-tab")); return render(); }
     if ((b = t.closest("[data-hb-pet]"))) { db.cur = b.getAttribute("data-hb-pet"); q("[data-hb-petform]").hidden = true; save(); render(); return syncCur(); }
-    if (t.closest("[data-hb-newpet]")) return petForm(null);
+    if (t.closest("[data-hb-newpet]")) { petForm(null); var pf0 = q("[data-hb-petform]"); if (pf0 && pf0.scrollIntoView) pf0.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
+    if (t.closest("[data-hb-eye]")) { var pw0 = q("[data-hb-drpw]"); pw0.type = pw0.type === "password" ? "text" : "password"; return; }
     if (t.closest("[data-hb-edit-pet]")) { var pe = curPet(); petForm(pe); q("[data-hb-petform]").classList.toggle("photoonly", srvOn() && !isDr()); q("[data-hb-pf-title]").textContent = srvOn() && !isDr() ? "تغییر عکس پت" : "ویرایش شناسنامه"; return; }
     if (t.closest("[data-hb-cancel-pet]")) { q("[data-hb-petform]").hidden = true; return render(); }
     if (t.closest("[data-hb-cover-photo]")) { var cpp = curPet(); if (t.closest(".hb-cam") || !cpp || !cpp.photo) return q("[data-hb-file2]").click(); q("[data-hb-viewimg]").src = cpp.photo; q("[data-hb-viewm]").hidden = false; document.documentElement.classList.add("gift-open"); return; }
@@ -1658,8 +1660,8 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     }
     if (t.closest("[data-hb-share]")) return isDr() ? openShare() : undefined;
     if (t.closest("[data-hb-drbtn]")) {
-      if (isDr()) { try { localStorage.removeItem("dm_hb_dr"); } catch (x) {} tokSet(""); applyRole(); return render(); }
-      q("[data-hb-drm]").hidden = false; document.documentElement.classList.add("gift-open"); q("[data-hb-drpw]").value = ""; q("[data-hb-drerr]").hidden = true; q("[data-hb-drpw]").focus(); return;
+      if (isDr()) { if (!confirm("از حالت دکتر خارج می‌شوید؟")) return; try { localStorage.removeItem("dm_hb_dr"); } catch (x) {} tokSet(""); applyRole(); return render(); }
+      q("[data-hb-drm]").hidden = false; document.documentElement.classList.add("gift-open"); q("[data-hb-drpw]").value = ""; q("[data-hb-drpw]").type = "password"; q("[data-hb-drerr]").hidden = true; q("[data-hb-drpw]").focus(); return;
     }
     if (t.closest("[data-hb-dr-close]") || t === q("[data-hb-drm]")) return closeModal("[data-hb-drm]");
     if (t.closest("[data-hb-dr-ok]")) {
