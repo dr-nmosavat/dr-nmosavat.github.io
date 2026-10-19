@@ -1781,3 +1781,26 @@ html.hb-dr .hb-editrow:has([data-hb-present]) { display: none; }
 .hb-qr1::after { content: "‹"; position: absolute; inset-inline-end: 12px; top: 50%; transform: translateY(-50%); font-size: 22px; color: #9ab; }
 .hb-qlo { margin-top: 10px; font-weight: 700; }
 .hb-drtabs button { font-size: 12.5px; white-space: nowrap; }
+
+/* ابزارهای سن پت، غذاهای سمی، چک‌لیست فوریت */
+.pa-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } .pa-row label.sm { font-size: 13px; color: var(--muted); display: block; margin-bottom: 4px; }
+.pa-row input { width: 100%; box-sizing: border-box; min-height: 46px; border: 1.5px solid var(--line); border-radius: 12px; padding: 8px 12px; font: inherit; }
+.tx-seg { margin: 10px 0 14px; } .tx-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.tx { position: relative; border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; background: #fff; border-inline-start: 6px solid #c9d4e2; }
+.tx[hidden] { display: none; }
+.tx b { font-size: 15.5px; } .tx p { margin: 6px 0 0; font-size: 14px; color: var(--muted); line-height: 1.8; }
+.tx-l { display: inline-block; margin-inline-start: 8px; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+.tx-sp { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
+.tx-r { border-inline-start-color: #d9534f; } .tx-r .tx-l { background: #fde8e6; color: #b3382c; }
+.tx-y { border-inline-start-color: #e8a13a; } .tx-y .tx-l { background: #fdf1da; color: #8a5a0d; }
+.tx-g { border-inline-start-color: #4aa37a; } .tx-g .tx-l { background: #e2f4ea; color: #12684a; }
+.tx-none { text-align: center; color: var(--muted); }
+.emg-h { font-size: 17px; margin: 14px 0 8px; } .emg-h.r { color: #b3382c; } .emg-h.y { color: #8a5a0d; }
+.emg-list { display: grid; gap: 8px; }
+.emg-i { display: flex; align-items: flex-start; gap: 10px; padding: 11px 12px; border: 1px solid var(--line); border-radius: 14px; background: #fff; cursor: pointer; font-size: 14.5px; line-height: 1.8; }
+.emg-i input { width: 22px; height: 22px; margin-top: 4px; flex: none; }
+.emg-i:has(input:checked) { background: #fff3f1; border-color: #e6b9b3; }
+.emg-res { margin-top: 12px; }
+.emg-bar { position: sticky; bottom: 12px; z-index: 5; display: block; width: calc(100% - 84px); margin: 12px 0 0 auto; padding: 10px 14px; border: 0; border-radius: 14px; font: inherit; font-weight: 700; font-size: 14px; text-align: center; cursor: pointer; box-shadow: 0 6px 18px rgba(0,0,0,.18); }
+.emg-bar[hidden] { display: none; } .emg-bar.emg-r { background: #d9534f; color: #fff; } .emg-bar.emg-y { background: #e8a13a; color: #3d2706; }
+.emg-res.emg-r { background: #fde8e6; color: #7a1f17; } .emg-res.emg-y { background: #fdf1da; color: #6b4608; }

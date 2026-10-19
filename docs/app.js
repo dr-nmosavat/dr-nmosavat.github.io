@@ -1800,3 +1800,63 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   if ("serviceWorker" in navigator && /^https?:/.test(location.protocol)) { try { navigator.serviceWorker.register("sw.js"); } catch (e) {} }
   render();
 })();
+
+// ابزار سن پت به سن انسان
+(function () {
+  var root = document.querySelector("[data-petage]"); if (!root) return;
+  var res = root.querySelector("[data-pa-res]"), sizeBox = root.querySelector("[data-pa-size]"), birdBox = root.querySelector("[data-pa-bird]");
+  function sp() { var b = root.querySelector('[data-seg="pa-sp"] .on'); return b ? b.getAttribute("data-v") : "dog"; }
+  root.addEventListener("click", function () { setTimeout(function () { var s = sp(); sizeBox.hidden = s !== "dog"; birdBox.hidden = s !== "bird"; }, 0); });
+  function stage(s, y) {
+    if (s === "bird") return y < 1 ? "جوان" : "بالغ";
+    var senior = s === "cat" ? 11 : 7;
+    return y < 1 ? (s === "cat" ? "بچه‌گربه و نوجوان" : "توله و نوجوان") : y < 3 ? "جوان" : y < senior - 4 ? "بالغ" : y < senior ? "میانسال" : "مسن";
+  }
+  root.querySelector("[data-pa-go]").addEventListener("click", function () {
+    var s = sp(), y = toolNum(root.querySelector("#pa-y").value) || 0, m = toolNum(root.querySelector("#pa-m").value) || 0, age = y + Math.min(11, Math.max(0, m)) / 12, h, note = "";
+    res.hidden = false;
+    if (!(age > 0)) { res.innerHTML = "<b>سن را وارد کنید</b><span>سال و ماه پت را بنویسید.</span>"; return; }
+    if (s === "bird") {
+      var life = Number(root.querySelector("#pa-bird").value); h = Math.min(100, age / life * 80); note = "برای پرندگان، سن با میانگین عمر گونه مقایسه شده است و فقط تصویری تقریبی می‌دهد.";
+    } else {
+      var per = s === "cat" ? 4 : { s: 4, m: 5, l: 6 }[root.querySelector("#pa-size").value];
+      h = age <= 1 ? age * 15 : age <= 2 ? 15 + (age - 1) * 9 : 24 + (age - 2) * per;
+    }
+    var st = stage(s, age);
+    res.innerHTML = "<b>حدود " + toolFa(Math.round(h)) + " سالگی انسان</b><span>مرحلهٔ زندگی: " + st + (st === "مسن" ? ". چکاپ منظم و آزمایش خون پیشنهاد می‌شود." : "") + "</span>" + (note ? "<span>" + note + "</span>" : "") + '<a class="btn small" href="health-book.html">ثبت واکسن و چکاپ در دفترچهٔ سلامت</a>';
+  });
+})();
+
+// ابزار غذاهای سمی
+(function () {
+  var root = document.querySelector("[data-toxic]"); if (!root) return;
+  var inp = root.querySelector("[data-tx-q]"), items = [].slice.call(root.querySelectorAll(".tx")), none = root.querySelector("[data-tx-none]");
+  function norm(s) { return String(s || "").replace(/ي/g, "ی").replace(/ك/g, "ک").replace(/‌/g, "").toLowerCase(); }
+  function apply() {
+    var b = root.querySelector('[data-seg="tx-sp"] .on'), f = b ? b.getAttribute("data-v") : "", q = norm(inp.value).trim(), n = 0;
+    items.forEach(function (li) {
+      var ok = (!f || (" " + li.getAttribute("data-sp") + " ").indexOf(" " + f + " ") > -1) && (!q || norm(li.getAttribute("data-n") + " " + li.textContent).indexOf(q) > -1);
+      li.hidden = !ok; if (ok) n++;
+    });
+    none.hidden = n > 0;
+  }
+  inp.addEventListener("input", apply);
+  root.addEventListener("click", function () { setTimeout(apply, 0); });
+})();
+
+// چک‌لیست فوریت
+(function () {
+  var root = document.querySelector("[data-emg-tool]"); if (!root) return;
+  var res = root.querySelector("[data-emg-res]"), bar = root.querySelector("[data-emg-bar]");
+  bar.addEventListener("click", function () { res.scrollIntoView({ behavior: "smooth", block: "center" }); });
+  function upd() {
+    var u = root.querySelectorAll('[data-emg="u"]:checked').length, s = root.querySelectorAll('[data-emg="s"]:checked').length;
+    res.className = "tool-res emg-res " + (u ? "emg-r" : s ? "emg-y" : "");
+    if (u) res.innerHTML = "<b>🚨 فوری است</b><span>همین الان با دامپزشک تماس بگیرید یا پت را به نزدیک‌ترین کلینیک یا اورژانس دامپزشکی ببرید. منتظر بهتر شدن نمانید.</span>" + '<a class="btn small" data-ask="فوریت پت" href="contact.html">پیام به دکتر در واتساپ</a>';
+    else if (s) res.innerHTML = "<b>ظرف ۲۴ ساعت باید دیده شود</b><span>برای امروز یا فردا ویزیت بگیرید. اگر علائم بدتر شد یا علائم فوری اضافه شد، فوراً اقدام کنید.</span>" + '<a class="btn small" href="booking.html">ثبت نوبت</a>';
+    bar.hidden = !(u || s); bar.className = "emg-bar " + (u ? "emg-r" : "emg-y"); bar.textContent = u ? "🚨 فوری است؛ برای جزئیات بزنید" : "⏱ ظرف ۲۴ ساعت؛ برای جزئیات بزنید";
+    if (u || s) return;
+    res.innerHTML = "<b>علائم را تیک بزنید</b><span>اگر هیچ‌کدام از این علائم را ندارید ولی نگران هستید، با دکتر مشورت کنید.</span>";
+  }
+  root.addEventListener("change", upd);
+})();
