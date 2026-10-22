@@ -1271,7 +1271,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function tokSet(t) { try { if (t) localStorage.setItem("dm_hb_tok", JSON.stringify({ t: t, exp: (Number(String(t).split(".")[0]) || Date.now() + 3 * 86400000) - 60000 })); else localStorage.removeItem("dm_hb_tok"); } catch (e) {} }
   var DRPAGE = document.body.classList.contains("hb-drpage");
   var drListRun = null;
-  function dview(v) { root.setAttribute("data-dview", v); [].forEach.call(root.querySelectorAll("[data-hb-dtab]"), function (b) { b.classList.toggle("on", b.getAttribute("data-hb-dtab") === v); }); if (v === "list" && isDr() && srvOn() && drListRun) drListRun(); }
+  function dview(v) { root.setAttribute("data-dview", v); [].forEach.call(root.querySelectorAll("[data-hb-dtab]"), function (b) { b.classList.toggle("on", b.getAttribute("data-hb-dtab") === v); }); if (v === "list" && isDr() && srvOn() && drListRun) drListRun(); if (v === "adopt" && isDr() && srvOn()) adLoad(); }
   function drDrop(msg) { try { localStorage.removeItem("dm_hb_dr"); } catch (e) {} tokSet(""); setTimeout(function () { applyRole(); render(); toast(msg); }, 0); }
   function isDr() { if (!DRPAGE) return false; try { var f = localStorage.getItem("dm_hb_dr") === "1"; if (f && srvOn() && !tokGet()) { drDrop("مدت اعتبار ورود تمام شد؛ لطفاً دوباره وارد شوید."); return false; } return f; } catch (e) { return false; } }
   function srvOf(p) { return p && p.srv && p.srv.code ? p.srv : null; }
@@ -1794,6 +1794,56 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   q("[data-hb-do-install]").addEventListener("click", function () { if (dp) { dp.prompt(); dp = null; q("[data-hb-install]").hidden = true; } });
   if (/iphone|ipad/i.test(navigator.userAgent) && !window.navigator.standalone) q("[data-hb-ios]").hidden = false;
   (function () { var w = q("[data-hb-wa]"); if (w && INFO.whatsapp) w.href = "https://wa.me/" + INFO.whatsapp + "?text=" + encodeURIComponent("سلام دکتر مساوات، می‌خواهم شناسنامهٔ سلامت پتم را بگیرم."); var vci = q("[data-hb-vcode]"); if (vci) vci.addEventListener("keydown", function (e) { if (e.key === "Enter") q("[data-hb-vgo]").click(); }); var pwi = q("[data-hb-drpw]"); if (pwi) pwi.addEventListener("keydown", function (e) { if (e.key === "Enter") q("[data-hb-dr-ok]").click(); }); })();
+  // ---- واگذاری‌ها (دکتر) ----
+  var adItems = [], adPhotoId = "";
+  function adLabel(s) { return s === "pending" ? "در انتظار بررسی" : s === "approved" ? "منتشرشده" : s === "done" ? "واگذار شد 🎉" : "ردشده"; }
+  function adLoad() {
+    var box = q("[data-hb-adlist]"); box.innerHTML = '<p class="hb-qmsg">در حال بارگذاری…</p>';
+    api({ a: "adoptAdmin", t: tokGet() }).then(function (j) { if (!j.ok) { box.innerHTML = '<p class="hb-qmsg">' + esc(errMsg(j.err)) + "</p>"; return; } adItems = j.items; adRender(); });
+  }
+  function adRender() {
+    var b = q('[data-seg="hb-adf"] .on'), f = b ? b.getAttribute("data-v") : "pending", box = q("[data-hb-adlist]");
+    var list = adItems.filter(function (r) { return f === "closed" ? (r.status === "done" || r.status === "rejected") : r.status === f; });
+    box.innerHTML = list.length ? list.map(function (r) {
+      var btns = r.status === "pending" ? '<button type="button" class="btn small primary" data-hb-adact="approved" data-id="' + esc(r.id) + '">✅ تأیید و انتشار</button><button type="button" class="btn small hb-danger" data-hb-adact="rejected" data-id="' + esc(r.id) + '">رد</button>'
+        : r.status === "approved" ? '<button type="button" class="btn small primary" data-hb-adact="done" data-id="' + esc(r.id) + '">🎉 واگذار شد</button><button type="button" class="btn small" data-hb-adact="pending" data-id="' + esc(r.id) + '">پنهان کردن</button>'
+        : '<button type="button" class="btn small" data-hb-adact="pending" data-id="' + esc(r.id) + '">بازگرداندن به انتظار</button>';
+      return '<article class="hb-adc"><div class="hb-adh"><b>' + esc(r.name) + "</b><span>" + esc(r.species) + " · " + esc(r.sex) + (r.age ? " · " + esc(r.age) : "") + '</span><em class="ad-' + esc(r.status) + '">' + adLabel(r.status) + "</em></div>"
+        + (r.photo ? '<img class="hb-adimg" src="' + esc(r.photo) + '" alt="">' : "")
+        + '<p>📍 ' + esc(r.city || "—") + " · عقیم‌شده: " + esc(r.neutered) + " · واکسن: " + esc(r.vaccine) + "</p>"
+        + (r.temper ? "<p>رفتار: " + esc(r.temper) + "</p>" : "") + (r.reason ? "<p>دلیل: " + esc(r.reason) + "</p>" : "")
+        + '<p>📞 <a href="tel:' + esc(r.contact) + '" dir="ltr">' + esc(r.contact) + '</a> · کد <bdi dir="ltr">' + esc(r.id) + "</bdi></p>"
+        + '<div class="hb-adb">' + btns + '<button type="button" class="btn small ghost" data-hb-adphoto data-id="' + esc(r.id) + '">📷 ' + (r.photo ? "تغییر عکس" : "افزودن عکس") + '</button><button type="button" class="btn small ghost hb-danger" data-hb-adact="deleted" data-id="' + esc(r.id) + '">🗑 حذف</button></div></article>';
+    }).join("") : '<p class="hb-qmsg">موردی نیست.</p>';
+  }
+  function adShrink(file, cb) {
+    var rd = new FileReader();
+    rd.onload = function () { var im = new Image(); im.onload = function () {
+      var side = 360, qual = 0.72, out = "";
+      for (var k = 0; k < 8; k++) {
+        var sc = Math.min(1, side / Math.max(im.width, im.height)), cv = document.createElement("canvas"); cv.width = Math.round(im.width * sc); cv.height = Math.round(im.height * sc);
+        cv.getContext("2d").drawImage(im, 0, 0, cv.width, cv.height); out = cv.toDataURL("image/jpeg", qual);
+        if (out.length <= 44000) return cb(out); qual = Math.max(0.5, qual - 0.07); side = Math.round(side * 0.88);
+      }
+      cb("");
+    }; im.onerror = function () { cb(""); }; im.src = rd.result; };
+    rd.readAsDataURL(file);
+  }
+  root.addEventListener("click", function (e) {
+    var t = e.target, b2;
+    if (t.closest && t.closest('[data-seg="hb-adf"] button')) { setTimeout(adRender, 0); return; }
+    if ((b2 = t.closest && t.closest("[data-hb-adact]"))) {
+      var st = b2.getAttribute("data-hb-adact"), id = b2.getAttribute("data-id");
+      if (st === "deleted" && !confirm("این مورد برای همیشه حذف شود؟")) return;
+      b2.disabled = true; api({ a: "adoptSet", t: tokGet(), id: id, status: st }).then(function (j) { if (!j.ok) { b2.disabled = false; return alert(errMsg(j.err)); } adLoad(); });
+      return;
+    }
+    if ((b2 = t.closest && t.closest("[data-hb-adphoto]"))) { adPhotoId = b2.getAttribute("data-id"); q("[data-hb-adfile]").click(); }
+  });
+  q("[data-hb-adfile]").addEventListener("change", function () {
+    var inp = this, f = inp.files[0]; if (!f || !adPhotoId) return; var id = adPhotoId; inp.value = "";
+    adShrink(f, function (d) { if (!d) return alert("این عکس قابل استفاده نبود."); api({ a: "adoptSet", t: tokGet(), id: id, photo: d }).then(function (j) { if (!j.ok) return alert(errMsg(j.err)); toast("عکس ذخیره شد"); adLoad(); }); });
+  });
   applyRole(); dview("list");
   checkImport();
   syncCur();
@@ -1859,4 +1909,43 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     res.innerHTML = "<b>علائم را تیک بزنید</b><span>اگر هیچ‌کدام از این علائم را ندارید ولی نگران هستید، با دکتر مشورت کنید.</span>";
   }
   root.addEventListener("change", upd);
+})();
+
+// صفحهٔ واگذاری پت (عمومی)
+(function () {
+  var root = document.querySelector("[data-adopt]"); if (!root) return;
+  var grid = root.querySelector("[data-ad-grid]"), pets = [], form = root.querySelector("[data-ad-form]"), okBox = root.querySelector("[data-ad-ok]"), err = root.querySelector("[data-ad-err]");
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function api(body) { return fetch(INFO.sheetApi, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(body) }).then(function (r) { return r.json(); }).catch(function () { return { ok: false, err: "net" }; }); }
+  function wa(txt) { return "https://wa.me/" + INFO.whatsapp + "?text=" + encodeURIComponent(txt); }
+  function draw() {
+    var b = root.querySelector('[data-seg="ad-sp"] .on'), f = b ? b.getAttribute("data-v") : "", list = pets.filter(function (p) { return !f || p.species === f; });
+    grid.innerHTML = list.length ? list.map(function (p) {
+      return '<article class="ad-card">' + (p.photo ? '<img src="' + esc(p.photo) + '" alt="' + esc(p.species + " " + p.name + " برای واگذاری") + '" loading="lazy">' : '<div class="ad-ph" aria-hidden="true">🐾</div>')
+        + '<div class="ad-in"><h3>' + esc(p.name) + '</h3><p class="ad-meta">' + esc(p.species) + " · " + esc(p.sex) + (p.age ? " · " + esc(p.age) : "") + "</p>"
+        + '<p class="ad-tags">' + (p.city ? "📍 " + esc(p.city) + " · " : "") + "عقیم‌شده: " + esc(p.neutered) + " · واکسن: " + esc(p.vaccine) + "</p>"
+        + (p.temper ? "<p>" + esc(p.temper) + "</p>" : "")
+        + '<a class="btn small" target="_blank" rel="noopener" href="' + wa("سلام دکتر، می‌خواهم دربارهٔ واگذاری «" + p.name + "» (کد " + p.id + ") صحبت کنم.") + '">می‌خواهم این پت را بگیرم</a></div></article>';
+    }).join("") : '<p class="ad-msg">' + (pets.length ? "موردی برای این گونه نیست." : "فعلاً پتی در فهرست نیست. اگر پتی برای واگذاری دارید، فرم پایین را پر کنید.") + "</p>";
+  }
+  root.addEventListener("click", function (e) { if (e.target.closest && e.target.closest('[data-seg="ad-sp"] button')) setTimeout(draw, 0); });
+  if (INFO.sheetApi) api({ a: "adoptList" }).then(function (j) { if (j.ok) { pets = j.pets; draw(); } else grid.innerHTML = '<p class="ad-msg">بارگذاری فهرست ممکن نشد. کمی بعد دوباره امتحان کنید.</p>'; });
+  else grid.innerHTML = '<p class="ad-msg">فعلاً پتی در فهرست نیست.</p>';
+  function seg(n) { var b = root.querySelector('[data-seg="' + n + '"] .on'); return b ? b.getAttribute("data-v") : ""; }
+  function val(id) { return root.querySelector("#" + id).value.trim(); }
+  root.querySelector("[data-ad-send]").addEventListener("click", function () {
+    var btn = this, digits = val("ad-contact").replace(/[۰-۹]/g, function (c) { return c.charCodeAt(0) - 1776; }).replace(/\D/g, "");
+    err.hidden = true;
+    if (!val("ad-name")) { err.textContent = "نام پت را بنویسید."; err.hidden = false; return; }
+    if (digits.length < 10) { err.textContent = "شمارهٔ تماس را کامل بنویسید."; err.hidden = false; return; }
+    if (!root.querySelector("#ad-consent").checked) { err.textContent = "تیک موافقت را بزنید."; err.hidden = false; return; }
+    btn.disabled = true; btn.textContent = "در حال ثبت…";
+    api({ a: "adoptSubmit", species: seg("ad-fsp"), name: val("ad-name"), age: val("ad-age"), sex: seg("ad-sex"), neutered: val("ad-neu"), vaccine: val("ad-vac"), temper: val("ad-temper"), reason: val("ad-reason"), city: val("ad-city"), contact: val("ad-contact"), consent: 1, hp: val("ad-hp") }).then(function (j) {
+      btn.disabled = false; btn.textContent = "ثبت درخواست واگذاری";
+      if (!j.ok) { err.textContent = j.err === "busy" ? "تعداد درخواست‌ها زیاد است؛ کمی بعد دوباره امتحان کنید." : j.err === "net" ? "اتصال با سرور برقرار نشد. اینترنت را بررسی کنید." : "ثبت انجام نشد؛ اطلاعات را بررسی کنید."; err.hidden = false; return; }
+      form.hidden = true; okBox.hidden = false;
+      okBox.innerHTML = "<b>✅ درخواست شما ثبت شد</b><span>کد پیگیری: <bdi dir=\"ltr\">" + esc(j.id) + "</bdi>. حالا عکس‌های پت را به واتساپ دکتر بفرستید تا بعد از بررسی همراه آگهی منتشر شود.</span>" + '<a class="btn small" target="_blank" rel="noopener" href="' + wa("سلام دکتر، درخواست واگذاری پت ثبت کردم. کد: " + j.id + " (نام پت: " + val("ad-name") + ")") + '">ارسال عکس در واتساپ</a>';
+      okBox.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  });
 })();

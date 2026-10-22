@@ -144,6 +144,9 @@ function health_(b) {
     return { ok: true, pet: petOut_(p, false), recs: recsOf_(p.code).map(recOut_) };
   }
   if (a === 'ownerAddRec' || a === 'ownerDelRec') return ownerWrite_(a, b);
+  // ---- واگذاری پت: ثبت درخواست و فهرست منتشرشده‌ها برای همه ----
+  if (a === 'adoptSubmit') return adoptSubmit_(b);
+  if (a === 'adoptList') return adoptList_();
   // ---- دکتر ----
   if (!okToken_(b.t)) return { ok: false, err: 'auth' };
   var lock = LockService.getScriptLock(); lock.waitLock(15000);
@@ -157,6 +160,8 @@ function health_(b) {
     if (a === 'deletePet') return deletePet_(b);
     if (a === 'verifyCode') return verifyCode_(b, false);
     if (a === 'useCode') return verifyCode_(b, true);
+    if (a === 'adoptAdmin') return adoptAdmin_();
+    if (a === 'adoptSet') return adoptSet_(b);
   } finally { lock.releaseLock(); }
   return { ok: false, err: 'bad' };
 }
@@ -281,7 +286,7 @@ function doGet(e) {
   var p = (e && e.parameter) || {};
   if (p.action === 'spin') return json_(spin_(p));
   if (p.action === 'verify') return verifyPage_(p);
-  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v3-keys14-verifycode' });
+  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v4-adopt' });
 }
 
 // ======================= چرخ هدیه =======================
@@ -346,4 +351,55 @@ function verifyPage_(p) {
     return html('کد معتبر است ✓', base + '<p><a href="' + link + '" style="display:inline-block;padding:12px 20px;background:#1a8f63;color:#fff;border-radius:10px;text-decoration:none">ثبت به‌عنوان استفاده‌شده</a></p>', '#1a8f63');
   }
   return html('کد پیدا نشد', '<p>این کد در شیت ثبت نشده است.</p>', '#b3261e');
+}
+
+
+// ======================= واگذاری پت =======================
+var AD = { maxPerHour: 20, days: 60, statuses: ['pending', 'approved', 'done', 'rejected', 'deleted'] };
+var AD_COLS = ['id', 'created', 'status', 'species', 'name', 'age', 'sex', 'neutered', 'vaccine', 'temper', 'reason', 'city', 'contact', 'photo', 'note', 'approved', 'updated'];
+function faDigits_(s) { return String(s || '').replace(/[۰-۹]/g, function (c) { return c.charCodeAt(0) - 1776; }).replace(/[٠-٩]/g, function (c) { return c.charCodeAt(0) - 1632; }); }
+function adoptSubmit_(b) {
+  if (b.hp) return { ok: true, id: 'AD-000000' };   // ربات‌ها (فیلد مخفی)
+  var cache = CacheService.getScriptCache(), key = 'adn' + Utilities.formatDate(new Date(), CFG.tz, 'yyyyMMddHH'), n = Number(cache.get(key) || 0);
+  if (n >= AD.maxPerHour) return { ok: false, err: 'busy' };
+  var species = clip_(b.species, 12); if (['سگ', 'گربه', 'پرنده', 'دیگر'].indexOf(species) < 0) return { ok: false, err: 'bad' };
+  var name = clip_(b.name, 40).trim(), contact = faDigits_(clip_(b.contact, 30)).replace(/[^0-9+]/g, '');
+  if (!name || contact.replace(/\D/g, '').length < 10 || !b.consent) return { ok: false, err: 'bad' };
+  var o = { id: 'AD-' + rnd_(6).toUpperCase(), created: nowIso_(), status: 'pending', species: species, name: name, age: clip_(b.age, 30), sex: ['نر', 'ماده', 'نامشخص'].indexOf(b.sex) > -1 ? b.sex : 'نامشخص',
+    neutered: ['بله', 'خیر', 'نمی‌دانم'].indexOf(b.neutered) > -1 ? b.neutered : 'نمی‌دانم', vaccine: ['بله', 'خیر', 'نمی‌دانم'].indexOf(b.vaccine) > -1 ? b.vaccine : 'نمی‌دانم',
+    temper: clip_(b.temper, 300), reason: clip_(b.reason, 300), city: clip_(b.city, 60), contact: contact, photo: '', note: '', approved: '', updated: nowIso_() };
+  var lock = LockService.getScriptLock(); lock.waitLock(15000);
+  try { writeRow_(hsheet_('Adoptions', AD_COLS), AD_COLS, o); } finally { lock.releaseLock(); }
+  cache.put(key, String(n + 1), 3600);
+  return { ok: true, id: o.id };
+}
+function adoptPub_(r) { return { id: r.id, species: r.species, name: r.name, age: r.age, sex: r.sex, neutered: r.neutered, vaccine: r.vaccine, temper: r.temper, reason: r.reason, city: r.city, photo: r.photo, approved: r.approved }; }
+function adoptList_() {
+  var lim = Utilities.formatDate(new Date(Date.now() - AD.days * 86400000), CFG.tz, 'yyyy-MM-dd');
+  var rows = readAll_(hsheet_('Adoptions', AD_COLS), AD_COLS).filter(function (r) { return r.status === 'approved' && r.approved >= lim; });
+  rows.sort(function (x, y) { return x.approved < y.approved ? 1 : -1; });
+  return { ok: true, pets: rows.slice(0, 60).map(adoptPub_) };
+}
+function adoptAdmin_() {
+  var rows = readAll_(hsheet_('Adoptions', AD_COLS), AD_COLS).filter(function (r) { return r.status !== 'deleted'; });
+  rows.sort(function (x, y) { return x.created < y.created ? 1 : -1; });
+  return { ok: true, items: rows.slice(0, 200).map(function (r) { var o = adoptPub_(r); o.status = r.status; o.created = r.created; o.contact = r.contact; o.note = r.note; return o; }) };
+}
+function adoptSet_(b) {
+  var sh = hsheet_('Adoptions', AD_COLS), rows = readAll_(sh, AD_COLS), r = null, i;
+  for (i = 0; i < rows.length; i++) if (rows[i].id === String(b.id || '')) { r = rows[i]; break; }
+  if (!r) return { ok: false, err: 'notfound' };
+  if (b.status !== undefined) {
+    if (AD.statuses.indexOf(b.status) < 0) return { ok: false, err: 'bad' };
+    if (b.status === 'approved' && r.status !== 'approved') r.approved = day_(new Date());
+    r.status = b.status;
+  }
+  if (b.photo !== undefined) {
+    if (b.photo === '') r.photo = '';
+    else if (/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(b.photo) && b.photo.length <= 45000) r.photo = b.photo;
+    else return { ok: false, err: 'bad' };
+  }
+  if (b.note !== undefined) r.note = clip_(b.note, 300);
+  r.updated = nowIso_(); writeRow_(sh, AD_COLS, r, r._row);
+  return { ok: true };
 }
