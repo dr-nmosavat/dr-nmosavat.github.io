@@ -1918,7 +1918,9 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
   function api(body) { return fetch(INFO.sheetApi, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(body) }).then(function (r) { return r.json(); }).catch(function () { return { ok: false, err: "net" }; }); }
   function wa(txt) { return "https://wa.me/" + INFO.whatsapp + "?text=" + encodeURIComponent(txt); }
+  var deco = grid.innerHTML;
   function draw() {
+    if (!pets.length) { grid.innerHTML = deco; return; }
     var b = root.querySelector('[data-seg="ad-sp"] .on'), f = b ? b.getAttribute("data-v") : "", list = pets.filter(function (p) { return !f || p.species === f; });
     grid.innerHTML = list.length ? list.map(function (p) {
       return '<article class="ad-card">' + (p.photo ? '<img src="' + esc(p.photo) + '" alt="' + esc(p.species + " " + p.name + " برای واگذاری") + '" loading="lazy">' : '<div class="ad-ph" aria-hidden="true">🐾</div>')
@@ -1926,11 +1928,10 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
         + '<p class="ad-tags">' + (p.city ? "📍 " + esc(p.city) + " · " : "") + "عقیم‌شده: " + esc(p.neutered) + " · واکسن: " + esc(p.vaccine) + "</p>"
         + (p.temper ? "<p>" + esc(p.temper) + "</p>" : "")
         + '<a class="btn small" target="_blank" rel="noopener" href="' + wa("سلام دکتر، می‌خواهم دربارهٔ واگذاری «" + p.name + "» (کد " + p.id + ") صحبت کنم.") + '">می‌خواهم این پت را بگیرم</a></div></article>';
-    }).join("") : '<p class="ad-msg">' + (pets.length ? "موردی برای این گونه نیست." : "فعلاً پتی در فهرست نیست. اگر پتی برای واگذاری دارید، فرم پایین را پر کنید.") + "</p>";
+    }).join("") : '<p class="ad-msg">' + (pets.length ? "موردی برای این گونه نیست." : "") + "</p>";
   }
   root.addEventListener("click", function (e) { if (e.target.closest && e.target.closest('[data-seg="ad-sp"] button')) setTimeout(draw, 0); });
-  if (INFO.sheetApi) api({ a: "adoptList" }).then(function (j) { if (j.ok) { pets = j.pets; draw(); } else grid.innerHTML = '<p class="ad-msg">بارگذاری فهرست ممکن نشد. کمی بعد دوباره امتحان کنید.</p>'; });
-  else grid.innerHTML = '<p class="ad-msg">فعلاً پتی در فهرست نیست.</p>';
+  if (INFO.sheetApi) api({ a: "adoptList" }).then(function (j) { if (j.ok) { pets = j.pets; draw(); } else grid.insertAdjacentHTML("afterbegin", '<p class="ad-msg">بارگذاری فهرست ممکن نشد. کمی بعد دوباره امتحان کنید.</p>'); });
   function seg(n) { var b = root.querySelector('[data-seg="' + n + '"] .on'); return b ? b.getAttribute("data-v") : ""; }
   function val(id) { return root.querySelector("#" + id).value.trim(); }
   root.querySelector("[data-ad-send]").addEventListener("click", function () {

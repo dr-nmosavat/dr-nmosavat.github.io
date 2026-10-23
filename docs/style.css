@@ -1828,3 +1828,13 @@ html.hb-dr .hb-drtabs { grid-template-columns: repeat(2, 1fr); }
 .hb-adimg { width: 100%; max-height: 220px; object-fit: cover; border-radius: 12px; margin-top: 8px; }
 .hb-adb { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .ad-cons { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.8; } .ad-cons input { width: 22px; height: 22px; flex: none; margin-top: 4px; }
+
+/* باکس واگذاری بالای صفحهٔ اول و تصاویر تزیینی */
+.ad-top { display: flex; align-items: center; gap: 16px; margin: 14px 0 18px; padding: 16px; border-radius: 22px; background: linear-gradient(135deg, #fff4de, #ffe9c2); border: 1.5px solid #f0cf94; text-decoration: none; color: inherit; box-shadow: 0 8px 20px rgba(122,77,11,.10); }
+.ad-top-ph { display: flex; flex: none; } .ad-top-ph img { width: 62px; height: 62px; border-radius: 50%; object-fit: cover; border: 3px solid #fff; margin-inline-start: -16px; box-shadow: 0 3px 8px rgba(0,0,0,.15); } .ad-top-ph img:first-child { margin-inline-start: 0; }
+.ad-top-t b { display: block; font-size: 18px; color: #6b4108; margin-bottom: 4px; } .ad-top-t p { margin: 0 0 8px; font-size: 14px; line-height: 1.8; color: #5a4a30; }
+.ad-top-t .btn { background: #b36b00; color: #fff; border-color: #b36b00; }
+@media (max-width: 520px) { .ad-top { flex-direction: column; text-align: center; } .ad-top-ph img { width: 72px; height: 72px; } }
+.ad-deco { text-align: center; padding: 18px 12px 22px; border: 1.5px dashed #f0cf94; border-radius: 20px; background: #fffaf0; }
+.ad-deco-ph { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; } .ad-deco-ph figure { margin: 0; } .ad-deco-ph img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 18px; display: block; } .ad-deco-ph figcaption { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+.ad-deco p { margin: 4px 0; } .ad-deco-s { color: var(--muted); font-size: 14px; } .ad-deco .btn { margin-top: 10px; }
