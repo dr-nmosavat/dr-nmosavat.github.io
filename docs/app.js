@@ -1856,7 +1856,8 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   var root = document.querySelector("[data-petage]"); if (!root) return;
   var res = root.querySelector("[data-pa-res]"), sizeBox = root.querySelector("[data-pa-size]"), birdBox = root.querySelector("[data-pa-bird]");
   function sp() { var b = root.querySelector('[data-seg="pa-sp"] .on'); return b ? b.getAttribute("data-v") : "dog"; }
-  root.addEventListener("click", function () { setTimeout(function () { var s = sp(); sizeBox.hidden = s !== "dog"; birdBox.hidden = s !== "bird"; }, 0); });
+  function sync() { var s = sp(); sizeBox.hidden = s !== "dog"; birdBox.hidden = s !== "bird"; }
+  root.addEventListener("click", function () { setTimeout(sync, 0); }); sync();
   function stage(s, y) {
     if (s === "bird") return y < 1 ? "جوان" : "بالغ";
     var senior = s === "cat" ? 11 : 7;

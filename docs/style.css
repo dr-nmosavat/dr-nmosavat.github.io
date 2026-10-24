@@ -1840,3 +1840,4 @@ html.hb-dr .hb-drtabs { grid-template-columns: repeat(2, 1fr); }
 .ad-deco p { margin: 4px 0; } .ad-deco-s { color: var(--muted); font-size: 14px; } .ad-deco .btn { margin-top: 10px; }
 
 .ph .cap { position: absolute; inset-inline: 0; top: 0; padding: 9px 10px 24px; text-align: center; color: #fff; font-weight: 700; font-size: 15px; background: linear-gradient(to bottom, rgba(0,0,0,.5), transparent); pointer-events: none; }
+.fld[hidden] { display: none !important; }
