@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=202610242109">
+<link rel="stylesheet" href="style.css?v=202610242258">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="icon" href="favicon.ico" sizes="48x48">
 <link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png">
@@ -72,7 +72,7 @@
         <button type="button" class="btn primary" data-hb-req>📝 درخواست شناسنامه</button>
         <a class="btn small ghost hb-wa2" data-hb-wa href="contact.html" target="_blank" rel="noopener">یا پیام به دکتر در واتساپ</a>
       </div>
-      <div class="hb-drtabs" data-hb-drtabs role="tablist"><button type="button" data-hb-dtab="list">📒 شناسنامه‌ها</button><button type="button" data-hb-dtab="new">＋ صدور جدید</button><button type="button" data-hb-dtab="code">🎁 کد جایزه</button><button type="button" data-hb-dtab="adopt">🏡 واگذاری</button><button type="button" data-hb-dtab="req">📝 درخواست‌ها</button></div>
+      <div class="hb-drtabs" data-hb-drtabs role="tablist"><button type="button" data-hb-dtab="list">📒 شناسنامه‌ها</button><button type="button" data-hb-dtab="new">＋ صدور جدید</button><button type="button" data-hb-dtab="code">🔎 بررسی کد</button><button type="button" data-hb-dtab="adopt">🏡 واگذاری</button><button type="button" data-hb-dtab="req">📝 درخواست‌ها</button></div>
       <div class="hb-search" data-hb-searchbox hidden>
         <input type="search" data-hb-q autocomplete="off" placeholder="🔎 جستجوی پت: نام، صاحب یا کد (مثل NM-1234)">
         <div class="hb-qres" data-hb-qres></div>
@@ -81,6 +81,10 @@
         <h3>🎁 بررسی کد جایزهٔ چرخ</h3>
         <div class="hb-vrow"><input type="text" data-hb-vcode dir="ltr" autocomplete="off" autocapitalize="characters" placeholder="DM-1234-ABCD"><button type="button" class="btn small primary" data-hb-vgo>بررسی</button></div>
         <div class="hb-vres" data-hb-vres></div>
+        <h3 class="hb-v2h">🔎 بررسی اصالت شناسنامه</h3>
+        <p class="hb-v2p">کد پت و کد اصالت چاپ‌شده روی شناسنامه را بنویسید.</p>
+        <div class="hb-vrow"><input type="text" data-hb-vpcode dir="ltr" autocomplete="off" autocapitalize="characters" placeholder="NM-1234"><input type="text" data-hb-vpauth dir="ltr" autocomplete="off" autocapitalize="characters" maxlength="8" placeholder="A7K2Q9"><button type="button" class="btn small primary" data-hb-vpgo>بررسی</button></div>
+        <div class="hb-vres" data-hb-vpres></div>
       </div>
       <button type="button" class="btn small ghost hb-back" data-hb-back>→ برگشت به فهرست</button>
       <div class="hb-adbox" data-hb-adbox>
@@ -222,7 +226,7 @@
             <div data-hb-types></div>
             <div class="hb-sf" data-hb-sf></div>
             <p class="hb-err" data-hb-err hidden></p>
-            <div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-save>ثبت</button></div>
+            <div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-save>ثبت</button><button type="button" class="btn small hb-doc-only hb-nextbtn" data-hb-saveno>ثبت و مورد بعدی</button></div>
           </div>
           <div class="hb-hist" data-hb-hist hidden></div>
         </div>
@@ -285,7 +289,7 @@
   </div>
 </div>
 <a class="fab" aria-label="نیاز به مشاوره؟" data-consult href="contact.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4V5z"/></svg><span><i class="l-long">نیاز به مشاوره؟</i><i class="l-short">مشاوره</i></span></a>
-<script src="app.js?v=202610242109"></script>
+<script src="app.js?v=202610242258"></script>
     </body>
     </html>
     

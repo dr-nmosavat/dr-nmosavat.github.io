@@ -1851,3 +1851,12 @@ html.hb-dr [data-dview="req"] .hb-reqbox { display: block; }
 html.hb-dr [data-dview="req"] [data-hb-searchbox], html.hb-dr [data-dview="req"] [data-hb-verifybox], html.hb-dr [data-dview="req"] [data-hb-petform], html.hb-dr [data-dview="req"] [data-hb-main] { display: none !important; }
 html.hb-dr .hb-drtabs button:last-child:nth-child(odd) { grid-column: 1 / -1; }
 .hb-adc .btn.hb-danger { background: #fff; color: #b3382c; border: 1px solid #e6b9b3; }
+
+/* اصالت شناسنامه، منبع ثبت، برچسب سابقهٔ قبلی */
+.hb-v2h { margin: 18px 0 4px; font-size: 16px; } .hb-v2p { margin: 0 0 8px; font-size: 13px; color: var(--muted); }
+.hb-vrow input[data-hb-vpcode] { flex: 1 1 110px; } .hb-vrow input[data-hb-vpauth] { flex: 1 1 90px; }
+.hb-auth { font-weight: 800; letter-spacing: 1.5px; color: #12684a; }
+.hb-srcf { display: none; } html.hb-dr .hb-srcf { display: block; }
+.hb-oldb { display: inline-block; margin-inline-start: 6px; padding: 1px 8px; border-radius: 999px; background: #fdf1da; color: #8a5a0d; font-size: 11px; font-weight: 700; }
+.hb-nextbtn { margin-inline-start: 8px; }
+.hb-vrow { flex-wrap: wrap; } .hb-vrow input[data-hb-vpcode], .hb-vrow input[data-hb-vpauth] { min-width: 120px; }

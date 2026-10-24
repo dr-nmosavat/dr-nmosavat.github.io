@@ -64,7 +64,7 @@ var H = {
   allTypes: ["واکسن", "ضدانگل داخلی", "ضدانگل خارجی (کک و کنه)", "ویزیت", "وزن", "دارو", "عقیم‌سازی", "آزمایش", "سایر"]
 };
 var PET_COLS = ['code', 'key', 'name', 'en', 'owner', 'guardian', 'species', 'breed', 'breedEn', 'birth', 'plan', 'consent', 'created', 'updated', 'deleted'];
-var REC_COLS = ['id', 'code', 'type', 'date', 'name', 'brand', 'serial', 'place', 'extra', 'freq', 'how', 'dur', 'end', 'weight', 'next', 'closed', 'dr', 'created', 'updated', 'deleted'];
+var REC_COLS = ['id', 'code', 'type', 'date', 'name', 'brand', 'serial', 'place', 'extra', 'freq', 'how', 'dur', 'end', 'weight', 'next', 'closed', 'dr', 'created', 'updated', 'deleted', 'src'];
 
 function hsheet_(name, cols) {
   var ss = SpreadsheetApp.getActiveSpreadsheet(), sh = ss.getSheetByName(name);
@@ -118,11 +118,11 @@ function findPet_(code) {
 }
 function petOut_(p, withKey) {
   var plan = []; try { plan = JSON.parse(p.plan || '[]'); } catch (e) {}
-  var o = { code: p.code, name: p.name, en: p.en, owner: p.owner, guardian: p.guardian, species: p.species, breed: p.breed, breedEn: p.breedEn, birth: p.birth, plan: plan, consent: p.consent === '1', updated: p.updated };
+  var o = { code: p.code, name: p.name, en: p.en, owner: p.owner, guardian: p.guardian, species: p.species, breed: p.breed, breedEn: p.breedEn, birth: p.birth, plan: plan, consent: p.consent === '1', updated: p.updated, auth: authCode_(p.code), created: String(p.created || '').slice(0, 10) };
   if (withKey) o.key = p.key; return o;
 }
 function recOut_(r) {
-  return { id: r.id, type: r.type, date: r.date, name: r.name, brand: r.brand, serial: r.serial, place: r.place, extra: r.extra, freq: r.freq, how: r.how, dur: r.dur, end: r.end, weight: Number(r.weight) || 0, next: r.next, closed: r.closed === '1', dr: r.dr === '1' };
+  return { id: r.id, type: r.type, date: r.date, name: r.name, brand: r.brand, serial: r.serial, place: r.place, extra: r.extra, freq: r.freq, how: r.how, dur: r.dur, end: r.end, weight: Number(r.weight) || 0, next: r.next, closed: r.closed === '1', dr: r.dr === '1', src: r.src === 'old' ? 'old' : '' };
 }
 function recsOf_(code) {
   return readAll_(hsheet_('Records', REC_COLS), REC_COLS).filter(function (r) { return r.code === code && r.deleted !== '1'; });
@@ -134,7 +134,7 @@ function cleanRec_(b, code, dr) {
   var w = Number(b.weight) || 0; if (!(w >= 0 && w < 200)) w = 0;
   return { id: /^[A-Za-z0-9]{6,30}$/.test(b.id || '') ? b.id : rnd_(12), code: code, type: type, date: d,
     name: clip_(b.name, 90), brand: clip_(b.brand, 60), serial: clip_(b.serial, 60), place: clip_(b.place, 90), extra: clip_(b.extra, 90),
-    freq: clip_(b.freq, 40), how: clip_(b.how, 40), dur: clip_(b.dur, 20), end: date_(b.end), weight: w || '', next: date_(b.next), closed: b.closed ? '1' : '', dr: dr ? '1' : '' };
+    freq: clip_(b.freq, 40), how: clip_(b.how, 40), dur: clip_(b.dur, 20), end: date_(b.end), weight: w || '', next: date_(b.next), closed: b.closed ? '1' : '', dr: dr ? '1' : '', src: dr && b.src === 'old' ? 'old' : '' };
 }
 
 function health_(b) {
@@ -163,6 +163,7 @@ function health_(b) {
     if (a === 'deletePet') return deletePet_(b);
     if (a === 'verifyCode') return verifyCode_(b, false);
     if (a === 'useCode') return verifyCode_(b, true);
+    if (a === 'verifyPet') return verifyPet_(b);
     if (a === 'adoptAdmin') return adoptAdmin_();
     if (a === 'adoptSet') return adoptSet_(b);
     if (a === 'petReqList') return petReqList_();
@@ -291,7 +292,7 @@ function doGet(e) {
   var p = (e && e.parameter) || {};
   if (p.action === 'spin') return json_(spin_(p));
   if (p.action === 'verify') return verifyPage_(p);
-  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v7-notify' });
+  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v8-auth' });
 }
 
 // ======================= چرخ هدیه =======================
@@ -457,13 +458,13 @@ var LOOK = {
   Spins: { color: '#d97706', labels: ['زمان', 'کد', 'جایزه', 'انقضا', 'دستگاه', 'استفاده شد؟', 'زمان استفاده'], widths: [150, 120, 190, 110, 130, 100, 150], clip: [5] },
   Pets: { color: '#1f5aa6', labels: ['کد پت', 'کلید لینک (محرمانه)', 'نام', 'نام انگلیسی', 'صاحب', 'سرپرست', 'گونه', 'نژاد', 'نژاد (انگلیسی)', 'تاریخ تولد', 'برنامهٔ واکسن (داده)', 'رضایت (۱=بله)', 'ساخته شد', 'ویرایش', 'حذف‌شده؟ (۱=بله)'],
     widths: [90, 140, 110, 110, 130, 110, 80, 110, 120, 100, 120, 90, 150, 150, 90], clip: [2, 11], gray: [2, 11], del: 15 },
-  Records: { color: '#0f766e', labels: ['شناسه', 'کد پت', 'نوع', 'تاریخ', 'نام', 'برند', 'سریال', 'محل', 'توضیح', 'تکرار', 'روش', 'مدت', 'پایان', 'وزن', 'نوبت بعدی', 'بسته‌شده؟', 'ثبت دکتر؟', 'ساخته شد', 'ویرایش', 'حذف‌شده؟ (۱=بله)'],
-    widths: [110, 90, 130, 100, 150, 110, 110, 110, 140, 90, 90, 80, 100, 70, 100, 80, 80, 150, 150, 90], gray: [1], del: 20 },
+  Records: { color: '#0f766e', labels: ['شناسه', 'کد پت', 'نوع', 'تاریخ', 'نام', 'برند', 'سریال', 'محل', 'توضیح', 'تکرار', 'روش', 'مدت', 'پایان', 'وزن', 'نوبت بعدی', 'بسته‌شده؟', 'ثبت دکتر؟', 'ساخته شد', 'ویرایش', 'حذف‌شده؟ (۱=بله)', 'منبع (old=سابقهٔ قبلی)'],
+    widths: [110, 90, 130, 100, 150, 110, 110, 110, 140, 90, 90, 80, 100, 70, 100, 80, 80, 150, 150, 90, 110], gray: [1], del: 20 },
   Adoptions: { color: '#b36b00', labels: ['کد', 'زمان ثبت', 'وضعیت', 'گونه', 'نام', 'سن', 'جنس', 'عقیم', 'واکسن', 'رفتار', 'دلیل واگذاری', 'شهر', 'تلفن (محرمانه)', 'عکس (داده)', 'یادداشت', 'تاریخ تأیید', 'ویرایش'],
-    widths: [110, 150, 100, 80, 110, 90, 80, 80, 80, 220, 220, 130, 130, 70, 150, 100, 150], clip: [14], gray: [14], status: 3,
+    widths: [110, 150, 100, 80, 110, 90, 80, 80, 80, 220, 220, 130, 130, 70, 150, 100, 150], clip: [14], gray: [14], status: 3, statusList: ['pending', 'approved', 'done', 'rejected', 'deleted'],
     note: 'وضعیت: pending=در انتظار بررسی · approved=منتشرشده · done=واگذار شد · rejected=ردشده · deleted=حذف' },
   PetReqs: { color: '#7c3aed', labels: ['کد درخواست', 'زمان ثبت', 'وضعیت', 'نام پت', 'گونه', 'صاحب', 'تلفن (محرمانه)', 'تولد', 'توضیح', 'کد شناسنامه', 'ویرایش'],
-    widths: [110, 150, 100, 110, 80, 140, 130, 110, 220, 110, 150], status: 3,
+    widths: [110, 150, 100, 110, 80, 140, 130, 110, 220, 110, 150], status: 3, statusList: ['new', 'done', 'rejected', 'deleted'],
     note: 'وضعیت: new=جدید · done=شناسنامه صادر شد · rejected=ردشده · deleted=حذف' }
 };
 function look_(sh, spec) {
@@ -486,12 +487,14 @@ function look_(sh, spec) {
         rules.push(SpreadsheetApp.newConditionalFormatRule().whenTextEqualTo(k).setBackground(STATUS_COLORS[k][0]).setFontColor(STATUS_COLORS[k][1]).setRanges([sr]).build());
       });
       try { sh.getRange(1, spec.status).setNote(spec.note || ''); } catch (e2) {}
+      try { if (spec.statusList) sr.setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(spec.statusList, true).setAllowInvalid(false).build()); } catch (e3) {}
     }
     if (spec.del) {
       var col = String.fromCharCode(64 + spec.del);
       rules.push(SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=$' + col + '2="1"').setFontColor('#b3382c').setBackground('#f8f0ef').setRanges([body]).build());
     }
     if (rules.length) sh.setConditionalFormatRules(rules);
+    try { if (!sh.getFilter()) sh.getDataRange().createFilter(); } catch (e4) {}
     lastLookError_ = '';
   } catch (e) { lastLookError_ = String(e); }
 }
@@ -502,10 +505,8 @@ function formatSheets() {
     var sh = ss.getSheetByName(name);
     if (sh) { look_(sh, LOOK[name]); done.push(name); }
   });
+  guideSheet_();
   return done;
-}
-function onOpen() {
-  try { SpreadsheetApp.getUi().createMenu('🐾 سایت دکتر').addItem('زیباسازی جدول‌ها', 'formatSheets').addToUi(); } catch (e) {}
 }
 
 
@@ -538,3 +539,133 @@ function testNotify() {
   Logger.log(JSON.stringify(r));
   return r;
 }
+
+
+// ======================= اصالت شناسنامه =======================
+// کد اصالت: شش نویسه که فقط با رمز سرور (SECRET) از روی کد پت ساخته می‌شود؛ روی شناسنامه چاپ می‌شود و دکتر می‌تواند راستی‌آزمایی کند.
+// این کد محرمانه نیست؛ «کلید لینک» محرمانه است و هرگز نباید روی شناسنامه بیاید.
+var AUTH_ABC = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+function authCode_(code) {
+  var raw = Utilities.computeHmacSha256Signature('auth|' + String(code || '').toUpperCase(), prop_('SECRET') || 'change-me'), out = '', i;
+  for (i = 0; i < 6; i++) out += AUTH_ABC.charAt((raw[i] & 0xff) % 32);
+  return out;
+}
+function verifyPet_(b) {
+  var p = findPet_(b.code), auth = String(b.auth || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (!p || p.deleted === '1') return { ok: true, valid: false, reason: 'notfound' };
+  if (auth !== authCode_(p.code)) return { ok: true, valid: false, reason: 'mismatch' };
+  return { ok: true, valid: true, pet: { code: p.code, name: p.name, species: p.species, owner: p.owner, created: String(p.created || '').slice(0, 10) } };
+}
+
+// ======================= منوی شیت =======================
+function onOpen() {
+  try {
+    SpreadsheetApp.getUi().createMenu('🐾 سایت دکتر')
+      .addItem('📖 راهنمای جدول‌ها', 'openGuide')
+      .addItem('📊 خلاصهٔ امروز', 'showSummary')
+      .addSeparator()
+      .addItem('📝 درخواست‌های شناسنامهٔ جدید', 'goPetReqs')
+      .addItem('🏡 واگذاری‌های در انتظار', 'goAdoptions')
+      .addItem('🔄 نمایش همهٔ ردیف‌ها', 'clearFilters')
+      .addItem('🔎 بررسی اصالت یک شناسنامه', 'checkAuthPrompt')
+      .addSeparator()
+      .addItem('🎨 زیباسازی جدول‌ها', 'formatSheets')
+      .addItem('💾 گرفتن پشتیبان', 'backupNow')
+      .addItem('🔔 آزمایش اطلاع‌رسانی', 'testNotify')
+      .addToUi();
+  } catch (e) {}
+}
+function ui_() { try { return SpreadsheetApp.getUi(); } catch (e) { return null; } }
+function say_(title, text) { var u = ui_(); if (u) u.alert(title, text, u.ButtonSet.OK); return text; }
+function goSheet_(name, status, emptyMsg) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet(), sh = ss.getSheetByName(name);
+  if (!sh) return say_('هنوز چیزی نیست', emptyMsg);
+  ss.setActiveSheet(sh);
+  try {
+    var f = sh.getFilter() || sh.getDataRange().createFilter();
+    f.setColumnFilterCriteria(3, SpreadsheetApp.newFilterCriteria().whenTextEqualTo(status).build());
+  } catch (e) {}
+  return name;
+}
+function goPetReqs() { return goSheet_('PetReqs', 'new', 'هنوز درخواست شناسنامه‌ای ثبت نشده است.'); }
+function goAdoptions() { return goSheet_('Adoptions', 'pending', 'هنوز درخواست واگذاری‌ای ثبت نشده است.'); }
+function clearFilters() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet(), n = 0;
+  Object.keys(LOOK).forEach(function (name) {
+    var sh = ss.getSheetByName(name);
+    try { var f = sh && sh.getFilter(); if (f) { for (var c = 1; c <= LOOK[name].labels.length; c++) f.removeColumnFilterCriteria(c); n++; } } catch (e) {}
+  });
+  return n;
+}
+function countRows_(name, cols, test) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet(), sh = ss.getSheetByName(name);
+  if (!sh) return 0;
+  return readAll_(sh, cols).filter(test).length;
+}
+function summary_() {
+  var today = day_(new Date());
+  var spins = 0, ss = SpreadsheetApp.getActiveSpreadsheet(), sp = ss.getSheetByName(CFG.sheetName);
+  if (sp) { var v = sp.getDataRange().getValues(); for (var i = 1; i < v.length; i++) { try { if (day_(new Date(v[i][COL.time])) === today) spins++; } catch (e) {} } }
+  return {
+    petReqsNew: countRows_('PetReqs', PR_COLS, function (r) { return r.status === 'new'; }),
+    adoptPending: countRows_('Adoptions', AD_COLS, function (r) { return r.status === 'pending'; }),
+    adoptLive: countRows_('Adoptions', AD_COLS, function (r) { return r.status === 'approved'; }),
+    pets: countRows_('Pets', PET_COLS, function (r) { return r.deleted !== '1'; }),
+    recs: countRows_('Records', REC_COLS, function (r) { return r.deleted !== '1'; }),
+    spinsToday: spins
+  };
+}
+function showSummary() {
+  var m = summary_();
+  say_('📊 خلاصهٔ امروز', '📝 درخواست شناسنامهٔ جدید: ' + m.petReqsNew + '\n🏡 واگذاری در انتظار تأیید: ' + m.adoptPending + '\n🏡 واگذاری منتشرشده: ' + m.adoptLive + '\n📒 شناسنامه‌های فعال: ' + m.pets + '\n💉 ثبت‌های دفترچه: ' + m.recs + '\n🎁 چرخش چرخ امروز: ' + m.spinsToday);
+  return m;
+}
+function checkAuthPrompt() {
+  var u = ui_(); if (!u) return '';
+  var a = u.prompt('بررسی اصالت شناسنامه', 'کد پت را بنویسید (مثل NM-1234):', u.ButtonSet.OK_CANCEL);
+  if (a.getSelectedButton() !== u.Button.OK) return '';
+  var b = u.prompt('بررسی اصالت شناسنامه', 'کد اصالت روی شناسنامه را بنویسید (۶ نویسه):', u.ButtonSet.OK_CANCEL);
+  if (b.getSelectedButton() !== u.Button.OK) return '';
+  var r = verifyPet_({ code: a.getResponseText(), auth: b.getResponseText() });
+  if (r.valid) return say_('✅ شناسنامه معتبر است', 'نام پت: ' + r.pet.name + ' (' + r.pet.species + ')\nصاحب: ' + (r.pet.owner || '—') + '\nتاریخ صدور: ' + (r.pet.created || '—'));
+  return say_('❌ معتبر نیست', r.reason === 'notfound' ? 'شناسنامه‌ای با این کد پیدا نشد.' : 'کد اصالت با این شناسنامه نمی‌خواند؛ اشتباه تایپی یا شناسنامهٔ تقلبی.');
+}
+function backupNow() {
+  var name = 'پشتیبان سایت دکتر — ' + day_(new Date());
+  var f = DriveApp.getFileById(SpreadsheetApp.getActiveSpreadsheet().getId()).makeCopy(name);
+  say_('💾 پشتیبان ساخته شد', 'نام فایل در Google Drive:\n' + name);
+  return f.getUrl();
+}
+
+// ======================= برگهٔ راهنما =======================
+var GUIDE = [
+  ['📖 راهنمای شیت سایت دکتر نیلوفر مساوات', 'این شیت پایگاه‌دادهٔ سایت است. بیشتر چیزها خودکار پر می‌شوند و لازم نیست دستی ویرایش کنید. کارهای روزانه را از صفحهٔ دکتر در سایت (drniloofarmosavat.ir/dr) انجام دهید و این شیت را بیشتر برای دیدن و پشتیبان‌گیری به کار ببرید.'],
+  ['⚠️ سه قانون مهم', '۱) ردیف اول (عنوان ستون‌ها) و ترتیب ستون‌ها را عوض نکنید.\n۲) ستون‌های خاکستری (کلید، داده‌های فنی) را دستی ویرایش نکنید.\n۳) برای حذف یک ردیف، آن را از صفحهٔ دکتر در سایت حذف کنید؛ ردیف را پاک نکنید.'],
+  ['Pets — شناسنامه‌ها', 'هر ردیف یک پت است. «کد پت» مثل NM-1234 است. «کلید لینک» محرمانه است و مثل رمز عمل می‌کند؛ به کسی نشان ندهید. «رضایت» یعنی صاحب پت اجازهٔ ذخیرهٔ اطلاعات را داده است. ردیف قرمز کم‌رنگ یعنی حذف‌شده.'],
+  ['Records — ثبت‌های دفترچه', 'واکسن، ضدانگل، ویزیت، وزن و بقیه. هر ردیف به یک «کد پت» وصل است. «نوبت بعدی» یادآوری را می‌سازد. «ثبت دکتر؟» اگر ۱ باشد، فقط دکتر می‌تواند آن را عوض کند. «منبع» اگر old باشد، یعنی سابقهٔ قبلی است (از گفتهٔ صاحب یا دفترچهٔ کاغذی) و در سایت با برچسب «سابقهٔ قبلی» دیده می‌شود.'],
+  ['PetReqs — درخواست‌های شناسنامه', 'درخواستی که صاحب پت از سایت فرستاده. وضعیت: new = جدید · done = شناسنامه صادر شد · rejected = رد شده. صدور از صفحهٔ دکتر ← تب «📝 درخواست‌ها» انجام می‌شود. شمارهٔ تماس فقط دکتر می‌بیند.'],
+  ['Adoptions — واگذاری‌ها', 'درخواست واگذاری پت. وضعیت: pending = در انتظار بررسی · approved = منتشرشده در سایت · done = واگذار شد · rejected = رد شد. تأیید و عکس از صفحهٔ دکتر ← تب «🏡 واگذاری» انجام می‌شود. آگهی ۶۰ روز بعد از تأیید از سایت پنهان می‌شود.'],
+  ['Spins — چرخ هدیه', 'نتیجهٔ چرخش‌ها و کد جایزه‌ها (مثل DM-1234-ABCD). برای استفاده از یک کد، از صفحهٔ دکتر ← تب «🔎 بررسی کد» استفاده کنید.'],
+  ['🔎 اصالت شناسنامه', 'روی هر شناسنامه یک «کد اصالت» شش‌نویسه (مثل A7K2Q9) چاپ می‌شود. برای راستی‌آزمایی: منوی «🐾 سایت دکتر ← بررسی اصالت یک شناسنامه» یا صفحهٔ دکتر ← تب «🔎 بررسی کد». کد فقط با رمز سرور ساخته می‌شود و نمی‌شود برایش کد جعلی ساخت.'],
+  ['🎨 رنگ‌ها', 'سبز = منتشرشده · زرد = در انتظار/جدید · آبی = انجام‌شده · قرمز = ردشده یا حذف‌شده.'],
+  ['🐾 منوی «سایت دکتر»', 'بالای شیت: راهنما، خلاصهٔ امروز، رفتن به درخواست‌ها و واگذاری‌های جدید، بررسی اصالت، زیباسازی جدول‌ها، گرفتن پشتیبان و آزمایش اطلاع‌رسانی. اگر منو دیده نشد، صفحه را یک بار ببندید و باز کنید.']
+];
+function guideSheet_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet(), sh = ss.getSheetByName('📖 راهنما');
+  if (!sh) sh = ss.insertSheet('📖 راهنما', 0);
+  try {
+    sh.clear();
+    var rows = GUIDE.map(function (g) { return [g[0], g[1]]; });
+    sh.getRange(1, 1, rows.length, 2).setValues(rows);
+    sh.setRightToLeft(true); sh.setColumnWidth(1, 240); sh.setColumnWidth(2, 640);
+    var all = sh.getRange(1, 1, rows.length, 2);
+    all.setVerticalAlignment('top').setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP).setFontSize(11);
+    sh.getRange(1, 1, rows.length, 1).setFontWeight('bold').setBackground('#eef4fb').setFontColor('#1f5aa6');
+    sh.getRange(1, 1, 1, 2).setBackground('#1f5aa6').setFontColor('#ffffff').setFontSize(13);
+    sh.getRange(2, 1, 1, 2).setBackground('#fff4de');
+    for (var i = 1; i <= rows.length; i++) sh.setRowHeight(i, i === 1 ? 70 : 96);
+    sh.setTabColor('#1f5aa6');
+  } catch (e) { lastLookError_ = 'guide: ' + String(e); }
+  return sh;
+}
+function openGuide() { var sh = guideSheet_(); try { SpreadsheetApp.getActiveSpreadsheet().setActiveSheet(sh); } catch (e) {} return sh.getName(); }

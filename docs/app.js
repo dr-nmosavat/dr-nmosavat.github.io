@@ -1146,7 +1146,12 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   }
   function curPet() { return db.pets.filter(function (p) { return p.id === db.cur; })[0] || db.pets[0]; }
   function dl(name, text, type) { var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type: type })); a.download = name; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500); }
-  function when(n) { return n === 0 ? "امروز" : n > 0 ? toolFa(n) + " روز دیگر" : toolFa(-n) + " روز گذشته"; }
+  function when(n) {
+    if (n === 0) return "امروز"; if (n > 0) return toolFa(n) + " روز دیگر";
+    var a = -n; if (a < 60) return toolFa(a) + " روز گذشته";
+    var y = Math.floor(a / 365), m = Math.round((a % 365) / 30); if (m === 12) { y++; m = 0; }
+    return (y ? toolFa(y) + " سال" : "") + (y && m ? " و " : "") + (m ? toolFa(m) + " ماه" : "") + " گذشته";
+  }
   function cfg(t) { return CFG[t] || CFG["سایر"]; }
   function ageText(b) {
     if (!b) return ""; var d = -days(b); if (d < 0) return "";
@@ -1183,7 +1188,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     function line(r) { return "- " + [r.brand, r.name || tl(r.type)].filter(Boolean).join(" · ") + (r.serial ? " Lot:" + r.serial : "") + (r.extra && !r.serial ? " (" + String(r.extra).slice(0, 24) + ")" : "") + ": " + fl(r.date) + " / " + r.date; }
     function nextOf(t) { var n = allRem().filter(function (r) { return r.pet === cp.id && r.type === t; })[0]; return n ? n.date : ""; }
     var lw = last("وزن", 1)[0], be = cp.breedEn || breedEn(cp.breed), o = [];
-    o.push("HEALTH RECORD | شناسنامه سلامت" + (srvOf(cp) ? " | ID " + cp.srv.code : ""), cp.name + (cp.en ? " / " + cp.en : "") + (cp.owner ? " | Owner/صاحب: " + cp.owner : "") + (cp.guardian ? " | Guardian/سرپرست: " + cp.guardian : ""), (SPEN[cp.species] || cp.species || "") + (cp.breed ? " | " + cp.breed + (be ? " / " + be : "") : ""));
+    o.push("HEALTH RECORD | شناسنامه سلامت" + (srvOf(cp) ? " | ID " + cp.srv.code + (cp.srv.auth ? " | Auth " + cp.srv.auth : "") : ""), cp.name + (cp.en ? " / " + cp.en : "") + (cp.owner ? " | Owner/صاحب: " + cp.owner : "") + (cp.guardian ? " | Guardian/سرپرست: " + cp.guardian : ""), (SPEN[cp.species] || cp.species || "") + (cp.breed ? " | " + cp.breed + (be ? " / " + be : "") : ""));
     if (cp.birth) o.push("Birth/تولد: " + fl(cp.birth) + " (" + cp.birth + ")");
     if (lw) o.push("Weight/وزن: " + lw.weight + " kg (" + lw.date + ")");
     [["واکسن", "Vaccines/واکسن", 3], ["ضدانگل داخلی", "Deworming/ضدانگل داخلی", 2], ["ضدانگل خارجی (کک و کنه)", "Flea-tick/ضدانگل خارجی", 2]].forEach(function (x) {
@@ -1203,6 +1208,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function renderCover(cp) {
     var lw = db.recs.filter(function (r) { return r.pet === cp.id && r.weight; }).sort(function (a, b) { return a.date < b.date ? 1 : -1; })[0], rows = [];
     if (srvOf(cp)) rows.push(["کد پت / ID", '<bdi dir="ltr">' + esc(cp.srv.code) + "</bdi>"]);
+    if (srvOf(cp) && cp.srv.auth) rows.push(["کد اصالت / Auth", '<bdi dir="ltr" class="hb-auth">✓ ' + esc(cp.srv.auth) + "</bdi>"]);
     rows.push(["صاحب پت / Owner", cp.owner ? esc(cp.owner) : '<span class="nil">—</span>']);
     if (cp.guardian) rows.push(["سرپرست / Guardian", esc(cp.guardian)]);
     function enp(s) { return s ? ' <span class="en">· ' + esc(s) + "</span>" : ""; }
@@ -1238,6 +1244,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (young && !hasPlan) pl.innerHTML = '<div class="hb-plan-c"><b>برنامهٔ واکسن ' + (cp.species === "سگ" ? "توله‌سگ" : "بچه‌گربه") + "</b><p>با زدن دکمهٔ زیر، تاریخ نوبت‌های واکسن و کرم‌کشی بر اساس تاریخ تولد حساب می‌شود و به «یادآوری‌ها» اضافه می‌شود. تاریخ‌ها تقریبی‌اند و طبق نظر دامپزشک تنظیم کنید.</p><button type=\"button\" class=\"btn small primary\" data-hb-mkplan>📅 ساخت برنامهٔ واکسن و کرم‌کشی</button><details class=\"hb-det\"><summary>برنامه شامل چه چیزی است؟</summary><p>واکسن در هفتهٔ ۸، ۱۲ و ۱۶ (" + (cp.species === "سگ" ? "چندگانه سگ" : "سه‌گانه گربه") + ")، هاری در هفتهٔ ۱۶ و یادآور سالانه؛ ضدانگل داخلی در هفته‌های ۲، ۴، ۶، ۸، ۱۲، ۱۶، ۲۰ و ۲۴. بعد از ساخت، هر نوبت با «انجام شد» در دفترچه ثبت می‌شود و می‌توانید آن را به تقویم گوشی اضافه کنید. هر زمان خواستید «حذف برنامه» را بزنید.</p></details></div>";
     else if (!cp.birth && (cp.species === "سگ" || cp.species === "گربه")) pl.innerHTML = '<div class="hb-plan-c"><b>برنامهٔ واکسن توله و بچه‌گربه</b><p>با نوشتن تاریخ تولد، برنامهٔ پیشنهادی ساخته می‌شود.</p><button type="button" class="btn small" data-hb-edit-pet>نوشتن تاریخ تولد</button></div>';
     else pl.innerHTML = hasPlan ? '<div class="hb-plan-c ok"><span>برنامهٔ واکسن ' + (cp.species === "سگ" ? "توله‌سگ" : "بچه‌گربه") + ' فعال است.</span><button type="button" class="hb-lnk" data-hb-delplan>حذف برنامه</button></div>' : "";
+    if (srvOn() && !isDr()) pl.innerHTML = "";
     var cpRem = allRem().filter(function (r) { return r.pet === cp.id; }), rl = "", skipV = cp.species === "پرنده" || cp.species === "دیگر", extra = 0;
     STAT.forEach(function (t) {
       if (t === "واکسن" && skipV) return;
@@ -1277,13 +1284,13 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function srvOf(p) { return p && p.srv && p.srv.code ? p.srv : null; }
   function errMsg(e) { return e === "net" ? "اتصال با سرور برقرار نشد. اینترنت را بررسی کنید." : e === "auth" ? "دسترسی مجاز نیست (دوباره وارد شوید یا لینک را بررسی کنید)." : e === "forbidden" ? "این مورد را فقط دکتر ثبت یا تغییر می‌دهد." : e === "locked" ? "ورود موقتاً قفل شد؛ چند دقیقه بعد دوباره تلاش کنید." : "خطای سرور؛ دوباره تلاش کنید."; }
   function toSrvPet(p) { return { code: p.srv && p.srv.code, name: p.name, en: p.en, owner: p.owner, guardian: p.guardian, species: p.species, breed: p.breed, breedEn: p.breedEn, birth: p.birth, plan: p.plan || [], consent: p.consent ? 1 : 0 }; }
-  function toSrvRec(r) { var o = {}; ["id", "type", "date", "name", "brand", "serial", "place", "extra", "freq", "how", "dur", "end", "weight", "next", "closed"].forEach(function (k) { if (r[k]) o[k] = r[k]; }); return o; }
+  function toSrvRec(r) { var o = {}; ["id", "type", "date", "name", "brand", "serial", "place", "extra", "freq", "how", "dur", "end", "weight", "next", "closed", "src"].forEach(function (k) { if (r[k]) o[k] = r[k]; }); return o; }
   function normRec(r) { var o = {}; for (var k in r) o[k] = r[k]; o.dr = r.dr ? 1 : 0; o.closed = !!r.closed; return o; }
   function upsertSrv(sp, recs, key) {
     var p = db.pets.filter(function (x) { return (x.srv && x.srv.code === sp.code) || x.id === sp.code; })[0];
     if (!p) { p = { id: sp.code, plan: [] }; db.pets.push(p); }
     ["name", "en", "owner", "guardian", "species", "breed", "breedEn", "birth"].forEach(function (k) { p[k] = sp[k] || ""; });
-    p.plan = sp.plan || []; p.consent = !!sp.consent; p.srv = { code: sp.code, key: key || (p.srv && p.srv.key) || sp.key || "" };
+    p.plan = sp.plan || []; p.consent = !!sp.consent; p.srv = { code: sp.code, key: key || (p.srv && p.srv.key) || sp.key || "", auth: sp.auth || (p.srv && p.srv.auth) || "" };
     db.recs = db.recs.filter(function (r) { return r.pet !== p.id; }).concat((recs || []).map(function (r) { var o = normRec(r); o.pet = p.id; return o; }));
     return p;
   }
@@ -1309,6 +1316,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   var curPg = 0, editList = false;
   var PGS = ["مشخصات", "واکسیناسیون", "ضدانگل", "سایر"];
   function recDel(r) { return false ? '<button type="button" class="hb-pdel" data-hb-del="' + r.id + '" aria-label="حذف">✕</button>' : ""; }
+  function oldB(r) { return r.src === "old" ? '<span class="hb-oldb">سابقهٔ قبلی</span>' : ""; }
   function pageRows(cp, types, mode) {
     var rs = db.recs.filter(function (r) { return r.pet === cp.id && types.indexOf(r.type) > -1; }).sort(function (x, y) { return x.date < y.date ? 1 : -1; });
     if (!rs.length) return '<p class="hb-pe">' + (mode === "vax" && !isDr() ? "واکسن‌ها توسط دکتر ثبت می‌شود." : "هنوز موردی ثبت نشده است.") + "</p>";
@@ -1316,14 +1324,14 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       var k = cfg(r.type);
       if (mode === "vax" || mode === "par") {
         var main = (r.brand ? "<bdi>" + esc(r.brand) + "</bdi>" + (r.name ? " · " : "") : "") + (r.name ? esc(r.name) : r.brand ? "" : tl(r.type));
-        return '<div class="hb-pr">' + recDel(r) + '<div class="hb-pn"><b>' + main + "</b>" + (mode === "par" ? "<span>" + (r.type === "ضدانگل داخلی" ? "داخلی" : "خارجی") + "</span>" : "") + (r.serial ? '<small dir="ltr">Lot: ' + esc(r.serial) + "</small>" : "") + '</div><div class="hb-pd"><span><i>' + (mode === "vax" ? "تزریق" : "مصرف") + "</i>" + fd(r.date) + "</span><span><i>تکرار</i>" + (r.next ? fd(r.next) : "—") + "</span></div></div>";
+        return '<div class="hb-pr">' + recDel(r) + '<div class="hb-pn"><b>' + main + "</b>" + oldB(r) + (mode === "par" ? "<span>" + (r.type === "ضدانگل داخلی" ? "داخلی" : "خارجی") + "</span>" : "") + (r.serial ? '<small dir="ltr">Lot: ' + esc(r.serial) + "</small>" : "") + '</div><div class="hb-pd"><span><i>' + (mode === "vax" ? "تزریق" : "مصرف") + "</i>" + fd(r.date) + "</span><span><i>تکرار</i>" + (r.next ? fd(r.next) : "—") + "</span></div></div>";
       }
       if (r.type === "دارو") {
         var act = r.dur === "دائمی" || (r.end && days(r.end) >= 0), line2 = [r.extra, r.freq, r.how].filter(Boolean).map(esc).join(" · ");
         return '<div class="hb-pr"><div class="hb-pn"><b>' + k.ic + " " + esc(r.name || "دارو") + (act ? ' <span class="hb-act">فعال</span>' : "") + "</b>" + (line2 ? "<small>" + line2 + "</small>" : "") + '</div><div class="hb-pd"><span><i>شروع</i>' + fd(r.date) + "</span><span><i>تا</i>" + (r.dur === "دائمی" ? "دائمی" : r.end ? fd(r.end) : "—") + "</span></div></div>";
       }
       var det = [r.name, r.place, r.extra].filter(Boolean).map(esc).join(" · ") + (r.weight ? (r.name || r.place || r.extra ? " · " : "") + toolFa(r.weight) + " کیلوگرم" : "");
-      return '<div class="hb-pr">' + recDel(r) + '<div class="hb-pn"><b>' + k.ic + " " + tl(r.type) + "</b>" + (!r.dr && (r.type === "سایر" || r.type === "دارو") ? "<span>ثبت صاحب پت</span>" : "") + (det ? "<small>" + det + "</small>" : "") + '</div><div class="hb-pd"><span>' + fd(r.date) + "</span></div></div>";
+      return '<div class="hb-pr">' + recDel(r) + '<div class="hb-pn"><b>' + k.ic + " " + tl(r.type) + "</b>" + oldB(r) + (!r.dr && (r.type === "سایر" || r.type === "دارو") ? "<span>ثبت صاحب پت</span>" : "") + (det ? "<small>" + det + "</small>" : "") + '</div><div class="hb-pd"><span>' + fd(r.date) + "</span></div></div>";
     }).join("");
   }
   function weightChart(cp) {
@@ -1356,7 +1364,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     }, { passive: true });
   })();
   // ---- برگهٔ ثبت: فیلدها بر پایهٔ نوع ----
-  var editRecId = null;
+  var editRecId = null, keepNext = false, lastSrc = "";
   function renderTypes() {
     var avail = ORDER.filter(function (t) { return !locked(t); });
     q("[data-hb-types]").innerHTML = '<div class="fld"><label for="hb-tsel">نوع خدمت</label><select id="hb-tsel" data-hb-tsel' + (editRecId ? " disabled" : "") + ">" + avail.map(function (t) { return '<option value="' + esc(t) + '"' + (t === curType ? " selected" : "") + ">" + tl(t) + "</option>"; }).join("") + "</select></div>";
@@ -1382,7 +1390,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       if (el.tagName === "SELECT") { var has = [].some.call(el.options, function (o) { return o.value === v; }); if (v && !has) { el.value = "__o"; var o2 = q("#" + el.id + "-o"); o2.hidden = false; o2.value = v; } else el.value = v; } else el.value = v;
     });
     if (c.weight && q("#hb-w")) q("#hb-w").value = r.weight || "";
-    JD.d.set(r.date); JD.x.set(r.next || ""); xTouched = true; updateSug();
+    JD.d.set(r.date); JD.x.set(r.next || ""); xTouched = true; updateSug(); if (q("#hb-src")) q("#hb-src").value = r.src || "";
     q("[data-hb-save]").textContent = "ذخیره تغییرات";
   }
   function fieldHtml(f, sp) {
@@ -1396,10 +1404,12 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     c.f.forEach(function (f) { h += fieldHtml(f, sp); });
     if (c.weight) h = '<div class="fld"><label for="hb-w">وزن (کیلوگرم) <b class="hb-rq">*</b></label><input id="hb-w" type="number" inputmode="decimal" step="0.1" min="0.05" max="90"></div>' + h;
     h += '<div class="fld"><label>' + (c.dateLabel || "تاریخ (شمسی)") + '</label><div class="jd" data-jd="d"></div></div>';
+    h += '<div class="fld hb-srcf"><label for="hb-src">منبع ثبت</label><select id="hb-src"><option value="">ثبت در این کلینیک</option><option value="old">سابقهٔ قبلی (بر اساس گفتهٔ صاحب یا دفترچهٔ کاغذی)</option></select></div>';
     if (!c.weight && !c.noNext) h += '<div class="fld"><label>تاریخ تکرار / نوبت بعدی <small>(اختیاری)</small></label><div class="jd" data-jd="x"></div><p class="hb-sug" data-hb-sug hidden></p><div class="hb-quick"><button type="button" data-hb-add="1">+۱ ماه</button><button type="button" data-hb-add="3">+۳ ماه</button><button type="button" data-hb-add="12">+۱ سال</button><button type="button" data-hb-clear>بدون نوبت</button></div></div>';
     q("[data-hb-sf]").innerHTML = h; q("[data-hb-err]").hidden = true;
-    JD.d = initJd(q('[data-jd="d"]'), { minY: -2, maxY: 0 }); JD.x = (c.weight || c.noNext) ? { get: function () { return ""; }, set: function () {}, on: function () {} } : initJd(q('[data-jd="x"]'), { optional: true, minY: 0, maxY: 6 });
+    JD.d = initJd(q('[data-jd="d"]'), { minY: -30, maxY: 0 }); JD.x = (c.weight || c.noNext) ? { get: function () { return ""; }, set: function () {}, on: function () {} } : initJd(q('[data-jd="x"]'), { optional: true, minY: -30, maxY: 6 });
     JD.d.set(ymd(new Date())); JD.d.on(function () { xTouched = false; updateSug(); }); JD.x.on(function () { xTouched = true; });
+    if (lastSrc && q("#hb-src")) q("#hb-src").value = lastSrc;
     updateSug();
   }
   function updateSug() {
@@ -1701,7 +1711,8 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (t.closest("[data-hb-qr-save]")) return savePng(q("[data-hb-qrbox] svg"), "qr-" + (curPet().en || "pet") + ".png");
     if (t.closest("[data-hb-shqr-save]")) return savePng(q("[data-hb-shqr] svg"), "share-" + (curPet().en || "pet") + ".png");
     if (t.closest("[data-hb-more]")) { showAll = !showAll; return render(); }
-    if (t.closest("[data-hb-save]")) {
+    if (t.closest("[data-hb-save]") || t.closest("[data-hb-saveno]")) {
+      keepNext = !!t.closest("[data-hb-saveno]");
       var ed = editRecId ? db.recs.filter(function (r) { return r.id === editRecId; })[0] : null;
       if (locked(curType) || (editRecId && !ed)) return;
       var cp = curPet(); if (!cp) return; var d = JD.d.get(); if (!d) return; var c = cfg(curType), er = q("[data-hb-err]"), vals = {};
@@ -1711,7 +1722,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       var nx = JD.x.get(), nm = vals.name || "", end = DURD[vals.dur] ? addDays(d, DURD[vals.dur]) : "";
       db.mem = db.mem || {};
       c.f.forEach(function (f) { var el = q("#hb-f-" + f.id); if (el && el.tagName === "SELECT" && el.value === "__o" && vals[f.id]) { var mk = curType + "|" + f.id; if (f.sel(cp.species).indexOf(vals[f.id]) < 0) { db.mem[mk] = db.mem[mk] || []; if (db.mem[mk].indexOf(vals[f.id]) < 0) db.mem[mk].push(vals[f.id]); } } });
-      var fields = { date: d, name: nm, brand: vals.brand || "", serial: vals.serial || "", place: vals.place || "", extra: vals.extra || "", freq: vals.freq || "", how: vals.how || "", dur: vals.dur || "", end: end, weight: w || 0, next: nx };
+      var fields = { date: d, name: nm, brand: vals.brand || "", serial: vals.serial || "", place: vals.place || "", extra: vals.extra || "", freq: vals.freq || "", how: vals.how || "", dur: vals.dur || "", end: end, weight: w || 0, next: nx, src: (isDr() && q("#hb-src") && q("#hb-src").value === "old") ? "old" : "" };
       function commit(srvRec) {
         if (ed) { for (var kf in fields) ed[kf] = fields[kf]; ed.closed = false; }
         else {
@@ -1722,7 +1733,8 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
           });
           var rec = srvRec || { id: uid(), pet: cp.id, type: curType, dr: isDr() ? 1 : 0 }; if (!srvRec) for (var k2 in fields) rec[k2] = fields[k2]; db.recs.push(rec);
         }
-        editRecId = null; save(); closeSheet(); render();
+        editRecId = null; save();
+        if (keepNext && !ed) { lastSrc = fields.src; render(); renderFields(); toast("ثبت شد؛ مورد بعدی را وارد کنید"); } else { lastSrc = ""; closeSheet(); render(); }
       }
       var sv = srvOf(cp);
       if (sv && srvOn()) {
@@ -1861,6 +1873,18 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       toast("اطلاعات درخواست وارد شد؛ تاریخ تولد و رضایت را کامل کنید");
       var pf = q("[data-hb-petform]"); if (pf && pf.scrollIntoView) pf.scrollIntoView({ behavior: "smooth", block: "start" });
     }
+  });
+  // ---- بررسی اصالت شناسنامه (دکتر) ----
+  root.addEventListener("click", function (e) {
+    if (!(e.target.closest && e.target.closest("[data-hb-vpgo]"))) return;
+    var code = q("[data-hb-vpcode]").value.trim(), au = q("[data-hb-vpauth]").value.trim(), box = q("[data-hb-vpres]");
+    if (!code || !au) { box.innerHTML = '<div class="hb-vbox bad"><b>هر دو کد را بنویسید.</b></div>'; return; }
+    box.innerHTML = '<div class="hb-vbox"><b>در حال بررسی…</b></div>';
+    api({ a: "verifyPet", t: tokGet(), code: code, auth: au }).then(function (j) {
+      if (!j.ok) { box.innerHTML = '<div class="hb-vbox bad"><b>' + esc(errMsg(j.err)) + "</b></div>"; return; }
+      if (j.valid) box.innerHTML = '<div class="hb-vbox ok"><b>✅ شناسنامه معتبر است</b><span>' + esc(j.pet.name) + " (" + esc(j.pet.species) + ")" + (j.pet.owner ? " · صاحب: " + esc(j.pet.owner) : "") + (j.pet.created ? " · صدور: " + esc(fd(j.pet.created)) : "") + '</span><span dir="ltr">' + esc(j.pet.code) + "</span></div>";
+      else box.innerHTML = '<div class="hb-vbox bad"><b>❌ معتبر نیست</b><span>' + (j.reason === "notfound" ? "شناسنامه‌ای با این کد پیدا نشد." : "کد اصالت با این شناسنامه نمی‌خواند؛ اشتباه تایپی یا شناسنامهٔ تقلبی.") + "</span></div>";
+    });
   });
   // ---- واگذاری‌ها (دکتر) ----
   var adItems = [], adPhotoId = "";
