@@ -150,6 +150,7 @@ function health_(b) {
   if (a === 'adoptSubmit') return adoptSubmit_(b);
   if (a === 'adoptList') return adoptList_();
   if (a === 'petReqSubmit') return petReqSubmit_(b);
+  if (a === 'verifyPublic') return verifyPublic_(b);
   // ---- دکتر ----
   if (!okToken_(b.t)) return { ok: false, err: 'auth' };
   var lock = LockService.getScriptLock(); lock.waitLock(15000);
@@ -292,7 +293,7 @@ function doGet(e) {
   var p = (e && e.parameter) || {};
   if (p.action === 'spin') return json_(spin_(p));
   if (p.action === 'verify') return verifyPage_(p);
-  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v8-auth' });
+  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v9-verify' });
 }
 
 // ======================= چرخ هدیه =======================
@@ -569,6 +570,7 @@ function onOpen() {
       .addItem('🔄 نمایش همهٔ ردیف‌ها', 'clearFilters')
       .addItem('🔎 بررسی اصالت یک شناسنامه', 'checkAuthPrompt')
       .addItem('🌐 باز کردن صفحهٔ دکتر در سایت', 'openDoctorPage')
+      .addItem('🔑 نمایش رمز ورود دکتر', 'showDrPass')
       .addSeparator()
       .addItem('🎨 زیباسازی جدول‌ها', 'formatSheets')
       .addItem('💾 گرفتن پشتیبان', 'backupNow')
@@ -647,9 +649,9 @@ var GUIDE = [
   ['PetReqs — درخواست‌های شناسنامه', 'درخواستی که صاحب پت از سایت فرستاده. وضعیت: new = جدید · done = شناسنامه صادر شد · rejected = رد شده. صدور از صفحهٔ دکتر ← تب «📝 درخواست‌ها» انجام می‌شود. شمارهٔ تماس فقط دکتر می‌بیند.'],
   ['Adoptions — واگذاری‌ها', 'درخواست واگذاری پت. وضعیت: pending = در انتظار بررسی · approved = منتشرشده در سایت · done = واگذار شد · rejected = رد شد. تأیید و عکس از صفحهٔ دکتر ← تب «🏡 واگذاری» انجام می‌شود. آگهی ۶۰ روز بعد از تأیید از سایت پنهان می‌شود.'],
   ['Spins — چرخ هدیه', 'نتیجهٔ چرخش‌ها و کد جایزه‌ها (مثل DM-1234-ABCD). برای استفاده از یک کد، از صفحهٔ دکتر ← تب «🔎 بررسی کد» استفاده کنید.'],
-  ['🔎 اصالت شناسنامه', 'روی هر شناسنامه یک «کد اصالت» شش‌نویسه (مثل A7K2Q9) چاپ می‌شود. برای راستی‌آزمایی: منوی «🐾 سایت دکتر ← بررسی اصالت یک شناسنامه» یا صفحهٔ دکتر ← تب «🔎 بررسی کد». کد فقط با رمز سرور ساخته می‌شود و نمی‌شود برایش کد جعلی ساخت.'],
+  ['🔎 اصالت شناسنامه', 'روی هر شناسنامه یک «کد اصالت» شش‌نویسه (مثل A7K2Q9) چاپ می‌شود. برای راستی‌آزمایی: منوی «🐾 سایت دکتر ← بررسی اصالت یک شناسنامه»، صفحهٔ دکتر ← تب «🔎 بررسی کد»، یا صفحهٔ عمومی drniloofarmosavat.ir/verify.html (برای مراجعین و دیگران؛ فقط نام و گونهٔ پت را نشان می‌دهد). کد فقط با رمز سرور ساخته می‌شود و نمی‌شود برایش کد جعلی ساخت. اگر نام پت با نام روی شناسنامه نخواند، شناسنامه جعلی است.'],
   ['🎨 رنگ‌ها', 'سبز = منتشرشده · زرد = در انتظار/جدید · آبی = انجام‌شده · قرمز = ردشده یا حذف‌شده.'],
-  ['🐾 منوی «سایت دکتر»', 'بالای شیت: راهنما، خلاصهٔ امروز، رفتن به درخواست‌ها و واگذاری‌های جدید، بررسی اصالت، زیباسازی جدول‌ها، گرفتن پشتیبان و آزمایش اطلاع‌رسانی. اگر منو دیده نشد، صفحه را یک بار ببندید و باز کنید.']
+  ['🐾 منوی «سایت دکتر»', 'بالای شیت: راهنما، خلاصهٔ امروز، رفتن به درخواست‌ها و واگذاری‌های جدید، بررسی اصالت، باز کردن صفحهٔ دکتر، نمایش رمز ورود دکتر، زیباسازی جدول‌ها، گرفتن پشتیبان و آزمایش اطلاع‌رسانی. اگر منو دیده نشد، صفحه را یک بار ببندید و باز کنید.']
 ];
 function guideSheet_() {
   var ss = SpreadsheetApp.getActiveSpreadsheet(), sh = ss.getSheetByName('📖 راهنما');
@@ -683,4 +685,29 @@ function openDoctorPage() {
   var html = HtmlService.createHtmlOutput('<div style="font:15px sans-serif;direction:rtl;text-align:right;padding:6px"><p>صفحهٔ دکتر (ثبت شناسنامه، درخواست‌ها، واگذاری‌ها):</p><p><a href="' + SITE + '/dr" target="_blank" style="font-size:17px">باز کردن صفحهٔ دکتر</a></p><p>سایت: <a href="' + SITE + '" target="_blank">' + SITE + '</a></p></div>').setWidth(380).setHeight(190);
   u.showModalDialog(html, '🌐 سایت دکتر');
   return SITE + '/dr';
+}
+
+
+// ======================= اصالت‌سنجی عمومی (بدون ورود) =======================
+// هر کس با کد پت و کد اصالت چاپ‌شده روی شناسنامه می‌تواند بپرسد «این شناسنامه واقعی است؟».
+// فقط نام و گونهٔ پت و تاریخ صدور برمی‌گردد؛ نام صاحب و تلفن هرگز.
+// محافظ حدس‌زدن: بعد از ۵ تلاش اشتباه برای یک کد، همان کد یک ساعت قفل می‌شود؛ و کل سایت ساعتی ۱۲۰ بررسی.
+function verifyPublic_(b) {
+  var cache = CacheService.getScriptCache(), code = String(b.code || '').toUpperCase().replace(/[^A-Z0-9\-]/g, '').slice(0, 12);
+  var hk = 'vph' + Utilities.formatDate(new Date(), CFG.tz, 'yyyyMMddHH'), hn = Number(cache.get(hk) || 0);
+  if (hn >= 120) return { ok: false, err: 'busy' };
+  var ck = 'vpc' + code, cn = Number(cache.get(ck) || 0);
+  if (cn >= 5) return { ok: false, err: 'locked' };
+  cache.put(hk, String(hn + 1), 3600);
+  var r = verifyPet_({ code: code, auth: b.auth });
+  if (!r.valid) { cache.put(ck, String(cn + 1), 3600); return { ok: true, valid: false }; }
+  cache.remove(ck);
+  return { ok: true, valid: true, pet: { name: r.pet.name, species: r.pet.species, created: r.pet.created } };
+}
+
+// رمز ورود دکتر را روی شیت نمی‌نویسیم (نسخهٔ پشتیبان و اشتراک‌گذاری شیت آن را لو می‌دهد)؛ فقط با این گزینه نشان داده می‌شود.
+function showDrPass() {
+  var pw = prop_('DR_PASS');
+  if (!pw) return say_('🔑 رمز ورود دکتر', 'هنوز رمزی تعیین نشده است. در Project Settings ← Script properties مقدار DR_PASS را بسازید.');
+  return say_('🔑 رمز ورود دکتر', 'آدرس: ' + SITE + '/dr\nرمز: ' + pw + '\n\nبرای عوض‌کردن رمز: Project Settings ← Script properties ← DR_PASS');
 }

@@ -1860,3 +1860,7 @@ html.hb-dr .hb-drtabs button:last-child:nth-child(odd) { grid-column: 1 / -1; }
 .hb-oldb { display: inline-block; margin-inline-start: 6px; padding: 1px 8px; border-radius: 999px; background: #fdf1da; color: #8a5a0d; font-size: 11px; font-weight: 700; }
 .hb-nextbtn { margin-inline-start: 8px; }
 .hb-vrow { flex-wrap: wrap; } .hb-vrow input[data-hb-vpcode], .hb-vrow input[data-hb-vpauth] { min-width: 120px; }
+
+.vf-ok { background: #e2f4ea; color: #0d5a3d; } .vf-bad { background: #fde8e6; color: #7a1f17; } .vf-wait { background: var(--blue-soft); }
+.hb-reqrow a.hb-lnk { display: block; margin-top: 8px; font-size: 13px; color: #1f5aa6; text-decoration: none; }
+.hb-drtabs button.has-new:not(.on) { border-color: #e8a13a; background: #fff7ea; color: #8a5a0d; }

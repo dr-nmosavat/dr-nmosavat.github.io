@@ -1278,7 +1278,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function tokSet(t) { try { if (t) localStorage.setItem("dm_hb_tok", JSON.stringify({ t: t, exp: (Number(String(t).split(".")[0]) || Date.now() + 3 * 86400000) - 60000 })); else localStorage.removeItem("dm_hb_tok"); } catch (e) {} }
   var DRPAGE = document.body.classList.contains("hb-drpage");
   var drListRun = null, pendingReq = "";
-  function dview(v) { root.setAttribute("data-dview", v); [].forEach.call(root.querySelectorAll("[data-hb-dtab]"), function (b) { b.classList.toggle("on", b.getAttribute("data-hb-dtab") === v); }); if (v === "list" && isDr() && srvOn() && drListRun) drListRun(); if (v === "adopt" && isDr() && srvOn()) adLoad(); if (v === "req" && isDr() && srvOn()) rqLoad(); if (v !== "new" && v !== "pet") pendingReq = ""; }
+  function dview(v) { root.setAttribute("data-dview", v); [].forEach.call(root.querySelectorAll("[data-hb-dtab]"), function (b) { b.classList.toggle("on", b.getAttribute("data-hb-dtab") === v); }); if (v === "list" && isDr() && srvOn() && drListRun) drListRun(); if (v === "adopt" && isDr() && srvOn()) adLoad(); if (v === "req" && isDr() && srvOn()) rqLoad(); if (v === "list") tabCounts(); if (v !== "new" && v !== "pet") pendingReq = ""; }
   function drDrop(msg) { try { localStorage.removeItem("dm_hb_dr"); } catch (e) {} tokSet(""); setTimeout(function () { applyRole(); render(); toast(msg); }, 0); }
   function isDr() { if (!DRPAGE) return false; try { var f = localStorage.getItem("dm_hb_dr") === "1"; if (f && srvOn() && !tokGet()) { drDrop("مدت اعتبار ورود تمام شد؛ لطفاً دوباره وارد شوید."); return false; } return f; } catch (e) { return false; } }
   function srvOf(p) { return p && p.srv && p.srv.code ? p.srv : null; }
@@ -1838,6 +1838,14 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       }
     });
   })();
+  // ---- شمارندهٔ تب‌ها (دکتر) ----
+  var tabBase = {};
+  function setTabCount(v, n) { var b = q('[data-hb-dtab="' + v + '"]'); if (!b) return; if (!tabBase[v]) tabBase[v] = b.textContent; b.textContent = tabBase[v] + (n ? " (" + toolFa(n) + ")" : ""); b.classList.toggle("has-new", n > 0); }
+  function tabCounts() {
+    if (!(isDr() && srvOn())) return;
+    api({ a: "petReqList", t: tokGet() }).then(function (j) { if (j.ok) { rqItems = j.items; setTabCount("req", rqItems.filter(function (r) { return r.status === "new"; }).length); } });
+    api({ a: "adoptAdmin", t: tokGet() }).then(function (j) { if (j.ok) { adItems = j.items; setTabCount("adopt", adItems.filter(function (r) { return r.status === "pending"; }).length); } });
+  }
   // ---- درخواست‌های شناسنامه (دکتر) ----
   var rqItems = [];
   function rqLoad() {
@@ -1846,6 +1854,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   }
   function rqRender() {
     var b = q('[data-seg="hb-rqf"] .on'), f = b ? b.getAttribute("data-v") : "new", box = q("[data-hb-rqlist]");
+    setTabCount("req", rqItems.filter(function (r) { return r.status === "new"; }).length);
     var list = rqItems.filter(function (r) { return f === "closed" ? r.status !== "new" : r.status === "new"; });
     box.innerHTML = list.length ? list.map(function (r) {
       var btns = r.status === "new" ? '<button type="button" class="btn small primary" data-hb-rqissue data-id="' + esc(r.id) + '">✅ صدور شناسنامه</button><button type="button" class="btn small hb-danger" data-hb-rqact="rejected" data-id="' + esc(r.id) + '">رد</button>'
@@ -1895,6 +1904,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   }
   function adRender() {
     var b = q('[data-seg="hb-adf"] .on'), f = b ? b.getAttribute("data-v") : "pending", box = q("[data-hb-adlist]");
+    setTabCount("adopt", adItems.filter(function (r) { return r.status === "pending"; }).length);
     var list = adItems.filter(function (r) { return f === "closed" ? (r.status === "done" || r.status === "rejected") : r.status === f; });
     box.innerHTML = list.length ? list.map(function (r) {
       var btns = r.status === "pending" ? '<button type="button" class="btn small primary" data-hb-adact="approved" data-id="' + esc(r.id) + '">✅ تأیید و انتشار</button><button type="button" class="btn small hb-danger" data-hb-adact="rejected" data-id="' + esc(r.id) + '">رد</button>'
@@ -2042,5 +2052,27 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       okBox.innerHTML = "<b>✅ درخواست شما ثبت شد</b><span>کد پیگیری: <bdi dir=\"ltr\">" + esc(j.id) + "</bdi>. حالا عکس‌های پت را به واتساپ دکتر بفرستید تا بعد از بررسی همراه آگهی منتشر شود.</span>" + '<a class="btn small" target="_blank" rel="noopener" href="' + wa("سلام دکتر، درخواست واگذاری پت ثبت کردم. کد: " + j.id + " (نام پت: " + val("ad-name") + ")") + '">ارسال عکس در واتساپ</a>';
       okBox.scrollIntoView({ behavior: "smooth", block: "center" });
     });
+  });
+})();
+
+// اصالت‌سنجی شناسنامه (عمومی)
+(function () {
+  var root = document.querySelector("[data-vfy]"); if (!root) return;
+  var res = root.querySelector("[data-vf-res]");
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function jy(iso) { try { return new Date(iso + "T12:00:00").toLocaleDateString("fa-IR-u-ca-persian", { year: "numeric", month: "long", day: "numeric" }); } catch (e) { return iso; } }
+  function show(cls, html) { res.hidden = false; res.className = "tool-res vf-" + cls; res.innerHTML = html; }
+  root.querySelector("[data-vf-go]").addEventListener("click", function () {
+    var code = root.querySelector("#vf-code").value.trim(), au = root.querySelector("#vf-auth").value.trim(), btn = this;
+    if (!code || !au) { show("bad", "<b>هر دو کد را بنویسید</b><span>کد پت (مثل NM-1234) و کد اصالت (شش نویسه).</span>"); return; }
+    if (!INFO.sheetApi) { show("bad", "<b>اصالت‌سنجی فعلاً در دسترس نیست</b>"); return; }
+    btn.disabled = true; show("wait", "<b>در حال بررسی…</b>");
+    fetch(INFO.sheetApi, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ a: "verifyPublic", code: code, auth: au }) })
+      .then(function (r) { return r.json(); }).catch(function () { return { ok: false, err: "net" }; }).then(function (j) {
+        btn.disabled = false;
+        if (!j.ok) { show("bad", "<b>" + (j.err === "locked" ? "این کد چند بار اشتباه بررسی شد و موقتاً قفل است. یک ساعت دیگر دوباره امتحان کنید." : j.err === "net" ? "اتصال با سرور برقرار نشد. اینترنت را بررسی کنید." : "تعداد بررسی‌ها زیاد است؛ کمی بعد دوباره امتحان کنید.") + "</b>"); return; }
+        if (j.valid) show("ok", "<b>✅ شناسنامه معتبر است</b><span>" + esc(j.pet.name) + " (" + esc(j.pet.species) + ")</span><span>تاریخ صدور: " + esc(jy(j.pet.created)) + "</span><span>نام پت را با شناسنامه مقایسه کنید.</span>");
+        else show("bad", "<b>❌ معتبر نیست</b><span>کدها با هم نمی‌خوانند یا شناسنامه‌ای با این کد وجود ندارد. دو کد را دوباره بررسی کنید؛ اگر باز هم همین بود، شناسنامه را معتبر ندانید.</span>");
+      });
   });
 })();
