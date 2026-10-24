@@ -568,6 +568,7 @@ function onOpen() {
       .addItem('🏡 واگذاری‌های در انتظار', 'goAdoptions')
       .addItem('🔄 نمایش همهٔ ردیف‌ها', 'clearFilters')
       .addItem('🔎 بررسی اصالت یک شناسنامه', 'checkAuthPrompt')
+      .addItem('🌐 باز کردن صفحهٔ دکتر در سایت', 'openDoctorPage')
       .addSeparator()
       .addItem('🎨 زیباسازی جدول‌ها', 'formatSheets')
       .addItem('💾 گرفتن پشتیبان', 'backupNow')
@@ -663,9 +664,23 @@ function guideSheet_() {
     sh.getRange(1, 1, rows.length, 1).setFontWeight('bold').setBackground('#eef4fb').setFontColor('#1f5aa6');
     sh.getRange(1, 1, 1, 2).setBackground('#1f5aa6').setFontColor('#ffffff').setFontSize(13);
     sh.getRange(2, 1, 1, 2).setBackground('#fff4de');
+    sh.getRange(rows.length + 2, 1).setValue('🌐 صفحهٔ دکتر');
+    sh.getRange(rows.length + 2, 2).setFormula('=HYPERLINK("' + SITE + '/dr","باز کردن صفحهٔ دکتر در سایت")');
+    sh.getRange(rows.length + 3, 1).setValue('🌐 سایت');
+    sh.getRange(rows.length + 3, 2).setFormula('=HYPERLINK("' + SITE + '","' + SITE + '")');
+    sh.getRange(rows.length + 2, 1, 2, 1).setFontWeight('bold').setFontColor('#1f5aa6');
     for (var i = 1; i <= rows.length; i++) sh.setRowHeight(i, i === 1 ? 70 : 96);
     sh.setTabColor('#1f5aa6');
   } catch (e) { lastLookError_ = 'guide: ' + String(e); }
   return sh;
 }
 function openGuide() { var sh = guideSheet_(); try { SpreadsheetApp.getActiveSpreadsheet().setActiveSheet(sh); } catch (e) {} return sh.getName(); }
+
+var SITE = 'https://drniloofarmosavat.ir';
+// پنجرهٔ کوچک با لینک؛ شیت نمی‌تواند خودش مرورگر را باز کند، پس لینک نشان می‌دهد
+function openDoctorPage() {
+  var u = ui_(); if (!u) return SITE + '/dr';
+  var html = HtmlService.createHtmlOutput('<div style="font:15px sans-serif;direction:rtl;text-align:right;padding:6px"><p>صفحهٔ دکتر (ثبت شناسنامه، درخواست‌ها، واگذاری‌ها):</p><p><a href="' + SITE + '/dr" target="_blank" style="font-size:17px">باز کردن صفحهٔ دکتر</a></p><p>سایت: <a href="' + SITE + '" target="_blank">' + SITE + '</a></p></div>').setWidth(380).setHeight(190);
+  u.showModalDialog(html, '🌐 سایت دکتر');
+  return SITE + '/dr';
+}
