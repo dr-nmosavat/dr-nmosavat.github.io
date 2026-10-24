@@ -291,7 +291,7 @@ function doGet(e) {
   var p = (e && e.parameter) || {};
   if (p.action === 'spin') return json_(spin_(p));
   if (p.action === 'verify') return verifyPage_(p);
-  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v6-look' });
+  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v7-notify' });
 }
 
 // ======================= چرخ هدیه =======================
@@ -376,6 +376,7 @@ function adoptSubmit_(b) {
   var lock = LockService.getScriptLock(); lock.waitLock(15000);
   try { writeRow_(hsheet_('Adoptions', AD_COLS), AD_COLS, o); } finally { lock.releaseLock(); }
   cache.put(key, String(n + 1), 3600);
+  notify_('🏡 درخواست واگذاری پت', 'کد: ' + o.id + '\nنام: ' + o.name + ' (' + o.species + ')\nشهر: ' + (o.city || '—') + '\nتماس: ' + o.contact + '\n\nبرای بررسی: صفحهٔ دکتر ← تب «🏡 واگذاری»');
   return { ok: true, id: o.id };
 }
 function adoptPub_(r) { return { id: r.id, species: r.species, name: r.name, age: r.age, sex: r.sex, neutered: r.neutered, vaccine: r.vaccine, temper: r.temper, reason: r.reason, city: r.city, photo: r.photo, approved: r.approved }; }
@@ -425,6 +426,7 @@ function petReqSubmit_(b) {
   var lock = LockService.getScriptLock(); lock.waitLock(15000);
   try { writeRow_(hsheet_('PetReqs', PR_COLS), PR_COLS, o); } finally { lock.releaseLock(); }
   cache.put(key, String(n + 1), 3600);
+  notify_('📝 درخواست شناسنامه', 'کد: ' + o.id + '\nپت: ' + o.name + ' (' + o.species + ')\nصاحب: ' + o.owner + '\nتماس: ' + o.contact + (o.note ? '\nتوضیح: ' + o.note : '') + '\n\nبرای صدور: صفحهٔ دکتر ← تب «📝 درخواست‌ها»');
   return { ok: true, id: o.id };
 }
 function petReqList_() {
@@ -504,4 +506,35 @@ function formatSheets() {
 }
 function onOpen() {
   try { SpreadsheetApp.getUi().createMenu('🐾 سایت دکتر').addItem('زیباسازی جدول‌ها', 'formatSheets').addToUi(); } catch (e) {}
+}
+
+
+// ======================= اطلاع‌رسانی به دکتر (ایمیل و ربات بله) =======================
+// هر دو اختیاری‌اند؛ اگر مقدارشان در Script Properties نباشد، چیزی ارسال نمی‌شود:
+//   NOTIFY_EMAIL  ایمیل دکتر (برای نوتیف در گوشی)
+//   BALE_TOKEN    توکن ربات بله (از @botfather در بله)
+//   BALE_CHAT     شناسهٔ عددی چت دکتر با ربات
+// خطا در ارسال هرگز ثبت درخواست را خراب نمی‌کند.
+function notify_(subject, text) {
+  var res = { email: false, bale: false, err: '' };
+  try {
+    var to = prop_('NOTIFY_EMAIL');
+    if (to) { MailApp.sendEmail(to, subject, text + '\n\n— سایت دکتر نیلوفر مساوات'); res.email = true; }
+  } catch (e1) { res.err += 'email: ' + String(e1).slice(0, 80) + ' '; }
+  try {
+    var tk = prop_('BALE_TOKEN'), chat = prop_('BALE_CHAT');
+    if (tk && chat) {
+      var r = UrlFetchApp.fetch('https://tapi.bale.ai/bot' + tk + '/sendMessage', { method: 'post', contentType: 'application/json', payload: JSON.stringify({ chat_id: chat, text: subject + '\n\n' + text }), muteHttpExceptions: true });
+      res.bale = r.getResponseCode() === 200;
+      if (!res.bale) res.err += 'bale: ' + r.getResponseCode() + ' ';
+    }
+  } catch (e2) { res.err += 'bale: ' + String(e2).slice(0, 80) + ' '; }
+  return res;
+}
+// یک‌بار از ویرایشگر اسکریپت اجرا کنید: هم اجازهٔ دسترسی به ایمیل را می‌گیرد، هم پیام آزمایشی می‌فرستد
+function testNotify() {
+  if (!prop_('NOTIFY_EMAIL') && !(prop_('BALE_TOKEN') && prop_('BALE_CHAT'))) throw new Error('اول NOTIFY_EMAIL (یا BALE_TOKEN و BALE_CHAT) را در Script Properties بسازید.');
+  var r = notify_('✅ آزمایش اطلاع‌رسانی', 'اگر این پیام را می‌بینید، اطلاع‌رسانی درست کار می‌کند.');
+  Logger.log(JSON.stringify(r));
+  return r;
 }
