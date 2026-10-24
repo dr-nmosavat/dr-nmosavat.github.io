@@ -1914,6 +1914,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   });
   applyRole(); dview("list");
   checkImport();
+  if (location.hash === "#request" && !DRPAGE) setTimeout(function () { var rb = q("[data-hb-req]"); if (rb) rb.click(); }, 400);
   syncCur();
   if ("serviceWorker" in navigator && /^https?:/.test(location.protocol)) { try { navigator.serviceWorker.register("sw.js"); } catch (e) {} }
   render();
