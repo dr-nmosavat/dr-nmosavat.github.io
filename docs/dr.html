@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=202610242021">
+<link rel="stylesheet" href="style.css?v=202610242103">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="icon" href="favicon.ico" sizes="48x48">
 <link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png">
@@ -67,9 +67,10 @@
           <li>QR را با دوربین گوشی اسکن کنید یا روی لینک بزنید.</li>
           <li>«افزودن به دفترچهٔ من» را بزنید. از این به بعد هر بار این صفحه را باز کنید، آخرین وضعیت پت‌تان را می‌بینید.</li>
         </ol>
-        <a class="btn primary" data-hb-wa href="contact.html" target="_blank" rel="noopener">پیام به دکتر در واتساپ</a>
+        <button type="button" class="btn primary" data-hb-req>📝 درخواست شناسنامه</button>
+        <a class="btn small ghost hb-wa2" data-hb-wa href="contact.html" target="_blank" rel="noopener">یا پیام به دکتر در واتساپ</a>
       </div>
-      <div class="hb-drtabs" data-hb-drtabs role="tablist"><button type="button" data-hb-dtab="list">📒 شناسنامه‌ها</button><button type="button" data-hb-dtab="new">＋ صدور جدید</button><button type="button" data-hb-dtab="code">🎁 کد جایزه</button><button type="button" data-hb-dtab="adopt">🏡 واگذاری</button></div>
+      <div class="hb-drtabs" data-hb-drtabs role="tablist"><button type="button" data-hb-dtab="list">📒 شناسنامه‌ها</button><button type="button" data-hb-dtab="new">＋ صدور جدید</button><button type="button" data-hb-dtab="code">🎁 کد جایزه</button><button type="button" data-hb-dtab="adopt">🏡 واگذاری</button><button type="button" data-hb-dtab="req">📝 درخواست‌ها</button></div>
       <div class="hb-search" data-hb-searchbox hidden>
         <input type="search" data-hb-q autocomplete="off" placeholder="🔎 جستجوی پت: نام، صاحب یا کد (مثل NM-1234)">
         <div class="hb-qres" data-hb-qres></div>
@@ -84,6 +85,10 @@
         <div class="seg hb-adf" data-seg="hb-adf"><button type="button" class="on" data-v="pending">در انتظار</button><button type="button" data-v="approved">منتشرشده</button><button type="button" data-v="closed">بسته‌شده</button></div>
         <div class="hb-adlist" data-hb-adlist></div>
         <input type="file" accept="image/*" data-hb-adfile hidden>
+      </div>
+      <div class="hb-adbox hb-reqbox" data-hb-reqbox>
+        <div class="seg hb-adf" data-seg="hb-rqf"><button type="button" class="on" data-v="new">جدید</button><button type="button" data-v="closed">بسته‌شده</button></div>
+        <div class="hb-adlist" data-hb-rqlist></div>
       </div>
       <div class="hb-pets" data-hb-pets role="tablist" aria-label="پت‌ها"></div>
 
@@ -128,10 +133,30 @@
           <div class="hb-arow hb-tools"><button type="button" class="btn small ghost" data-hb-print>چاپ</button><button type="button" class="btn small ghost" data-hb-export>پشتیبان</button><label class="btn small ghost hb-import">بازیابی<input type="file" accept="application/json" data-hb-import hidden></label></div>
         </div>
       </div>
+      <div class="hb-reqrow"><button type="button" class="hb-lnk" data-hb-req>🐾 برای پت دیگری هم شناسنامه می‌خواهید؟ درخواست بدهید</button></div>
       <p class="hb-priv">🔒 اطلاعات این شناسنامه فقط با لینک اختصاصی شما دیده می‌شود. لینک را برای دیگران نفرستید.<small>تاریخ‌های پیشنهادی را دامپزشک تأیید می‌کند.</small></p>
       <div class="hb-installbox"><div class="hb-install" data-hb-install hidden><b>📲 شناسنامه را روی صفحهٔ اصلی گوشی‌تان بگذارید</b><span>برای دسترسی سریع، مثل یک برنامه</span><button type="button" class="btn small" data-hb-do-install>نصب روی گوشی</button></div>
       <p class="hb-ios" data-hb-ios hidden><b>📲 شناسنامه را روی صفحهٔ اصلی گوشی‌تان بگذارید</b><span>دکمهٔ اشتراک‌گذاری مرورگر را بزنید و «Add to Home Screen» را انتخاب کنید.</span></p></div>
       <div class="hb-stamp"><svg viewBox="14 -4 172 172" aria-hidden="true"><path d="M78 8h44v52h52v44h-52v52H78v-52H26V60h52z" fill="#1f5aa6"/></svg><span>دکتر نیلوفر مساوات · دامپزشک</span></div>
+
+      <div class="hb-qrm" data-hb-reqm hidden role="dialog" aria-modal="true" aria-label="درخواست شناسنامه">
+        <div class="hb-qrc hb-reqc">
+          <div data-hb-rqform>
+            <h2>درخواست شناسنامهٔ سلامت</h2>
+            <p>اطلاعات پت را بنویسید. دکتر شناسنامه را می‌سازد و لینک یا QR آن را برایتان می‌فرستد.</p>
+            <div class="fld"><label for="hb-rq-name">نام پت</label><input id="hb-rq-name" type="text" maxlength="40" autocomplete="off"></div>
+            <div class="fld"><label>گونه</label><div class="seg" data-seg="hb-rq-sp"><button type="button" class="on" data-v="سگ">سگ</button><button type="button" data-v="گربه">گربه</button><button type="button" data-v="پرنده">پرنده</button><button type="button" data-v="دیگر">دیگر</button></div></div>
+            <div class="fld"><label for="hb-rq-owner">نام صاحب پت</label><input id="hb-rq-owner" type="text" maxlength="60" autocomplete="off"></div>
+            <div class="fld"><label for="hb-rq-contact">شمارهٔ تماس <small>(فقط دکتر می‌بیند)</small></label><input id="hb-rq-contact" type="tel" inputmode="tel" dir="ltr" placeholder="09123456789" autocomplete="off"></div>
+            <div class="fld"><label for="hb-rq-birth">تاریخ تولد تقریبی <small>(اختیاری)</small></label><input id="hb-rq-birth" type="text" maxlength="30" placeholder="مثلاً ۲ سال پیش یا ۱۴۰۳/۵" autocomplete="off"></div>
+            <div class="fld"><label for="hb-rq-note">توضیح <small>(اختیاری، مثلاً پت دوم هستم)</small></label><input id="hb-rq-note" type="text" maxlength="200" autocomplete="off"></div>
+            <input type="text" id="hb-rq-hp" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;top:0;inset-inline-start:0;width:1px;height:1px;opacity:0;pointer-events:none">
+            <p class="ad-err" data-hb-rqerr hidden></p>
+            <div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-rq-send>ارسال درخواست</button><button type="button" class="btn small ghost" data-hb-rq-close>انصراف</button></div>
+          </div>
+          <div data-hb-rqok hidden></div>
+        </div>
+      </div>
 
       <div class="hb-qrm" data-hb-shm hidden role="dialog" aria-modal="true" aria-label="ارسال شناسنامه برای صاحب پت">
         <div class="hb-qrc hb-shc">
@@ -258,7 +283,7 @@
   </div>
 </div>
 <a class="fab" aria-label="نیاز به مشاوره؟" data-consult href="contact.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4V5z"/></svg><span><i class="l-long">نیاز به مشاوره؟</i><i class="l-short">مشاوره</i></span></a>
-<script src="app.js?v=202610242021"></script>
+<script src="app.js?v=202610242103"></script>
     </body>
     </html>
     

@@ -147,6 +147,7 @@ function health_(b) {
   // ---- واگذاری پت: ثبت درخواست و فهرست منتشرشده‌ها برای همه ----
   if (a === 'adoptSubmit') return adoptSubmit_(b);
   if (a === 'adoptList') return adoptList_();
+  if (a === 'petReqSubmit') return petReqSubmit_(b);
   // ---- دکتر ----
   if (!okToken_(b.t)) return { ok: false, err: 'auth' };
   var lock = LockService.getScriptLock(); lock.waitLock(15000);
@@ -162,6 +163,8 @@ function health_(b) {
     if (a === 'useCode') return verifyCode_(b, true);
     if (a === 'adoptAdmin') return adoptAdmin_();
     if (a === 'adoptSet') return adoptSet_(b);
+    if (a === 'petReqList') return petReqList_();
+    if (a === 'petReqSet') return petReqSet_(b);
   } finally { lock.releaseLock(); }
   return { ok: false, err: 'bad' };
 }
@@ -286,7 +289,7 @@ function doGet(e) {
   var p = (e && e.parameter) || {};
   if (p.action === 'spin') return json_(spin_(p));
   if (p.action === 'verify') return verifyPage_(p);
-  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v4-adopt' });
+  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v5-petreq' });
 }
 
 // ======================= چرخ هدیه =======================
@@ -401,5 +404,38 @@ function adoptSet_(b) {
   }
   if (b.note !== undefined) r.note = clip_(b.note, 300);
   r.updated = nowIso_(); writeRow_(sh, AD_COLS, r, r._row);
+  return { ok: true };
+}
+
+
+// ======================= درخواست شناسنامه (از طرف صاحب پت) =======================
+var PR = { maxPerHour: 30, statuses: ['new', 'done', 'rejected', 'deleted'] };
+var PR_COLS = ['id', 'created', 'status', 'name', 'species', 'owner', 'contact', 'birth', 'note', 'code', 'updated'];
+function petReqSubmit_(b) {
+  if (b.hp) return { ok: true, id: 'RQ-000000' };
+  var cache = CacheService.getScriptCache(), key = 'prn' + Utilities.formatDate(new Date(), CFG.tz, 'yyyyMMddHH'), n = Number(cache.get(key) || 0);
+  if (n >= PR.maxPerHour) return { ok: false, err: 'busy' };
+  var species = clip_(b.species, 12); if (['سگ', 'گربه', 'پرنده', 'دیگر'].indexOf(species) < 0) return { ok: false, err: 'bad' };
+  var name = clip_(b.name, 40).trim(), owner = clip_(b.owner, 60).trim(), contact = faDigits_(clip_(b.contact, 30)).replace(/[^0-9+]/g, '');
+  if (!name || !owner || contact.replace(/\D/g, '').length < 10) return { ok: false, err: 'bad' };
+  var o = { id: 'RQ-' + rnd_(6).toUpperCase(), created: nowIso_(), status: 'new', name: name, species: species, owner: owner, contact: contact,
+    birth: clip_(b.birth, 30), note: clip_(b.note, 200), code: '', updated: nowIso_() };
+  var lock = LockService.getScriptLock(); lock.waitLock(15000);
+  try { writeRow_(hsheet_('PetReqs', PR_COLS), PR_COLS, o); } finally { lock.releaseLock(); }
+  cache.put(key, String(n + 1), 3600);
+  return { ok: true, id: o.id };
+}
+function petReqList_() {
+  var rows = readAll_(hsheet_('PetReqs', PR_COLS), PR_COLS).filter(function (r) { return r.status !== 'deleted'; });
+  rows.sort(function (x, y) { return x.created < y.created ? 1 : -1; });
+  return { ok: true, items: rows.slice(0, 200).map(function (r) { return { id: r.id, created: r.created, status: r.status, name: r.name, species: r.species, owner: r.owner, contact: r.contact, birth: r.birth, note: r.note, code: r.code }; }) };
+}
+function petReqSet_(b) {
+  var sh = hsheet_('PetReqs', PR_COLS), rows = readAll_(sh, PR_COLS), r = null, i;
+  for (i = 0; i < rows.length; i++) if (rows[i].id === String(b.id || '')) { r = rows[i]; break; }
+  if (!r) return { ok: false, err: 'notfound' };
+  if (b.status !== undefined) { if (PR.statuses.indexOf(b.status) < 0) return { ok: false, err: 'bad' }; r.status = b.status; }
+  if (b.code !== undefined) r.code = clip_(b.code, 20);
+  r.updated = nowIso_(); writeRow_(sh, PR_COLS, r, r._row);
   return { ok: true };
 }

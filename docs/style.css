@@ -1841,3 +1841,13 @@ html.hb-dr .hb-drtabs { grid-template-columns: repeat(2, 1fr); }
 
 .ph .cap { position: absolute; inset-inline: 0; top: 0; padding: 9px 10px 24px; text-align: center; color: #fff; font-weight: 700; font-size: 15px; background: linear-gradient(to bottom, rgba(0,0,0,.5), transparent); pointer-events: none; }
 .fld[hidden] { display: none !important; }
+
+/* درخواست شناسنامه */
+.hb-reqrow { text-align: center; margin: 14px 0 0; } .hb-reqrow .hb-lnk { font-size: 13px; color: #1f5aa6; }
+html.hb-dr .hb-reqrow, body.hb-drpage .hb-reqrow, body.hb-drpage [data-hb-noacct] { display: none; }
+.hb-wa2 { margin-top: 8px; } .hb-reqc { max-height: 90vh; overflow: auto; text-align: start; } .hb-reqc h2, .hb-reqc > div > p { text-align: center; } .hb-reqc .fld { margin-bottom: 10px; }
+.hb-reqc input[type=text], .hb-reqc input[type=tel] { width: 100%; box-sizing: border-box; min-height: 44px; border: 1.5px solid var(--line); border-radius: 12px; padding: 8px 12px; font: inherit; }
+html.hb-dr [data-dview="req"] .hb-reqbox { display: block; }
+html.hb-dr [data-dview="req"] [data-hb-searchbox], html.hb-dr [data-dview="req"] [data-hb-verifybox], html.hb-dr [data-dview="req"] [data-hb-petform], html.hb-dr [data-dview="req"] [data-hb-main] { display: none !important; }
+html.hb-dr .hb-drtabs button:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.hb-adc .btn.hb-danger { background: #fff; color: #b3382c; border: 1px solid #e6b9b3; }

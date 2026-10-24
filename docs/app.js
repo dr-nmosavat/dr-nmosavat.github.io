@@ -1270,8 +1270,8 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function tokGet() { try { var o = JSON.parse(localStorage.getItem("dm_hb_tok") || "null"); return o && o.exp > Date.now() ? o.t : ""; } catch (e) { return ""; } }
   function tokSet(t) { try { if (t) localStorage.setItem("dm_hb_tok", JSON.stringify({ t: t, exp: (Number(String(t).split(".")[0]) || Date.now() + 3 * 86400000) - 60000 })); else localStorage.removeItem("dm_hb_tok"); } catch (e) {} }
   var DRPAGE = document.body.classList.contains("hb-drpage");
-  var drListRun = null;
-  function dview(v) { root.setAttribute("data-dview", v); [].forEach.call(root.querySelectorAll("[data-hb-dtab]"), function (b) { b.classList.toggle("on", b.getAttribute("data-hb-dtab") === v); }); if (v === "list" && isDr() && srvOn() && drListRun) drListRun(); if (v === "adopt" && isDr() && srvOn()) adLoad(); }
+  var drListRun = null, pendingReq = "";
+  function dview(v) { root.setAttribute("data-dview", v); [].forEach.call(root.querySelectorAll("[data-hb-dtab]"), function (b) { b.classList.toggle("on", b.getAttribute("data-hb-dtab") === v); }); if (v === "list" && isDr() && srvOn() && drListRun) drListRun(); if (v === "adopt" && isDr() && srvOn()) adLoad(); if (v === "req" && isDr() && srvOn()) rqLoad(); if (v !== "new" && v !== "pet") pendingReq = ""; }
   function drDrop(msg) { try { localStorage.removeItem("dm_hb_dr"); } catch (e) {} tokSet(""); setTimeout(function () { applyRole(); render(); toast(msg); }, 0); }
   function isDr() { if (!DRPAGE) return false; try { var f = localStorage.getItem("dm_hb_dr") === "1"; if (f && srvOn() && !tokGet()) { drDrop("مدت اعتبار ورود تمام شد؛ لطفاً دوباره وارد شوید."); return false; } return f; } catch (e) { return false; } }
   function srvOf(p) { return p && p.srv && p.srv.code ? p.srv : null; }
@@ -1620,7 +1620,8 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
         api({ a: "savePet", t: tokGet(), pet: pin }).then(function (j) {
           sbtn.disabled = false; if (!j.ok) { perr.textContent = errMsg(j.err); perr.hidden = false; return; }
           var recs = ep0 ? db.recs.filter(function (r) { return r.pet === ep0.id; }) : [], pp = upsertSrv(j.pet, recs, j.pet.key);
-          pp.photo = formPhoto || (ep0 && ep0.photo) || ""; db.cur = pp.id; editId = null; q("[data-hb-petform]").hidden = true; save(); render(); dview("pet");
+          pp.photo = formPhoto || (ep0 && ep0.photo) || ""; db.cur = pp.id; editId = null; q("[data-hb-petform]").hidden = true; save(); if (!ep0 && pendingReq) { api({ a: "petReqSet", t: tokGet(), id: pendingReq, status: "done", code: j.pet.code }); pendingReq = ""; }
+          render(); dview("pet");
         });
         return;
       }
@@ -1794,6 +1795,73 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   q("[data-hb-do-install]").addEventListener("click", function () { if (dp) { dp.prompt(); dp = null; q("[data-hb-install]").hidden = true; } });
   if (/iphone|ipad/i.test(navigator.userAgent) && !window.navigator.standalone) q("[data-hb-ios]").hidden = false;
   (function () { var w = q("[data-hb-wa]"); if (w && INFO.whatsapp) w.href = "https://wa.me/" + INFO.whatsapp + "?text=" + encodeURIComponent("سلام دکتر مساوات، می‌خواهم شناسنامهٔ سلامت پتم را بگیرم."); var vci = q("[data-hb-vcode]"); if (vci) vci.addEventListener("keydown", function (e) { if (e.key === "Enter") q("[data-hb-vgo]").click(); }); var pwi = q("[data-hb-drpw]"); if (pwi) pwi.addEventListener("keydown", function (e) { if (e.key === "Enter") q("[data-hb-dr-ok]").click(); }); })();
+  // ---- درخواست شناسنامه (صاحب پت) ----
+  (function () {
+    var m = q("[data-hb-reqm]"); if (!m) return;
+    var form = m.querySelector("[data-hb-rqform]"), okb = m.querySelector("[data-hb-rqok]"), err = m.querySelector("[data-hb-rqerr]");
+    function g(id) { return m.querySelector("#" + id).value.trim(); }
+    function seg() { var b = m.querySelector('[data-seg="hb-rq-sp"] .on'); return b ? b.getAttribute("data-v") : "سگ"; }
+    root.addEventListener("click", function (e) {
+      var t = e.target;
+      if (t.closest && t.closest("[data-hb-req]")) {
+        form.hidden = false; okb.hidden = true; err.hidden = true;
+        var cp = curPet(); m.querySelector("#hb-rq-owner").value = (cp && cp.owner) || m.querySelector("#hb-rq-owner").value;
+        m.hidden = false; document.documentElement.classList.add("gift-open"); return;
+      }
+      if (t.closest && (t.closest("[data-hb-rq-close]") || t === m)) { m.hidden = true; document.documentElement.classList.remove("gift-open"); return; }
+      if (t.closest && t.closest("[data-hb-rq-send]")) {
+        var btn = t.closest("[data-hb-rq-send]"), digits = g("hb-rq-contact").replace(/[۰-۹]/g, function (c) { return c.charCodeAt(0) - 1776; }).replace(/\D/g, "");
+        err.hidden = true;
+        if (!g("hb-rq-name")) { err.textContent = "نام پت را بنویسید."; err.hidden = false; return; }
+        if (!g("hb-rq-owner")) { err.textContent = "نام صاحب پت را بنویسید."; err.hidden = false; return; }
+        if (digits.length < 10) { err.textContent = "شمارهٔ تماس را کامل بنویسید."; err.hidden = false; return; }
+        btn.disabled = true; btn.textContent = "در حال ارسال…";
+        api({ a: "petReqSubmit", name: g("hb-rq-name"), species: seg(), owner: g("hb-rq-owner"), contact: g("hb-rq-contact"), birth: g("hb-rq-birth"), note: g("hb-rq-note"), hp: g("hb-rq-hp") }).then(function (j) {
+          btn.disabled = false; btn.textContent = "ارسال درخواست";
+          if (!j.ok) { err.textContent = j.err === "busy" ? "تعداد درخواست‌ها زیاد است؛ کمی بعد دوباره امتحان کنید." : j.err === "net" ? "اتصال با سرور برقرار نشد. اینترنت را بررسی کنید." : "ارسال انجام نشد؛ اطلاعات را بررسی کنید."; err.hidden = false; return; }
+          form.hidden = true; okb.hidden = false;
+          okb.innerHTML = "<h2>✅ درخواست شما ثبت شد</h2><p>کد پیگیری: <bdi dir=\"ltr\">" + esc(j.id) + "</bdi><br>دکتر شناسنامه را می‌سازد و لینک یا QR آن را برایتان می‌فرستد. اگر عجله دارید، همین الان در واتساپ هم خبر بدهید.</p>"
+            + '<div class="hb-btns hb-center"><a class="btn small primary" target="_blank" rel="noopener" href="https://wa.me/' + INFO.whatsapp + "?text=" + encodeURIComponent("سلام دکتر، درخواست شناسنامه برای «" + g("hb-rq-name") + "» ثبت کردم. کد: " + j.id) + '">خبر دادن در واتساپ</a><button type="button" class="btn small ghost" data-hb-rq-close>بستن</button></div>';
+        });
+      }
+    });
+  })();
+  // ---- درخواست‌های شناسنامه (دکتر) ----
+  var rqItems = [];
+  function rqLoad() {
+    var box = q("[data-hb-rqlist]"); box.innerHTML = '<p class="hb-qmsg">در حال بارگذاری…</p>';
+    api({ a: "petReqList", t: tokGet() }).then(function (j) { if (!j.ok) { box.innerHTML = '<p class="hb-qmsg">' + esc(errMsg(j.err)) + "</p>"; return; } rqItems = j.items; rqRender(); });
+  }
+  function rqRender() {
+    var b = q('[data-seg="hb-rqf"] .on'), f = b ? b.getAttribute("data-v") : "new", box = q("[data-hb-rqlist]");
+    var list = rqItems.filter(function (r) { return f === "closed" ? r.status !== "new" : r.status === "new"; });
+    box.innerHTML = list.length ? list.map(function (r) {
+      var btns = r.status === "new" ? '<button type="button" class="btn small primary" data-hb-rqissue data-id="' + esc(r.id) + '">✅ صدور شناسنامه</button><button type="button" class="btn small hb-danger" data-hb-rqact="rejected" data-id="' + esc(r.id) + '">رد</button>'
+        : '<button type="button" class="btn small" data-hb-rqact="new" data-id="' + esc(r.id) + '">بازگرداندن به جدید</button>';
+      return '<article class="hb-adc"><div class="hb-adh"><b>' + esc(r.name) + "</b><span>" + esc(r.species) + " · صاحب: " + esc(r.owner) + '</span><em class="ad-' + (r.status === "new" ? "pending" : r.status === "done" ? "done" : "rejected") + '">' + (r.status === "new" ? "جدید" : r.status === "done" ? "صادر شد" : "ردشده") + "</em></div>"
+        + (r.birth ? "<p>تولد: " + esc(r.birth) + "</p>" : "") + (r.note ? "<p>توضیح: " + esc(r.note) + "</p>" : "")
+        + '<p>📞 <a href="tel:' + esc(r.contact) + '" dir="ltr">' + esc(r.contact) + '</a> · کد <bdi dir="ltr">' + esc(r.id) + "</bdi>" + (r.code ? ' · شناسنامه <bdi dir="ltr">' + esc(r.code) + "</bdi>" : "") + "</p>"
+        + '<div class="hb-adb">' + btns + '<button type="button" class="btn small ghost hb-danger" data-hb-rqact="deleted" data-id="' + esc(r.id) + '">🗑 حذف</button></div></article>';
+    }).join("") : '<p class="hb-qmsg">موردی نیست.</p>';
+  }
+  root.addEventListener("click", function (e) {
+    var t = e.target, b2;
+    if (t.closest && t.closest('[data-seg="hb-rqf"] button')) { setTimeout(rqRender, 0); return; }
+    if ((b2 = t.closest && t.closest("[data-hb-rqact]"))) {
+      var st = b2.getAttribute("data-hb-rqact"), id = b2.getAttribute("data-id");
+      if (st === "deleted" && !confirm("این درخواست حذف شود؟")) return;
+      b2.disabled = true; api({ a: "petReqSet", t: tokGet(), id: id, status: st }).then(function (j) { if (!j.ok) { b2.disabled = false; return alert(errMsg(j.err)); } rqLoad(); });
+      return;
+    }
+    if ((b2 = t.closest && t.closest("[data-hb-rqissue]"))) {
+      var rid = b2.getAttribute("data-id"), it = rqItems.filter(function (x) { return x.id === rid; })[0]; if (!it) return;
+      dview("new"); petForm(null); pendingReq = rid;
+      q("#hb-pn").value = it.name; q("#hb-po").value = it.owner;
+      var sb = q('[data-seg="hbsp"] [data-v="' + it.species + '"]'); if (sb) sb.click();
+      toast("اطلاعات درخواست وارد شد؛ تاریخ تولد و رضایت را کامل کنید");
+      var pf = q("[data-hb-petform]"); if (pf && pf.scrollIntoView) pf.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  });
   // ---- واگذاری‌ها (دکتر) ----
   var adItems = [], adPhotoId = "";
   function adLabel(s) { return s === "pending" ? "در انتظار بررسی" : s === "approved" ? "منتشرشده" : s === "done" ? "واگذار شد 🎉" : "ردشده"; }
