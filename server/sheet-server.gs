@@ -31,6 +31,7 @@ function sheet_() {
     sh = ss.insertSheet(CFG.sheetName);
     sh.appendRow(['زمان', 'کد', 'جایزه', 'انقضا', 'دستگاه', 'استفاده شد؟', 'زمان استفاده']);
     sh.setFrozenRows(1);
+    look_(sh, LOOK.Spins);
   }
   return sh;
 }
@@ -70,6 +71,7 @@ function hsheet_(name, cols) {
   if (!sh) {
     sh = ss.insertSheet(name); sh.appendRow(cols); sh.setFrozenRows(1);
     sh.getRange(1, 1, sh.getMaxRows(), cols.length).setNumberFormat('@');   // متن ساده: تاریخ‌ها خودکار تبدیل نشوند
+    if (LOOK[name]) look_(sh, LOOK[name]);
   }
   return sh;
 }
@@ -289,7 +291,7 @@ function doGet(e) {
   var p = (e && e.parameter) || {};
   if (p.action === 'spin') return json_(spin_(p));
   if (p.action === 'verify') return verifyPage_(p);
-  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v5-petreq' });
+  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v6-look' });
 }
 
 // ======================= چرخ هدیه =======================
@@ -438,4 +440,68 @@ function petReqSet_(b) {
   if (b.code !== undefined) r.code = clip_(b.code, 20);
   r.updated = nowIso_(); writeRow_(sh, PR_COLS, r, r._row);
   return { ok: true };
+}
+
+
+// ======================= ظاهر جدول‌ها (رنگ، عنوان فارسی، عرض ستون‌ها) =======================
+// عنوان‌ها فقط برچسب‌اند؛ سرور ستون‌ها را با ترتیبشان می‌خواند، پس تغییر عنوان به داده‌ها آسیبی نمی‌زند.
+// ردیف اول را عوض نکنید و ستون‌ها را جابه‌جا نکنید.
+var lastLookError_ = '';
+var STATUS_COLORS = {
+  pending: ['#fdf1da', '#8a5a0d'], approved: ['#e2f4ea', '#12684a'], done: ['#e7eefb', '#1f5aa6'], rejected: ['#fde8e6', '#b3382c'],
+  'new': ['#fdf1da', '#8a5a0d']
+};
+var LOOK = {
+  Spins: { color: '#d97706', labels: ['زمان', 'کد', 'جایزه', 'انقضا', 'دستگاه', 'استفاده شد؟', 'زمان استفاده'], widths: [150, 120, 190, 110, 130, 100, 150], clip: [5] },
+  Pets: { color: '#1f5aa6', labels: ['کد پت', 'کلید لینک (محرمانه)', 'نام', 'نام انگلیسی', 'صاحب', 'سرپرست', 'گونه', 'نژاد', 'نژاد (انگلیسی)', 'تاریخ تولد', 'برنامهٔ واکسن (داده)', 'رضایت (۱=بله)', 'ساخته شد', 'ویرایش', 'حذف‌شده؟ (۱=بله)'],
+    widths: [90, 140, 110, 110, 130, 110, 80, 110, 120, 100, 120, 90, 150, 150, 90], clip: [2, 11], gray: [2, 11], del: 15 },
+  Records: { color: '#0f766e', labels: ['شناسه', 'کد پت', 'نوع', 'تاریخ', 'نام', 'برند', 'سریال', 'محل', 'توضیح', 'تکرار', 'روش', 'مدت', 'پایان', 'وزن', 'نوبت بعدی', 'بسته‌شده؟', 'ثبت دکتر؟', 'ساخته شد', 'ویرایش', 'حذف‌شده؟ (۱=بله)'],
+    widths: [110, 90, 130, 100, 150, 110, 110, 110, 140, 90, 90, 80, 100, 70, 100, 80, 80, 150, 150, 90], gray: [1], del: 20 },
+  Adoptions: { color: '#b36b00', labels: ['کد', 'زمان ثبت', 'وضعیت', 'گونه', 'نام', 'سن', 'جنس', 'عقیم', 'واکسن', 'رفتار', 'دلیل واگذاری', 'شهر', 'تلفن (محرمانه)', 'عکس (داده)', 'یادداشت', 'تاریخ تأیید', 'ویرایش'],
+    widths: [110, 150, 100, 80, 110, 90, 80, 80, 80, 220, 220, 130, 130, 70, 150, 100, 150], clip: [14], gray: [14], status: 3,
+    note: 'وضعیت: pending=در انتظار بررسی · approved=منتشرشده · done=واگذار شد · rejected=ردشده · deleted=حذف' },
+  PetReqs: { color: '#7c3aed', labels: ['کد درخواست', 'زمان ثبت', 'وضعیت', 'نام پت', 'گونه', 'صاحب', 'تلفن (محرمانه)', 'تولد', 'توضیح', 'کد شناسنامه', 'ویرایش'],
+    widths: [110, 150, 100, 110, 80, 140, 130, 110, 220, 110, 150], status: 3,
+    note: 'وضعیت: new=جدید · done=شناسنامه صادر شد · rejected=ردشده · deleted=حذف' }
+};
+function look_(sh, spec) {
+  try {
+    var n = spec.labels.length, rows = Math.max(sh.getMaxRows() - 1, 1), i;
+    try { sh.setRightToLeft(true); } catch (e0) {}
+    try { if (!sh.getBandings().length) sh.getRange(1, 1, Math.max(sh.getMaxRows(), 2), n).applyRowBanding(SpreadsheetApp.BandingTheme.LIGHT_GREY, true, false); } catch (e1) {}
+    var h = sh.getRange(1, 1, 1, n);
+    h.setValues([spec.labels]).setBackground(spec.color).setFontColor('#ffffff').setFontWeight('bold').setFontSize(11).setHorizontalAlignment('center').setVerticalAlignment('middle');
+    sh.setRowHeight(1, 36); sh.setFrozenRows(1);
+    for (i = 0; i < n; i++) sh.setColumnWidth(i + 1, spec.widths[i]);
+    var body = sh.getRange(2, 1, rows, n);
+    body.setVerticalAlignment('top').setHorizontalAlignment('right').setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP);
+    (spec.clip || []).forEach(function (c) { sh.getRange(2, c, rows, 1).setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP); });
+    (spec.gray || []).forEach(function (c) { sh.getRange(2, c, rows, 1).setFontColor('#9aa5b1'); });
+    var rules = [];
+    if (spec.status) {
+      var sr = sh.getRange(2, spec.status, rows, 1);
+      Object.keys(STATUS_COLORS).forEach(function (k) {
+        rules.push(SpreadsheetApp.newConditionalFormatRule().whenTextEqualTo(k).setBackground(STATUS_COLORS[k][0]).setFontColor(STATUS_COLORS[k][1]).setRanges([sr]).build());
+      });
+      try { sh.getRange(1, spec.status).setNote(spec.note || ''); } catch (e2) {}
+    }
+    if (spec.del) {
+      var col = String.fromCharCode(64 + spec.del);
+      rules.push(SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied('=$' + col + '2="1"').setFontColor('#b3382c').setBackground('#f8f0ef').setRanges([body]).build());
+    }
+    if (rules.length) sh.setConditionalFormatRules(rules);
+    lastLookError_ = '';
+  } catch (e) { lastLookError_ = String(e); }
+}
+// از منوی «🐾 سایت دکتر» (بالای شیت) یا از ویرایشگر اسکریپت اجرا کنید؛ ظاهر همهٔ جدول‌ها را به‌روز می‌کند
+function formatSheets() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet(), done = [];
+  Object.keys(LOOK).forEach(function (name) {
+    var sh = ss.getSheetByName(name);
+    if (sh) { look_(sh, LOOK[name]); done.push(name); }
+  });
+  return done;
+}
+function onOpen() {
+  try { SpreadsheetApp.getUi().createMenu('🐾 سایت دکتر').addItem('زیباسازی جدول‌ها', 'formatSheets').addToUi(); } catch (e) {}
 }
