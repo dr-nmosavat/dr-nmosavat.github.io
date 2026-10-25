@@ -63,7 +63,7 @@ var H = {
   ownerTypes: ['ضدانگل داخلی', 'ضدانگل خارجی (کک و کنه)', 'وزن', 'دارو', 'سایر'],   // صاحب پت می‌تواند ثبت کند
   allTypes: ["واکسن", "ضدانگل داخلی", "ضدانگل خارجی (کک و کنه)", "ویزیت", "وزن", "دارو", "عقیم‌سازی", "آزمایش", "سایر"]
 };
-var PET_COLS = ['code', 'key', 'name', 'en', 'owner', 'guardian', 'species', 'breed', 'breedEn', 'birth', 'plan', 'consent', 'created', 'updated', 'deleted'];
+var PET_COLS = ['code', 'key', 'name', 'en', 'owner', 'guardian', 'species', 'breed', 'breedEn', 'birth', 'plan', 'consent', 'created', 'updated', 'deleted', 'auth'];
 var REC_COLS = ['id', 'code', 'type', 'date', 'name', 'brand', 'serial', 'place', 'extra', 'freq', 'how', 'dur', 'end', 'weight', 'next', 'closed', 'dr', 'created', 'updated', 'deleted', 'src'];
 
 function hsheet_(name, cols) {
@@ -81,11 +81,17 @@ function str_(v) {
 }
 function readAll_(sh, cols) {
   var v = sh.getDataRange().getValues(), out = [], i, j;
-  for (i = 1; i < v.length; i++) { var o = { _row: i + 1 }; for (j = 0; j < cols.length; j++) o[cols[j]] = str_(v[i][j]); out.push(o); }
+  for (i = 1; i < v.length; i++) {
+    var o = { _row: i + 1 }; for (j = 0; j < cols.length; j++) o[cols[j]] = str_(v[i][j]);
+    if (cols === AD_COLS || cols === PR_COLS) o.status = normStatus_(o.status);   // وضعیت ممکن است با آیکون و فارسی نوشته شده باشد
+    out.push(o);
+  }
   return out;
 }
 function writeRow_(sh, cols, o, row) {
   var arr = cols.map(function (c) { return o[c] === undefined || o[c] === null ? '' : String(o[c]); });
+  var si = cols === AD_COLS || cols === PR_COLS ? cols.indexOf('status') : -1;
+  if (si > -1) arr[si] = statusLabel_(cols === AD_COLS ? AD_LABEL : PR_LABEL, o.status);
   if (row) sh.getRange(row, 1, 1, cols.length).setValues([arr]); else sh.appendRow(arr);
 }
 function clip_(v, n) { return String(v === undefined || v === null ? '' : v).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '').slice(0, n || 100); }
@@ -206,7 +212,7 @@ function savePet_(b) {
   var o = cur || { code: newCode_(all), key: rnd_(14), created: nowIso_(), deleted: '' };
   o.name = name; o.en = clip_(pin.en, 30); o.owner = clip_(pin.owner, 40); o.guardian = clip_(pin.guardian, 40); o.species = species;
   o.breed = clip_(pin.breed, 40); o.breedEn = clip_(pin.breedEn, 40); o.birth = date_(pin.birth); o.plan = JSON.stringify(plan);
-  o.consent = pin.consent ? '1' : (cur ? cur.consent : ''); o.updated = nowIso_();
+  o.consent = pin.consent ? '1' : (cur ? cur.consent : ''); o.updated = nowIso_(); o.auth = authCode_(o.code);
   writeRow_(sh, PET_COLS, o, cur ? cur._row : 0);
   return { ok: true, pet: petOut_(o, true) };
 }
@@ -293,7 +299,7 @@ function doGet(e) {
   var p = (e && e.parameter) || {};
   if (p.action === 'spin') return json_(spin_(p));
   if (p.action === 'verify') return verifyPage_(p);
-  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v9-verify' });
+  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v10-icons' });
 }
 
 // ======================= چرخ هدیه =======================
@@ -457,16 +463,16 @@ var STATUS_COLORS = {
 };
 var LOOK = {
   Spins: { color: '#d97706', labels: ['زمان', 'کد', 'جایزه', 'انقضا', 'دستگاه', 'استفاده شد؟', 'زمان استفاده'], widths: [150, 120, 190, 110, 130, 100, 150], clip: [5] },
-  Pets: { color: '#1f5aa6', labels: ['کد پت', 'کلید لینک (محرمانه)', 'نام', 'نام انگلیسی', 'صاحب', 'سرپرست', 'گونه', 'نژاد', 'نژاد (انگلیسی)', 'تاریخ تولد', 'برنامهٔ واکسن (داده)', 'رضایت (۱=بله)', 'ساخته شد', 'ویرایش', 'حذف‌شده؟ (۱=بله)'],
-    widths: [90, 140, 110, 110, 130, 110, 80, 110, 120, 100, 120, 90, 150, 150, 90], clip: [2, 11], gray: [2, 11], del: 15 },
+  Pets: { color: '#1f5aa6', labels: ['شمارهٔ شناسنامه (کد پت)', 'کلید لینک (محرمانه)', 'نام', 'نام انگلیسی', 'صاحب', 'سرپرست', 'گونه', 'نژاد', 'نژاد (انگلیسی)', 'تاریخ تولد', 'برنامهٔ واکسن (داده)', 'رضایت (۱=بله)', 'ساخته شد', 'ویرایش', 'حذف‌شده؟ (۱=بله)', 'کد اصالت'],
+    widths: [130, 140, 110, 110, 130, 110, 80, 110, 120, 100, 120, 90, 150, 150, 90, 100], clip: [2, 11], gray: [2, 11], green: [1, 16], del: 15 },
   Records: { color: '#0f766e', labels: ['شناسه', 'کد پت', 'نوع', 'تاریخ', 'نام', 'برند', 'سریال', 'محل', 'توضیح', 'تکرار', 'روش', 'مدت', 'پایان', 'وزن', 'نوبت بعدی', 'بسته‌شده؟', 'ثبت دکتر؟', 'ساخته شد', 'ویرایش', 'حذف‌شده؟ (۱=بله)', 'منبع (old=سابقهٔ قبلی)'],
     widths: [110, 90, 130, 100, 150, 110, 110, 110, 140, 90, 90, 80, 100, 70, 100, 80, 80, 150, 150, 90, 110], gray: [1], del: 20 },
   Adoptions: { color: '#b36b00', labels: ['کد', 'زمان ثبت', 'وضعیت', 'گونه', 'نام', 'سن', 'جنس', 'عقیم', 'واکسن', 'رفتار', 'دلیل واگذاری', 'شهر', 'تلفن (محرمانه)', 'عکس (داده)', 'یادداشت', 'تاریخ تأیید', 'ویرایش'],
-    widths: [110, 150, 100, 80, 110, 90, 80, 80, 80, 220, 220, 130, 130, 70, 150, 100, 150], clip: [14], gray: [14], status: 3, statusList: ['pending', 'approved', 'done', 'rejected', 'deleted'],
-    note: 'وضعیت: pending=در انتظار بررسی · approved=منتشرشده · done=واگذار شد · rejected=ردشده · deleted=حذف' },
+    widths: [110, 150, 100, 80, 110, 90, 80, 80, 80, 220, 220, 130, 130, 70, 150, 100, 150], clip: [14], gray: [14], status: 3, statusList: 'AD',
+    note: 'وضعیت را از لیست کشویی انتخاب کنید. ⏳ pending=در انتظار بررسی · ✅ approved=منتشرشده در سایت · 🎉 done=واگذار شد · ❌ rejected=رد شد · 🗑 deleted=حذف' },
   PetReqs: { color: '#7c3aed', labels: ['کد درخواست', 'زمان ثبت', 'وضعیت', 'نام پت', 'گونه', 'صاحب', 'تلفن (محرمانه)', 'تولد', 'توضیح', 'کد شناسنامه', 'ویرایش'],
-    widths: [110, 150, 100, 110, 80, 140, 130, 110, 220, 110, 150], status: 3, statusList: ['new', 'done', 'rejected', 'deleted'],
-    note: 'وضعیت: new=جدید · done=شناسنامه صادر شد · rejected=ردشده · deleted=حذف' }
+    widths: [110, 150, 100, 110, 80, 140, 130, 110, 220, 110, 150], status: 3, statusList: 'PR',
+    note: 'وضعیت را از لیست کشویی انتخاب کنید. 🆕 new=جدید · ✅ done=شناسنامه صادر شد · ❌ rejected=رد شد · 🗑 deleted=حذف' }
 };
 function look_(sh, spec) {
   try {
@@ -478,17 +484,18 @@ function look_(sh, spec) {
     sh.setRowHeight(1, 36); sh.setFrozenRows(1);
     for (i = 0; i < n; i++) sh.setColumnWidth(i + 1, spec.widths[i]);
     var body = sh.getRange(2, 1, rows, n);
-    body.setVerticalAlignment('top').setHorizontalAlignment('right').setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP);
+    body.setVerticalAlignment('middle').setHorizontalAlignment('center').setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP);
     (spec.clip || []).forEach(function (c) { sh.getRange(2, c, rows, 1).setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP); });
     (spec.gray || []).forEach(function (c) { sh.getRange(2, c, rows, 1).setFontColor('#9aa5b1'); });
+    (spec.green || []).forEach(function (c) { sh.getRange(2, c, rows, 1).setFontColor('#12684a').setFontWeight('bold'); });
     var rules = [];
     if (spec.status) {
       var sr = sh.getRange(2, spec.status, rows, 1);
       Object.keys(STATUS_COLORS).forEach(function (k) {
-        rules.push(SpreadsheetApp.newConditionalFormatRule().whenTextEqualTo(k).setBackground(STATUS_COLORS[k][0]).setFontColor(STATUS_COLORS[k][1]).setRanges([sr]).build());
+        rules.push(SpreadsheetApp.newConditionalFormatRule().whenTextContains(k).setBackground(STATUS_COLORS[k][0]).setFontColor(STATUS_COLORS[k][1]).setRanges([sr]).build());
       });
       try { sh.getRange(1, spec.status).setNote(spec.note || ''); } catch (e2) {}
-      try { if (spec.statusList) sr.setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(spec.statusList, true).setAllowInvalid(false).build()); } catch (e3) {}
+      try { if (spec.statusList) sr.setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(labelsOf_(spec.statusList === 'AD' ? AD_LABEL : PR_LABEL), true).setAllowInvalid(true).build()); } catch (e3) {}
     }
     if (spec.del) {
       var col = String.fromCharCode(64 + spec.del);
@@ -502,6 +509,7 @@ function look_(sh, spec) {
 // از منوی «🐾 سایت دکتر» (بالای شیت) یا از ویرایشگر اسکریپت اجرا کنید؛ ظاهر همهٔ جدول‌ها را به‌روز می‌کند
 function formatSheets() {
   var ss = SpreadsheetApp.getActiveSpreadsheet(), done = [];
+  try { migrate_(ss); } catch (em) { lastLookError_ = 'migrate: ' + String(em); }
   Object.keys(LOOK).forEach(function (name) {
     var sh = ss.getSheetByName(name);
     if (sh) { look_(sh, LOOK[name]); done.push(name); }
@@ -586,7 +594,7 @@ function goSheet_(name, status, emptyMsg) {
   ss.setActiveSheet(sh);
   try {
     var f = sh.getFilter() || sh.getDataRange().createFilter();
-    f.setColumnFilterCriteria(3, SpreadsheetApp.newFilterCriteria().whenTextEqualTo(status).build());
+    f.setColumnFilterCriteria(3, SpreadsheetApp.newFilterCriteria().whenTextContains(status).build());
   } catch (e) {}
   return name;
 }
@@ -643,11 +651,11 @@ function backupNow() {
 // ======================= برگهٔ راهنما =======================
 var GUIDE = [
   ['📖 راهنمای شیت سایت دکتر نیلوفر مساوات', 'این شیت پایگاه‌دادهٔ سایت است. بیشتر چیزها خودکار پر می‌شوند و لازم نیست دستی ویرایش کنید. کارهای روزانه را از صفحهٔ دکتر در سایت (drniloofarmosavat.ir/dr) انجام دهید و این شیت را بیشتر برای دیدن و پشتیبان‌گیری به کار ببرید.'],
-  ['⚠️ سه قانون مهم', '۱) ردیف اول (عنوان ستون‌ها) و ترتیب ستون‌ها را عوض نکنید.\n۲) ستون‌های خاکستری (کلید، داده‌های فنی) را دستی ویرایش نکنید.\n۳) برای حذف یک ردیف، آن را از صفحهٔ دکتر در سایت حذف کنید؛ ردیف را پاک نکنید.'],
-  ['Pets — شناسنامه‌ها', 'هر ردیف یک پت است. «کد پت» مثل NM-1234 است. «کلید لینک» محرمانه است و مثل رمز عمل می‌کند؛ به کسی نشان ندهید. «رضایت» یعنی صاحب پت اجازهٔ ذخیرهٔ اطلاعات را داده است. ردیف قرمز کم‌رنگ یعنی حذف‌شده.'],
+  ['⚠️ چهار قانون مهم', '۱) ردیف اول (عنوان ستون‌ها) و ترتیب ستون‌ها را عوض نکنید.\n۲) ستون‌های خاکستری (کلید، داده‌های فنی) را دستی ویرایش نکنید.\n۳) برای حذف یک ردیف، آن را از صفحهٔ دکتر در سایت حذف کنید؛ ردیف را پاک نکنید.\n۴) مقدار SECRET را در Script properties عوض نکنید؛ با عوض‌شدنش همهٔ کدهای اصالتِ چاپ‌شدهٔ قبلی بی‌اعتبار می‌شود.'],
+  ['Pets — شناسنامه‌ها', 'هر ردیف یک پت است. ستون اول («شمارهٔ شناسنامه») همان کد پت است، مثل NM-1234، و ستون آخر (سبز) «کد اصالت» شش‌نویسه‌ای است که روی شناسنامه چاپ می‌شود. «کلید لینک» محرمانه است و مثل رمز عمل می‌کند؛ به کسی نشان ندهید. «رضایت» یعنی صاحب پت اجازهٔ ذخیرهٔ اطلاعات را داده است. ردیف قرمز کم‌رنگ یعنی حذف‌شده.'],
   ['Records — ثبت‌های دفترچه', 'واکسن، ضدانگل، ویزیت، وزن و بقیه. هر ردیف به یک «کد پت» وصل است. «نوبت بعدی» یادآوری را می‌سازد. «ثبت دکتر؟» اگر ۱ باشد، فقط دکتر می‌تواند آن را عوض کند. «منبع» اگر old باشد، یعنی سابقهٔ قبلی است (از گفتهٔ صاحب یا دفترچهٔ کاغذی) و در سایت با برچسب «سابقهٔ قبلی» دیده می‌شود.'],
-  ['PetReqs — درخواست‌های شناسنامه', 'درخواستی که صاحب پت از سایت فرستاده. وضعیت: new = جدید · done = شناسنامه صادر شد · rejected = رد شده. صدور از صفحهٔ دکتر ← تب «📝 درخواست‌ها» انجام می‌شود. شمارهٔ تماس فقط دکتر می‌بیند.'],
-  ['Adoptions — واگذاری‌ها', 'درخواست واگذاری پت. وضعیت: pending = در انتظار بررسی · approved = منتشرشده در سایت · done = واگذار شد · rejected = رد شد. تأیید و عکس از صفحهٔ دکتر ← تب «🏡 واگذاری» انجام می‌شود. آگهی ۶۰ روز بعد از تأیید از سایت پنهان می‌شود.'],
+  ['PetReqs — درخواست‌های شناسنامه', 'درخواستی که صاحب پت از سایت فرستاده. وضعیت را می‌شود از لیست کشویی عوض کرد: 🆕 جدید · ✅ شناسنامه صادر شد · ❌ رد شد. صدور از صفحهٔ دکتر ← تب «📝 درخواست‌ها» انجام می‌شود. شمارهٔ تماس فقط دکتر می‌بیند.'],
+  ['Adoptions — واگذاری‌ها', 'درخواست واگذاری پت. وضعیت را می‌شود از لیست کشویی عوض کرد: ⏳ در انتظار بررسی · ✅ منتشرشده در سایت · 🎉 واگذار شد · ❌ رد شد. تأیید و عکس از صفحهٔ دکتر ← تب «🏡 واگذاری» انجام می‌شود. آگهی ۶۰ روز بعد از تأیید از سایت پنهان می‌شود.'],
   ['Spins — چرخ هدیه', 'نتیجهٔ چرخش‌ها و کد جایزه‌ها (مثل DM-1234-ABCD). برای استفاده از یک کد، از صفحهٔ دکتر ← تب «🔎 بررسی کد» استفاده کنید.'],
   ['🔎 اصالت شناسنامه', 'روی هر شناسنامه یک «کد اصالت» شش‌نویسه (مثل A7K2Q9) چاپ می‌شود. برای راستی‌آزمایی: منوی «🐾 سایت دکتر ← بررسی اصالت یک شناسنامه»، صفحهٔ دکتر ← تب «🔎 بررسی کد»، یا صفحهٔ عمومی drniloofarmosavat.ir/verify.html (برای مراجعین و دیگران؛ فقط نام و گونهٔ پت را نشان می‌دهد). کد فقط با رمز سرور ساخته می‌شود و نمی‌شود برایش کد جعلی ساخت. اگر نام پت با نام روی شناسنامه نخواند، شناسنامه جعلی است.'],
   ['🎨 رنگ‌ها', 'سبز = منتشرشده · زرد = در انتظار/جدید · آبی = انجام‌شده · قرمز = ردشده یا حذف‌شده.'],
@@ -710,4 +718,31 @@ function showDrPass() {
   var pw = prop_('DR_PASS');
   if (!pw) return say_('🔑 رمز ورود دکتر', 'هنوز رمزی تعیین نشده است. در Project Settings ← Script properties مقدار DR_PASS را بسازید.');
   return say_('🔑 رمز ورود دکتر', 'آدرس: ' + SITE + '/dr\nرمز: ' + pw + '\n\nبرای عوض‌کردن رمز: Project Settings ← Script properties ← DR_PASS');
+}
+
+
+// ======================= وضعیت با آیکون و فارسی =======================
+// داخل سلول مثلاً «⏳ در انتظار · pending» نوشته می‌شود؛ سرور فقط کلمهٔ انگلیسی را می‌شناسد، پس آیکون و فارسی آزادند.
+var AD_LABEL = { pending: '⏳ در انتظار · pending', approved: '✅ منتشرشده · approved', done: '🎉 واگذار شد · done', rejected: '❌ رد شد · rejected', deleted: '🗑 حذف‌شده · deleted' };
+var PR_LABEL = { 'new': '🆕 جدید · new', done: '✅ شناسنامه صادر شد · done', rejected: '❌ رد شد · rejected', deleted: '🗑 حذف‌شده · deleted' };
+function normStatus_(v) { var m = /(pending|approved|done|rejected|deleted|new)/.exec(String(v || '')); return m ? m[1] : String(v || ''); }
+function statusLabel_(map, st) { return map[st] || String(st || ''); }
+function labelsOf_(map) { return Object.keys(map).map(function (k) { return map[k]; }); }
+// یک‌بار اجرا می‌شود (در زیباسازی): وضعیت‌های قدیمی را به شکل جدید درمی‌آورد و برای پت‌های قدیمی کد اصالت را پر می‌کند
+function migrate_(ss) {
+  var sh = ss.getSheetByName('Adoptions'), i, v, n;
+  [['Adoptions', AD_COLS, AD_LABEL], ['PetReqs', PR_COLS, PR_LABEL]].forEach(function (x) {
+    var s2 = ss.getSheetByName(x[0]); if (!s2) return;
+    n = s2.getLastRow() - 1; if (n < 1) return;
+    var rng = s2.getRange(2, 3, n, 1); v = rng.getValues();
+    rng.setValues(v.map(function (r) { return [statusLabel_(x[2], normStatus_(r[0]))]; }));
+  });
+  var ps = ss.getSheetByName('Pets');
+  if (ps) {
+    n = ps.getLastRow() - 1;
+    if (n >= 1) {
+      var codes = ps.getRange(2, 1, n, 1).getValues(), crng = ps.getRange(2, 16, n, 1);
+      crng.setValues(codes.map(function (r) { return [r[0] ? authCode_(r[0]) : '']; }));
+    }
+  }
 }
