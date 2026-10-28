@@ -1056,8 +1056,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
 (function () {
   var root = document.querySelector("[data-hb]"); if (!root) return;
   // دکتر و مراجع حافظهٔ جدا دارند: پت‌هایی که دکتر در این مرورگر باز می‌کند روی صفحهٔ عمومی دفترچه دیده نمی‌شود
-  var KEY = document.body.classList.contains("hb-drpage") ? "dm_hb_drdb" : "dm_hb";
-  if (KEY === "dm_hb_drdb") { try { if (!localStorage.getItem(KEY) && localStorage.getItem("dm_hb")) { localStorage.setItem(KEY, localStorage.getItem("dm_hb")); localStorage.removeItem("dm_hb"); } } catch (e) {} }
+  var ISDRP = document.body.classList.contains("hb-drpage"), KEY = ISDRP ? "dm_hb_drdb" : "dm_hb", TMPKEY = "dm_hb_tmp";
   var MON = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"];
   var PLACES = ["مرکز دامپزشکی ونک (دکتر مساوات)", "کلینیک ژیوان، تجریش", "کلینیک ژیوان، هروی", "تهران پت کلینیک، تهرانپارس", "ویزیت در منزل"];
   var DOG_VT = ["۴گانه سگ", "۵گانه سگ", "۶گانه سگ", "۷گانه سگ", "۸گانه سگ", "۹گانه سگ", "۱۰گانه سگ", "هاری", "بوردتلا (سرفهٔ کنل)", "لپتوسپیروز", "کرونا ویروس سگ"];
@@ -1109,9 +1108,31 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   var curType = "واکسن", curTab = 0, xTouched = false, editId = null, showAll = false, asc = false, JD = {};
   function q(s) { return root.querySelector(s); }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
-  function load() { try { var d = JSON.parse(localStorage.getItem(KEY) || "null"); if (d && d.pets && d.recs) return d; } catch (e) {} return { pets: [], recs: [], cur: null }; }
+  // حریم خصوصی: صفحهٔ دکتر فقط در sessionStorage (تا بستن تب) نگه می‌دارد؛ در صفحهٔ عمومی، پت‌های «نمایش موقت» هم فقط تا بستن تب می‌مانند
+  function readStore(st, key) { try { var d = JSON.parse(st.getItem(key) || "null"); if (d && d.pets && d.recs) return d; } catch (e) {} return null; }
+  function load() {
+    if (ISDRP) {
+      var s = readStore(sessionStorage, KEY);
+      if (!s) {   // بار اول بعد از این به‌روزرسانی: کپی‌های قدیمی پاک می‌شوند و فقط پت‌های ذخیره‌نشده روی سرور نگه داشته می‌شوند
+        var lg = readStore(localStorage, "dm_hb_drdb") || readStore(localStorage, "dm_hb"); s = { pets: [], recs: [], cur: null, mem: {} };
+        if (lg) { s.pets = lg.pets.filter(function (p) { return !(p.srv && p.srv.code); }); s.recs = lg.recs.filter(function (r) { return s.pets.some(function (p) { return p.id === r.pet; }); }); s.mem = lg.mem || {}; s.cur = s.pets[0] ? s.pets[0].id : null; }
+        try { localStorage.removeItem("dm_hb_drdb"); localStorage.removeItem("dm_hb"); } catch (e) {}
+      }
+      s.pets.forEach(function (p) { p.tmp = 1; }); return s;
+    }
+    var d = readStore(localStorage, KEY) || { pets: [], recs: [], cur: null }, t = readStore(sessionStorage, TMPKEY);
+    if (t) { t.pets.forEach(function (p) { p.tmp = 1; d.pets.push(p); }); d.recs = d.recs.concat(t.recs); if (!d.cur) d.cur = t.cur; }
+    return d;
+  }
   var db = load();
-  function save() { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) { alert("ذخیره‌سازی در این مرورگر ممکن نیست."); } }
+  function save() {
+    try {
+      if (ISDRP) { sessionStorage.setItem(KEY, JSON.stringify(db)); return; }
+      var tids = {}; db.pets.forEach(function (p) { if (p.tmp) tids[p.id] = 1; });
+      localStorage.setItem(KEY, JSON.stringify({ pets: db.pets.filter(function (p) { return !p.tmp; }), recs: db.recs.filter(function (r) { return !tids[r.pet]; }), cur: tids[db.cur] ? null : db.cur, mem: db.mem }));
+      sessionStorage.setItem(TMPKEY, JSON.stringify({ pets: db.pets.filter(function (p) { return p.tmp; }), recs: db.recs.filter(function (r) { return tids[r.pet]; }), cur: tids[db.cur] ? db.cur : null }));
+    } catch (e) { alert("ذخیره‌سازی در این مرورگر ممکن نیست."); }
+  }
   function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
   function ymd(d) { var p = function (n) { return (n < 10 ? "0" : "") + n; }; return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()); }
   function utc(s) { var a = s.split("-"); return Date.UTC(+a[0], +a[1] - 1, +a[2], 12); }
@@ -1240,7 +1261,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     var cp = curPet(); db.cur = cp.id;
     pets.innerHTML = db.pets.map(function (p) { return '<button type="button" class="chip' + (p.id === cp.id ? " on" : "") + '" data-hb-pet="' + p.id + '">' + avatar(p, "hb-mini") + " " + esc(p.name) + "</button>"; }).join("") + (srvOn() && !isDr() ? "" : '<button type="button" class="chip" data-hb-newpet>＋ پت جدید</button>');
     main.hidden = !pf.hidden; if (!pf.hidden) return;
-    renderCover(cp);
+    renderCover(cp); var tn = q("[data-hb-tmpnote]"); if (tn) tn.hidden = !(cp.tmp && !ISDRP);
     // کارت برنامهٔ واکسن
     var pl = q("[data-hb-plan]"), young = cp.birth && (cp.species === "سگ" || cp.species === "گربه") && -days(cp.birth) < 400, hasPlan = (cp.plan || []).length;
     if (young && !hasPlan) pl.innerHTML = '<div class="hb-plan-c"><b>برنامهٔ واکسن ' + (cp.species === "سگ" ? "توله‌سگ" : "بچه‌گربه") + "</b><p>با زدن دکمهٔ زیر، تاریخ نوبت‌های واکسن و کرم‌کشی بر اساس تاریخ تولد حساب می‌شود و به «یادآوری‌ها» اضافه می‌شود. تاریخ‌ها تقریبی‌اند و طبق نظر دامپزشک تنظیم کنید.</p><button type=\"button\" class=\"btn small primary\" data-hb-mkplan>📅 ساخت برنامهٔ واکسن و کرم‌کشی</button><details class=\"hb-det\"><summary>برنامه شامل چه چیزی است؟</summary><p>واکسن در هفتهٔ ۸، ۱۲ و ۱۶ (" + (cp.species === "سگ" ? "چندگانه سگ" : "سه‌گانه گربه") + ")، هاری در هفتهٔ ۱۶ و یادآور سالانه؛ ضدانگل داخلی در هفته‌های ۲، ۴، ۶، ۸، ۱۲، ۱۶، ۲۰ و ۲۴. بعد از ساخت، هر نوبت با «انجام شد» در دفترچه ثبت می‌شود و می‌توانید آن را به تقویم گوشی اضافه کنید. هر زمان خواستید «حذف برنامه» را بزنید.</p></details></div>";
@@ -1606,9 +1627,10 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if ((b = t.closest("[data-hb-dtab]"))) { var dv = b.getAttribute("data-hb-dtab"); dview(dv); if (dv === "new") { petForm(null); } else q("[data-hb-petform]").hidden = true; return; }
     if (t.closest("[data-hb-back]")) { q("[data-hb-petform]").hidden = true; dview("list"); return; }
     if ((b = t.closest("[data-hb-lopen]"))) { db.cur = b.getAttribute("data-hb-lopen"); q("[data-hb-petform]").hidden = true; save(); render(); dview("pet"); return; }
+    if (t.closest("[data-hb-keep]")) { var kp = curPet(); if (kp) { delete kp.tmp; save(); render(); toast("روی این دستگاه ذخیره شد"); } return; }
     if (t.closest("[data-hb-wipe]")) {
       if (!confirm("همهٔ شناسنامه‌هایی که روی این دستگاه ذخیره شده پاک شود؟ (روی سرور چیزی پاک نمی‌شود و با لینک دوباره می‌توانید اضافه کنید.)")) return;
-      db.pets = []; db.recs = []; db.cur = null; db.mem = {}; save(); q("[data-hb-petform]").hidden = true; render(); toast("پاک شد"); return;
+      db.pets = []; db.recs = []; db.cur = null; db.mem = {}; save(); try { sessionStorage.removeItem(TMPKEY); } catch (e) {} q("[data-hb-petform]").hidden = true; render(); toast("پاک شد"); return;
     }
     if (t.closest("[data-hb-newpet]")) { petForm(null); var pf0 = q("[data-hb-petform]"); if (pf0 && pf0.scrollIntoView) pf0.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
     if (t.closest("[data-hb-eye]")) { var pw0 = q("[data-hb-drpw]"); pw0.type = pw0.type === "password" ? "text" : "password"; return; }
@@ -1704,13 +1726,15 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     }
     if (t.closest("[data-hb-sh-wa]")) { if (!shareLink) return; var num = waNum(q("[data-hb-shnum]").value); window.open("https://wa.me/" + num + "?text=" + encodeURIComponent(shareMsg()), "_blank", "noopener"); return; }
     if (t.closest("[data-hb-imp-no]") || t === q("[data-hb-impm]")) { pendingImport = null; closeModal("[data-hb-impm]"); try { history.replaceState(null, "", location.pathname); } catch (x) {} return; }
-    if (t.closest("[data-hb-imp-yes]")) {
+    if (t.closest("[data-hb-imp-yes]") || t.closest("[data-hb-imp-tmp]")) {
+      var tmpMode = !!t.closest("[data-hb-imp-tmp]");
       if (pendingImport && pendingImport.live) {
-        var lv = pendingImport.live, pl0 = upsertSrv(lv.pet, lv.recs, lv.key); db.cur = pl0.id; q("[data-hb-petform]").hidden = true; save(); pendingImport = null; closeModal("[data-hb-impm]"); try { history.replaceState(null, "", location.pathname); } catch (x) {} return render();
+        var lv = pendingImport.live, pl0 = upsertSrv(lv.pet, lv.recs, lv.key); db.cur = pl0.id; if (tmpMode) pl0.tmp = 1; else delete pl0.tmp; q("[data-hb-petform]").hidden = true; save(); pendingImport = null; closeModal("[data-hb-impm]"); try { history.replaceState(null, "", location.pathname); } catch (x) {} return render();
       }
       if (!pendingImport) return; var pi = pendingImport, ex = db.pets.filter(function (p) { return p.id === pi.pet.id; })[0];
       if (ex && !confirm("این پت قبلاً در دفترچهٔ شما هست. با اطلاعات جدید به‌روز شود؟")) return;
       if (ex) { pi.pet.photo = ex.photo || ""; db.pets = db.pets.map(function (p) { return p.id === pi.pet.id ? pi.pet : p; }); db.recs = db.recs.filter(function (r) { return r.pet !== pi.pet.id; }); } else db.pets.push(pi.pet);
+      if (tmpMode) pi.pet.tmp = 1; else delete pi.pet.tmp;
       db.recs = db.recs.concat(pi.recs); db.cur = pi.pet.id; q("[data-hb-petform]").hidden = true; save(); pendingImport = null; closeModal("[data-hb-impm]"); try { history.replaceState(null, "", location.pathname); } catch (x) {} return render();
     }
     if (t.closest("[data-hb-qr]")) { var cq = curPet(); q("[data-hb-qrbox]").innerHTML = qrSvg(qrText(cq)); q("[data-hb-qrm]").hidden = false; document.documentElement.classList.add("gift-open"); return; }
