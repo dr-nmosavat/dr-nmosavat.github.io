@@ -1594,6 +1594,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function closeModal(sel) { q(sel).hidden = true; document.documentElement.classList.remove("gift-open"); }
   var pendingImport = null;
   function checkImport() {
+    if (location.hash === "#nolink") { try { history.replaceState(null, "", location.pathname); } catch (x) {} alert("این لینک ناقص باز شد: بخش آخر لینک (که کد شناسنامه در آن است) نرسیده است. بعضی برنامه‌های اسکن QR یا مرورگرهای داخل اپ آن را حذف می‌کنند. QR را با دوربین اصلی گوشی اسکن کنید، یا «فقط لینک» را از دکتر بگیرید و در مرورگر (سافاری یا کروم) باز کنید."); return; }
     var ml = /^#p=([A-Za-z0-9\-]{3,20})\.([A-Za-z0-9]{10,40})$/.exec(location.hash || "");
     if (ml) {
       if (!srvOn()) { alert("این لینک زنده به سرور نیاز دارد که هنوز فعال نشده است."); return; }

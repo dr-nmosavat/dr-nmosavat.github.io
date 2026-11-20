@@ -17,7 +17,7 @@
 <script>
 (function () {
   var h = location.hash.replace(/^#/, "").replace(/^p=/, "");
-  var url = "health-book.html" + (h ? "#p=" + h : "");
+  var url = "health-book.html" + (h ? "#p=" + h : "#nolink");
   document.getElementById("go").href = url;
   location.replace(url);
 })();
