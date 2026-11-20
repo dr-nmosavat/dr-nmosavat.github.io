@@ -1238,7 +1238,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     var lw = db.recs.filter(function (r) { return r.pet === cp.id && r.weight; }).sort(function (a, b) { return a.date < b.date ? 1 : -1; })[0], rows = [];
     rows.push(["صاحب پت / Owner", cp.owner ? esc(cp.owner) : '<span class="nil">—</span>']);
     if (cp.guardian) rows.push(["سرپرست / Guardian", esc(cp.guardian)]);
-    function enp(s) { return s ? ' <span class="en">· ' + esc(s) + "</span>" : ""; }
+    function enp(s) { return s ? ' <span class="en">' + esc(s) + "</span>" : ""; }
     if (cp.species) rows.push(["گونه / Species", esc(cp.species) + enp(SPEN[cp.species])]);
     var be = cp.breedEn || breedEn(cp.breed);
     if (cp.breed) rows.push(["نژاد / Breed", esc(cp.breed) + enp(be)]);
@@ -1293,7 +1293,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     document.documentElement.classList.add("hb-has-pet");
     document.documentElement.classList.toggle("hb-need-srv", srvOn() && !srvOf(cp));
   }
-  var OWNER_LOCKED = ["واکسن", "ویزیت", "آزمایش", "عقیم‌سازی"];   // انواعی که فقط دکتر ثبت می‌کند
+  var OWNER_LOCKED = ["واکسن", "ویزیت", "آزمایش", "عقیم‌سازی", "دارو", "سایر"];   // انواعی که فقط دکتر ثبت می‌کند
   var DR_SALT = "GnOd3U5koVp1Ozi8RTcLbA==", DR_HASH = "b4Ba9BSekt9YN0YQ3iruqAzem9RYjTbLV4PClSZjdFs=";
   function srvOn() { return !!INFO.sheetApi && !!window.fetch; }
   function api(body) {
@@ -1644,7 +1644,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if ((b = t.closest("[data-hb-dtab]"))) { var dv = b.getAttribute("data-hb-dtab"); dview(dv); if (dv === "new") { petForm(null); } else q("[data-hb-petform]").hidden = true; return; }
     if (t.closest("[data-hb-back]")) { q("[data-hb-petform]").hidden = true; dview("list"); return; }
     if ((b = t.closest("[data-hb-lopen]"))) { db.cur = b.getAttribute("data-hb-lopen"); q("[data-hb-petform]").hidden = true; save(); render(); dview("pet"); return; }
-    if (t.closest("[data-hb-keep]")) { var kp = curPet(); if (kp) { delete kp.tmp; save(); render(); toast("روی این دستگاه ذخیره شد"); } return; }
+    if (t.closest("[data-hb-keep]")) { var kp = curPet(); if (kp) { delete kp.tmp; save(); render(); toast("✅ ذخیره شد. دفعهٔ بعد در همین مرورگر drniloofarmosavat.ir/shenasname را باز کنید"); } return; }
     if (t.closest("[data-hb-wipe]")) {
       if (!confirm("همهٔ شناسنامه‌هایی که روی این دستگاه ذخیره شده پاک شود؟ (روی سرور چیزی پاک نمی‌شود و با لینک دوباره می‌توانید اضافه کنید.)")) return;
       db.pets = []; db.recs = []; db.cur = null; db.mem = {}; save(); try { sessionStorage.removeItem(TMPKEY); } catch (e) {} q("[data-hb-petform]").hidden = true; render(); toast("پاک شد"); return;

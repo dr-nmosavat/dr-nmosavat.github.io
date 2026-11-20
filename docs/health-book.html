@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=202611201204">
+<link rel="stylesheet" href="style.css?v=202611201207">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="icon" href="favicon.ico" sizes="48x48">
 <link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png">
@@ -128,16 +128,24 @@
           </div>
           <div class="hb-dots" data-hb-dots aria-hidden="true"></div>
         </div>
-        <div class="hb-editrow"><button type="button" class="btn small hb-showbtn" data-hb-present>🪪 نمایش شناسنامه به دیگران</button></div><div class="hb-tmpnote" data-hb-tmpnote hidden><b>💾 این شناسنامه فقط الان نمایش داده می‌شود</b><button type="button" class="btn primary" data-hb-keep>ذخیره در این گوشی</button><p class="hb-tmp-how">📲 برای باز شدن با یک لمس، <b>همین صفحه</b> را به صفحهٔ اصلی گوشی اضافه کنید:<br>آیفون: دکمهٔ اشتراک ← Add to Home Screen<br>اندروید: منوی مرورگر ← Add to Home screen</p><small>اگر این گوشی یا کامپیوتر مشترک است، ذخیره نکنید؛ با بستن صفحه پاک می‌شود.</small></div>
+        <div class="hb-editrow"><button type="button" class="btn small hb-showbtn" data-hb-present>🪪 نمایش شناسنامه به دیگران</button></div>
         <div class="hb-sendrow hb-doc-only"><button type="button" class="btn hb-sendbtn" data-hb-share>📤 ارسال برای صاحب پت</button></div>
         <div class="hb-rem" data-hb-rem></div>
         <div class="hb-plan" data-hb-plan></div>
+        <div class="hb-addbox" data-hb-addbox>
+          <b>📲 شناسنامه را روی صفحهٔ اصلی گوشی بگذارید</b>
+          <ol><li>آیفون: دکمهٔ اشتراک ⬆︎ · اندروید: منوی ⋮</li><li>«Add to Home Screen» را انتخاب کنید</li><li>از این به بعد با یک لمس باز می‌شود</li></ol>
+          <small>همین صفحه را اضافه کنید.</small>
+          <div class="hb-keeprow" data-hb-tmpnote hidden><span>این شناسنامه فقط تا بستن صفحه روی این دستگاه می‌ماند.</span><button type="button" class="hb-lnk" data-hb-keep>ذخیره در مرورگر</button></div>
+        </div>
+        <div class="hb-oacts"><button type="button" class="btn" data-hb-open-type="وزن">⚖️ ثبت وزن</button><button type="button" class="btn" data-hb-open-type="ضدانگل داخلی">🪱 ثبت ضدانگل</button></div>
+        <button type="button" class="hb-lnk hb-photolnk" data-hb-edit-pet>📷 تغییر عکس پت</button>
         <div class="hb-actions">
           <button type="button" class="btn primary hb-add" data-hb-open>＋ ثبت در دفترچه</button>
           <div class="hb-arow hb-pair"><button type="button" class="btn small" data-hb-edit-pet><span class="hb-t-dr">ویرایش پت</span><span class="hb-t-ow">📷 تغییر عکس</span></button><button type="button" class="btn small hb-danger hb-dr-only" data-hb-del-pet>حذف پت</button></div>
           <button type="button" class="btn small hb-sendbtn hb-tosrv" data-hb-tosrv>☁️ ذخیره روی سرور</button>
-          <div class="hb-arow hb-tools"><button type="button" class="btn small ghost" data-hb-print>چاپ</button><button type="button" class="btn small ghost" data-hb-export>پشتیبان</button><label class="btn small ghost hb-import">بازیابی<input type="file" accept="application/json" data-hb-import hidden></label></div>
         </div>
+        <details class="hb-more"><summary>⋯ بیشتر</summary><div class="hb-arow hb-tools"><button type="button" class="btn small ghost" data-hb-print>چاپ</button><button type="button" class="btn small ghost" data-hb-export>پشتیبان</button><label class="btn small ghost hb-import">بازیابی<input type="file" accept="application/json" data-hb-import hidden></label></div><button type="button" class="hb-lnk" data-hb-req>🐾 درخواست شناسنامه برای پت دیگر</button><a class="hb-lnk" href="verify.html">🔎 اصالت‌سنجی یک شناسنامه</a><button type="button" class="hb-lnk hb-wipe" data-hb-wipe>🧹 پاک‌کردن شناسنامه‌های این دستگاه</button></details>
       </div>
       <div class="hb-reqrow"><button type="button" class="hb-lnk" data-hb-req>🐾 برای پت دیگری هم شناسنامه می‌خواهید؟ درخواست بدهید</button><a class="hb-lnk" href="verify.html">🔎 اصالت‌سنجی یک شناسنامه</a><button type="button" class="hb-lnk hb-wipe" data-hb-wipe>🧹 پاک‌کردن شناسنامه‌های این دستگاه</button></div>
       <p class="hb-priv">🔒 اطلاعات این شناسنامه فقط با لینک اختصاصی شما دیده می‌شود. لینک را برای دیگران نفرستید.<small>تاریخ‌های پیشنهادی را دامپزشک تأیید می‌کند.</small></p>
@@ -289,7 +297,7 @@
   </div>
 </div>
 <a class="fab" aria-label="نیاز به مشاوره؟" data-consult href="contact.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4V5z"/></svg><span><i class="l-long">نیاز به مشاوره؟</i><i class="l-short">مشاوره</i></span></a>
-<script src="app.js?v=202611201204"></script>
+<script src="app.js?v=202611201207"></script>
     </body>
     </html>
     
