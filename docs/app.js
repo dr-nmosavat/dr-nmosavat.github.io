@@ -1601,10 +1601,10 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function closeModal(sel) { q(sel).hidden = true; document.documentElement.classList.remove("gift-open"); }
   var pendingImport = null;
   // آیکون صفحهٔ اصلی باید دقیقاً همین نشانی (با کد شناسنامه) را باز کند؛ پس مانیفست ثابت (که آدرس را به صفحهٔ اصلی دفترچه برمی‌گرداند) برداشته می‌شود
-  function linkAsApp() {
+  function linkAsApp(nm) {
     try {
       var mf = document.querySelector('link[rel="manifest"]'); if (mf) mf.parentNode.removeChild(mf);
-      [["apple-mobile-web-app-capable", "yes"], ["mobile-web-app-capable", "yes"], ["apple-mobile-web-app-title", "شناسنامهٔ پت"]].forEach(function (x) { var m = document.querySelector('meta[name="' + x[0] + '"]'); if (!m) { m = document.createElement("meta"); m.name = x[0]; document.head.appendChild(m); } m.content = x[1]; });
+      [["apple-mobile-web-app-capable", "yes"], ["mobile-web-app-capable", "yes"], ["apple-mobile-web-app-title", nm ? "شناسنامهٔ " + nm : "شناسنامهٔ پت"]].forEach(function (x) { var m = document.querySelector('meta[name="' + x[0] + '"]'); if (!m) { m = document.createElement("meta"); m.name = x[0]; document.head.appendChild(m); } m.content = x[1]; });
     } catch (e) {}
   }
   function checkImport() {
@@ -1620,7 +1620,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
         // نشانی (همراه با کد) را در نوار آدرس نگه می‌داریم تا «افزودن به صفحهٔ اصلی» همین شناسنامه را باز کند
         // آیفون بخش # را برای آیکون صفحهٔ اصلی نگه نمی‌دارد؛ پس کد را به بخش ? منتقل می‌کنیم
         try { history.replaceState(null, "", location.pathname + "?p=" + ml[1] + "." + ml[2]); } catch (xr) {}
-        linkAsApp();
+        linkAsApp(j.pet.name);
         render(); try { window.scrollTo(0, 0); } catch (x2) {}
       });
       return;
