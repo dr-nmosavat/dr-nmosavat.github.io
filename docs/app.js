@@ -1228,6 +1228,12 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     for (r = 0; r < n; r++) for (c = 0; c < n; c++) if (q.isDark(r, c)) d += "M" + (c + 3) + " " + (r + 3) + "h1v1h-1z";
     return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + (n + 6) + " " + (n + 6) + '" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#fff"/><path d="' + d + '" fill="#000"/></svg>';
   }
+  // QR جلد: به صفحهٔ اصالت‌سنجی می‌رود (کدها محرمانه نیستند)؛ برای پتی که روی سرور نیست، همان خلاصهٔ متنی
+  function coverQr(cp) {
+    var sv = srvOf(cp);
+    if (sv) { var u = qrFromText("https://drniloofarmosavat.ir/verify.html?c=" + encodeURIComponent(sv.code) + (sv.auth ? "&a=" + encodeURIComponent(sv.auth) : "")); if (u) return u; }
+    return qrSvg(qrText(cp));
+  }
   function renderCover(cp) {
     var lw = db.recs.filter(function (r) { return r.pet === cp.id && r.weight; }).sort(function (a, b) { return a.date < b.date ? 1 : -1; })[0], rows = [];
     rows.push(["صاحب پت / Owner", cp.owner ? esc(cp.owner) : '<span class="nil">—</span>']);
@@ -1239,7 +1245,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (cp.birth) rows.push(["تولد / Birth", esc(fd(cp.birth)) + enp(enDate(cp.birth))]);
     if (cp.birth && ageText(cp.birth)) rows.push(["سن / Age", esc(ageText(cp.birth))]);
     if (lw) rows.push(["وزن / Weight", toolFa(lw.weight) + " کیلوگرم" + enp(lw.weight + " kg")]);
-    q("[data-hb-cover]").innerHTML = '<button type="button" class="hb-qr" data-hb-qr aria-label="نمایش QR شناسنامه">' + qrSvg(qrText(cp)) + '</button><small class="hb-cv-t">شناسنامهٔ سلامت<br><i>Health Record</i></small><div class="hb-cv-ic"><button type="button" class="hb-cv-icb" data-hb-cover-photo aria-label="تغییر عکس پت">' + avatar(cp, "hb-cv-img") + '<span class="hb-cam" aria-hidden="true">📷</span></button></div><b>' + esc(cp.name) + "</b>" + (cp.en ? '<span class="hb-cv-en" dir="ltr">' + esc(cp.en) + "</span>" : "") + (rows.length ? '<dl class="hb-id">' + rows.map(function (r) { return "<div><dt>" + r[0] + "</dt><dd>" + r[1] + "</dd></div>"; }).join("") + "</dl>" : "");
+    q("[data-hb-cover]").innerHTML = '<button type="button" class="hb-qr" data-hb-qr aria-label="نمایش QR شناسنامه">' + coverQr(cp) + '</button><small class="hb-cv-t">شناسنامهٔ سلامت<br><i>Health Record</i></small><div class="hb-cv-ic"><button type="button" class="hb-cv-icb" data-hb-cover-photo aria-label="تغییر عکس پت">' + avatar(cp, "hb-cv-img") + '<span class="hb-cam" aria-hidden="true">📷</span></button></div><b>' + esc(cp.name) + "</b>" + (cp.en ? '<span class="hb-cv-en" dir="ltr">' + esc(cp.en) + "</span>" : "") + (rows.length ? '<dl class="hb-id">' + rows.map(function (r) { return "<div><dt>" + r[0] + "</dt><dd>" + r[1] + "</dd></div>"; }).join("") + "</dl>" : "");
   }
   // همهٔ یادآوری‌ها: نوبت‌های بعدی + برنامهٔ واکسن
   function allRem() {
@@ -1577,7 +1583,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function faDigits(s) { return String(s || "").replace(/[۰-۹]/g, function (c) { return c.charCodeAt(0) - 1776; }).replace(/[٠-٩]/g, function (c) { return c.charCodeAt(0) - 1632; }).replace(/\D/g, ""); }
   function waNum(s) { var d = faDigits(s); if (!d) return ""; if (d.indexOf("00") === 0) d = d.slice(2); if (d.charAt(0) === "0") d = "98" + d.slice(1); else if (d.length === 10 && d.charAt(0) === "9") d = "98" + d; return d; }
   var shareLink = "";
-  function shareMsg() { var cp = curPet(); return "📒 شناسنامهٔ سلامت «" + cp.name + "»\nدکتر نیلوفر مساوات\n\nبا این لینک باز کنید و «افزودن به دفترچهٔ من» را بزنید:\n" + shareLink; }
+  function shareMsg() { var cp = curPet(); return "📒 شناسنامهٔ سلامت «" + cp.name + "»\nدکتر نیلوفر مساوات\n\nبا این لینک شناسنامه را ببینید و «ذخیره در این گوشی» را بزنید:\n" + shareLink; }
   function qrFromText(text) {
     try { var qq = qrLib(0, "M"); qq.addData(text, "Byte"); qq.make(); var n = qq.getModuleCount(), d = "", r, c; for (r = 0; r < n; r++) for (c = 0; c < n; c++) if (qq.isDark(r, c)) d += "M" + (c + 4) + " " + (r + 4) + "h1v1h-1z"; return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + (n + 8) + " " + (n + 8) + '" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#fff"/><path d="' + d + '" fill="#000"/></svg>'; } catch (e) { return ""; }
   }
@@ -1600,11 +1606,11 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       if (!srvOn()) { alert("این لینک زنده به سرور نیاز دارد که هنوز فعال نشده است."); return; }
       api({ a: "getOwner", code: ml[1], key: ml[2] }).then(function (j) {
         if (!j.ok) { alert(j.err === "auth" ? "این لینک معتبر نیست یا باطل شده است. از دکتر لینک تازه بخواهید." : errMsg(j.err)); return; }
-        pendingImport = { live: { code: j.pet.code, key: ml[2], pet: j.pet, recs: j.recs } };
-        var cn = function (t) { return j.recs.filter(function (r) { return r.type === t; }).length; };
-        var inf = [cn("واکسن") ? toolFa(cn("واکسن")) + " واکسیناسیون" : "", (cn("ضدانگل داخلی") + cn("ضدانگل خارجی (کک و کنه)")) ? toolFa(cn("ضدانگل داخلی") + cn("ضدانگل خارجی (کک و کنه)")) + " ضدانگل" : "", cn("ویزیت") ? toolFa(cn("ویزیت")) + " ویزیت" : ""].filter(Boolean).join("، ") || "بدون سابقهٔ ثبت‌شده";
-        q("[data-hb-impinfo]").innerHTML = "<b>" + esc(j.pet.name) + "</b>" + (j.pet.owner ? "<small>صاحب: " + esc(j.pet.owner) + "</small>" : "") + "<small>" + esc(inf) + "</small>";
-        q("[data-hb-impm]").hidden = false; document.documentElement.classList.add("gift-open");
+        // لینک را که باز کنند، شناسنامه همان لحظه نمایش داده می‌شود (موقت)؛ با دکمهٔ «ذخیره در این گوشی» ماندگار می‌شود
+        var existed = db.pets.some(function (x) { return x.srv && x.srv.code === j.pet.code && !x.tmp; });
+        var pi0 = upsertSrv(j.pet, j.recs, ml[2]); if (!existed) pi0.tmp = 1; db.cur = pi0.id; q("[data-hb-petform]").hidden = true; save();
+        try { history.replaceState(null, "", location.pathname); } catch (x) {}
+        render(); try { window.scrollTo(0, 0); } catch (x2) {}
       });
       return;
     }
@@ -1740,7 +1746,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       if (tmpMode) pi.pet.tmp = 1; else delete pi.pet.tmp;
       db.recs = db.recs.concat(pi.recs); db.cur = pi.pet.id; q("[data-hb-petform]").hidden = true; save(); pendingImport = null; closeModal("[data-hb-impm]"); try { history.replaceState(null, "", location.pathname); } catch (x) {} return render();
     }
-    if (t.closest("[data-hb-qr]")) { var cq = curPet(); q("[data-hb-qrbox]").innerHTML = qrSvg(qrText(cq)); q("[data-hb-qrm]").hidden = false; document.documentElement.classList.add("gift-open"); return; }
+    if (t.closest("[data-hb-qr]")) { var cq = curPet(); q("[data-hb-qrbox]").innerHTML = coverQr(cq); q("[data-hb-qrm]").hidden = false; document.documentElement.classList.add("gift-open"); return; }
     if (t.closest("[data-hb-qr-close]") || t === q("[data-hb-qrm]")) { q("[data-hb-qrm]").hidden = true; document.documentElement.classList.remove("gift-open"); return; }
     if (t.closest("[data-hb-qr-save]")) return savePng(q("[data-hb-qrbox] svg"), "qr-" + (curPet().en || "pet") + ".png");
     if (t.closest("[data-hb-shqr-save]")) return savePng(q("[data-hb-shqr] svg"), "share-" + (curPet().en || "pet") + ".png");
@@ -2105,8 +2111,9 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       .then(function (r) { return r.json(); }).catch(function () { return { ok: false, err: "net" }; }).then(function (j) {
         btn.disabled = false;
         if (!j.ok) { show("bad", "<b>" + (j.err === "locked" ? "این کد چند بار اشتباه بررسی شد و موقتاً قفل است. یک ساعت دیگر دوباره امتحان کنید." : j.err === "net" ? "اتصال با سرور برقرار نشد. اینترنت را بررسی کنید." : "تعداد بررسی‌ها زیاد است؛ کمی بعد دوباره امتحان کنید.") + "</b>"); return; }
-        if (j.valid) show("ok", "<b>✅ شناسنامه معتبر است</b><span>" + esc(j.pet.name) + " (" + esc(j.pet.species) + ")</span><span>تاریخ صدور: " + esc(jy(j.pet.created)) + "</span><span>نام پت را با شناسنامه مقایسه کنید.</span>");
+        if (j.valid) show("ok", "<b>✅ شناسنامه معتبر است</b><span>" + esc(j.pet.name) + " (" + esc(j.pet.species) + ")</span><span>تاریخ صدور: " + esc(jy(j.pet.created)) + "</span><span>نام پت را با شناسنامه مقایسه کنید. سوابق واکسن و ضدانگل را صاحب پت در گوشی خودش نشان می‌دهد.</span>");
         else show("bad", "<b>❌ معتبر نیست</b><span>کدها با هم نمی‌خوانند یا شناسنامه‌ای با این کد وجود ندارد. دو کد را دوباره بررسی کنید؛ اگر باز هم همین بود، شناسنامه را معتبر ندانید.</span>");
       });
   });
+  (function () { try { var sp = new URLSearchParams(location.search), c0 = sp.get("c"), a0 = sp.get("a"); if (c0) root.querySelector("#vf-code").value = c0; if (a0) root.querySelector("#vf-auth").value = a0; if (c0 && a0) root.querySelector("[data-vf-go]").click(); } catch (e) {} })();
 })();

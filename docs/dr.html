@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=202611201105">
+<link rel="stylesheet" href="style.css?v=202611201119">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="icon" href="favicon.ico" sizes="48x48">
 <link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png">
@@ -65,7 +65,7 @@
         <ol>
           <li>در مراجعه یا گفت‌وگو با دکتر، <b>QR یا لینک</b> شناسنامهٔ پت‌تان را بگیرید.</li>
           <li>QR را با دوربین گوشی اسکن کنید یا روی لینک بزنید.</li>
-          <li>«افزودن به دفترچهٔ من» را بزنید. از این به بعد هر بار این صفحه را باز کنید، آخرین وضعیت پت‌تان را می‌بینید.</li>
+          <li>شناسنامه باز می‌شود. «ذخیره در این گوشی» را بزنید تا هر بار آخرین وضعیت پت‌تان را ببینید.</li>
         </ol>
         <button type="button" class="btn primary" data-hb-req>📝 درخواست شناسنامه</button>
         <a class="btn small ghost hb-wa2" data-hb-wa href="contact.html" target="_blank" rel="noopener">یا پیام به دکتر در واتساپ</a>
@@ -116,7 +116,6 @@
       <div data-hb-main hidden>
         <div class="hb-ptabs" data-hb-ptabs role="tablist" aria-label="صفحه‌های شناسنامه"></div>
         <input type="file" accept="image/*" data-hb-file2 hidden>
-        <div class="hb-tmpnote" data-hb-tmpnote hidden><span>👁 نمایش موقت: با بستن این صفحه، شناسنامه از روی این دستگاه پاک می‌شود.</span><button type="button" class="hb-lnk" data-hb-keep>ذخیره روی این دستگاه</button></div>
         <div class="hb-card">
           <button type="button" class="hb-px" data-hb-present-x aria-label="بستن حالت نمایش">✕ بستن</button>
           <div class="hb-track" data-hb-track>
@@ -127,7 +126,7 @@
           </div>
           <div class="hb-dots" data-hb-dots aria-hidden="true"></div>
         </div>
-        <div class="hb-editrow"><button type="button" class="btn small hb-showbtn" data-hb-present>🪪 نمایش شناسنامه به دیگران</button></div>
+        <div class="hb-editrow"><button type="button" class="btn small hb-showbtn" data-hb-present>🪪 نمایش شناسنامه به دیگران</button></div><div class="hb-tmpnote" data-hb-tmpnote hidden><b>💾 این شناسنامه فقط الان نمایش داده می‌شود</b><button type="button" class="btn primary" data-hb-keep>ذخیره در این گوشی</button><p class="hb-tmp-how">📲 برای دسترسی سریع، آن را به صفحهٔ اصلی گوشی هم اضافه کنید:<br>آیفون: دکمهٔ اشتراک ← Add to Home Screen<br>اندروید: منوی مرورگر ← Add to Home screen</p><small>اگر این گوشی یا کامپیوتر مشترک است، ذخیره نکنید؛ با بستن صفحه پاک می‌شود.</small></div>
         <div class="hb-sendrow hb-doc-only"><button type="button" class="btn hb-sendbtn" data-hb-share>📤 ارسال برای صاحب پت</button></div>
         <div class="hb-rem" data-hb-rem></div>
         <div class="hb-plan" data-hb-plan></div>
@@ -212,7 +211,7 @@
         <div class="hb-qrc">
           <h2>QR شناسنامهٔ پت</h2>
           <div class="hb-qrbox" data-hb-qrbox></div>
-          <p>با دوربین گوشی اسکن کنید تا خلاصهٔ شناسنامه (نام، تولد، واکسن‌ها، ضدانگل‌ها و آخرین ویزیت) را ببینید. اطلاعات داخل خود QR است و به اینترنت نیاز ندارد. بعد از هر ثبت جدید، QR تازه را ذخیره یا چاپ کنید.</p>
+          <p>با دوربین گوشی اسکن کنید تا اصالت این شناسنامه در سایت دکتر بررسی شود. سوابق واکسن و ضدانگل را صاحب پت در گوشی خودش نشان می‌دهد.</p>
           <div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-qr-save>ذخیره تصویر</button><button type="button" class="btn small ghost" data-hb-qr-close>بستن</button></div>
         </div>
       </div>
@@ -288,7 +287,7 @@
   </div>
 </div>
 <a class="fab" aria-label="نیاز به مشاوره؟" data-consult href="contact.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4V5z"/></svg><span><i class="l-long">نیاز به مشاوره؟</i><i class="l-short">مشاوره</i></span></a>
-<script src="app.js?v=202611201105"></script>
+<script src="app.js?v=202611201119"></script>
     </body>
     </html>
     
