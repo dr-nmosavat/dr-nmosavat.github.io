@@ -1230,8 +1230,6 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   }
   function renderCover(cp) {
     var lw = db.recs.filter(function (r) { return r.pet === cp.id && r.weight; }).sort(function (a, b) { return a.date < b.date ? 1 : -1; })[0], rows = [];
-    if (srvOf(cp)) rows.push(["کد پت / ID", '<bdi dir="ltr">' + esc(cp.srv.code) + "</bdi>"]);
-    if (srvOf(cp) && cp.srv.auth) rows.push(["کد اصالت / Auth", '<bdi dir="ltr" class="hb-auth">✓ ' + esc(cp.srv.auth) + "</bdi>"]);
     rows.push(["صاحب پت / Owner", cp.owner ? esc(cp.owner) : '<span class="nil">—</span>']);
     if (cp.guardian) rows.push(["سرپرست / Guardian", esc(cp.guardian)]);
     function enp(s) { return s ? ' <span class="en">· ' + esc(s) + "</span>" : ""; }
@@ -1264,7 +1262,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     renderCover(cp); var tn = q("[data-hb-tmpnote]"); if (tn) tn.hidden = !(cp.tmp && !ISDRP);
     // کارت برنامهٔ واکسن
     var pl = q("[data-hb-plan]"), young = cp.birth && (cp.species === "سگ" || cp.species === "گربه") && -days(cp.birth) < 400, hasPlan = (cp.plan || []).length;
-    if (young && !hasPlan) pl.innerHTML = '<div class="hb-plan-c"><b>برنامهٔ واکسن ' + (cp.species === "سگ" ? "توله‌سگ" : "بچه‌گربه") + "</b><p>با زدن دکمهٔ زیر، تاریخ نوبت‌های واکسن و کرم‌کشی بر اساس تاریخ تولد حساب می‌شود و به «یادآوری‌ها» اضافه می‌شود. تاریخ‌ها تقریبی‌اند و طبق نظر دامپزشک تنظیم کنید.</p><button type=\"button\" class=\"btn small primary\" data-hb-mkplan>📅 ساخت برنامهٔ واکسن و کرم‌کشی</button><details class=\"hb-det\"><summary>برنامه شامل چه چیزی است؟</summary><p>واکسن در هفتهٔ ۸، ۱۲ و ۱۶ (" + (cp.species === "سگ" ? "چندگانه سگ" : "سه‌گانه گربه") + ")، هاری در هفتهٔ ۱۶ و یادآور سالانه؛ ضدانگل داخلی در هفته‌های ۲، ۴، ۶، ۸، ۱۲، ۱۶، ۲۰ و ۲۴. بعد از ساخت، هر نوبت با «انجام شد» در دفترچه ثبت می‌شود و می‌توانید آن را به تقویم گوشی اضافه کنید. هر زمان خواستید «حذف برنامه» را بزنید.</p></details></div>";
+    if (young && !hasPlan) pl.innerHTML = '<div class="hb-plan-c"><b>برنامهٔ واکسن ' + (cp.species === "سگ" ? "توله‌سگ" : "بچه‌گربه") + "</b><p>با زدن دکمهٔ زیر، تاریخ نوبت‌های واکسن و ضدانگل بر اساس تاریخ تولد حساب می‌شود و به «یادآوری‌ها» اضافه می‌شود. تاریخ‌ها تقریبی‌اند و طبق نظر دامپزشک تنظیم کنید.</p><button type=\"button\" class=\"btn small primary\" data-hb-mkplan>📅 ساخت برنامهٔ واکسن و ضدانگل</button><details class=\"hb-det\"><summary>برنامه شامل چه چیزی است؟</summary><p>واکسن در هفتهٔ ۸، ۱۲ و ۱۶ (" + (cp.species === "سگ" ? "چندگانه سگ" : "سه‌گانه گربه") + ")، هاری در هفتهٔ ۱۶ و یادآور سالانه؛ ضدانگل داخلی در هفته‌های ۲، ۴، ۶، ۸، ۱۲، ۱۶، ۲۰ و ۲۴. بعد از ساخت، هر نوبت با «انجام شد» در دفترچه ثبت می‌شود و می‌توانید آن را به تقویم گوشی اضافه کنید. هر زمان خواستید «حذف برنامه» را بزنید.</p></details></div>";
     else if (!cp.birth && (cp.species === "سگ" || cp.species === "گربه")) pl.innerHTML = '<div class="hb-plan-c"><b>برنامهٔ واکسن توله و بچه‌گربه</b><p>با نوشتن تاریخ تولد، برنامهٔ پیشنهادی ساخته می‌شود.</p><button type="button" class="btn small" data-hb-edit-pet>نوشتن تاریخ تولد</button></div>';
     else pl.innerHTML = hasPlan ? '<div class="hb-plan-c ok"><span>برنامهٔ واکسن ' + (cp.species === "سگ" ? "توله‌سگ" : "بچه‌گربه") + ' فعال است.</span><button type="button" class="hb-lnk" data-hb-delplan>حذف برنامه</button></div>' : "";
     if (srvOn() && !isDr()) pl.innerHTML = "";
@@ -1365,11 +1363,15 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     var pts = ws.map(function (r, i) { return (10 + i * (280 / (ws.length - 1))).toFixed(1) + "," + (60 - ((r.weight - mn) / rg) * 46).toFixed(1); }).join(" ");
     return '<div class="hb-weight"><svg viewBox="0 0 300 70" aria-hidden="true"><polyline points="' + pts + '" fill="none" stroke="#1f5ea6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg><small>روند وزن: از ' + toolFa(vals[0]) + " به " + toolFa(vals[vals.length - 1]) + " کیلوگرم</small></div>";
   }
+  function sealBox(cp) {
+    var sv = srvOf(cp); if (!sv) return "";
+    return '<div class="hb-seal"><b class="hb-seal-t">مهر و اصالت</b><div class="hb-seal-r"><span>شمارهٔ شناسنامه</span><b dir="ltr">' + esc(sv.code) + "</b></div>" + (sv.auth ? '<div class="hb-seal-r"><span>کد اصالت</span><b dir="ltr" class="hb-auth">✓ ' + esc(sv.auth) + "</b></div>" : "") + '<small>راستی‌آزمایی: drniloofarmosavat.ir/asalat</small></div>';
+  }
   function renderPages(cp) {
     function pg(i, title, body) { return '<div class="hb-pg-h">' + title + '</div><div class="hb-pg-b">' + body + "</div>"; }
     q('[data-hb-pg="1"]').innerHTML = pg(1, "💉 واکسیناسیون", pageRows(cp, ["واکسن"], "vax"));
     q('[data-hb-pg="2"]').innerHTML = pg(2, "🪱 ضدانگل داخلی و خارجی", pageRows(cp, ["ضدانگل داخلی", "ضدانگل خارجی (کک و کنه)"], "par"));
-    q('[data-hb-pg="3"]').innerHTML = pg(3, "🩺 ویزیت، آزمایش، وزن و سایر", weightChart(cp) + pageRows(cp, ["ویزیت", "آزمایش", "عقیم‌سازی", "دارو", "وزن", "سایر"], "oth"));
+    q('[data-hb-pg="3"]').innerHTML = pg(3, "🩺 ویزیت، آزمایش، وزن و سایر", weightChart(cp) + pageRows(cp, ["ویزیت", "آزمایش", "عقیم‌سازی", "دارو", "وزن", "سایر"], "oth") + sealBox(cp));
     q("[data-hb-ptabs]").innerHTML = PGS.map(function (t, i) { return '<button type="button" class="chip' + (i === curPg ? " on" : "") + '" data-hb-pgo="' + i + '">' + t + "</button>"; }).join("");
     q("[data-hb-dots]").innerHTML = PGS.map(function (t, i) { return '<i class="' + (i === curPg ? "on" : "") + '"></i>'; }).join("");
     var tr = q("[data-hb-track]"); tr.scrollTo({ left: (getComputedStyle(tr).direction === "rtl" ? -1 : 1) * curPg * tr.clientWidth, behavior: "auto" }); fitTrack();
@@ -2095,7 +2097,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function show(cls, html) { res.hidden = false; res.className = "tool-res vf-" + cls; res.innerHTML = html; }
   root.querySelector("[data-vf-go]").addEventListener("click", function () {
     var code = root.querySelector("#vf-code").value.trim(), au = root.querySelector("#vf-auth").value.trim(), btn = this;
-    if (!code || !au) { show("bad", "<b>هر دو کد را بنویسید</b><span>کد پت (مثل NM-1234) و کد اصالت (شش نویسه).</span>"); return; }
+    if (!code || !au) { show("bad", "<b>هر دو کد را بنویسید</b><span>شمارهٔ شناسنامه (مثل NM-1234) و کد اصالت (شش نویسه).</span>"); return; }
     if (!INFO.sheetApi) { show("bad", "<b>اصالت‌سنجی فعلاً در دسترس نیست</b>"); return; }
     btn.disabled = true; show("wait", "<b>در حال بررسی…</b>");
     fetch(INFO.sheetApi, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ a: "verifyPublic", code: code, auth: au }) })
