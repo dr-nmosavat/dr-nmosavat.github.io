@@ -1899,3 +1899,5 @@ html:not(.hb-dr) .hb-actions { display: none; }
 .hb-more > * { margin-top: 8px; } .hb-more .hb-tools { display: flex; gap: 8px; justify-content: center; } .hb-more a.hb-lnk, .hb-more .hb-lnk { display: block; margin-inline: auto; font-size: 13px; color: #1f5aa6; text-decoration: none; }
 [data-hb-main]:not([hidden]) ~ .hb-reqrow { display: none; }
 .hb-priv, .hb-installbox { display: none; }
+
+.hb-standalone .hb-addbox { display: none !important; }

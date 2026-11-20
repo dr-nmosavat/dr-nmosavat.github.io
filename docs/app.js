@@ -1056,6 +1056,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
 (function () {
   var root = document.querySelector("[data-hb]"); if (!root) return;
   // دکتر و مراجع حافظهٔ جدا دارند: پت‌هایی که دکتر در این مرورگر باز می‌کند روی صفحهٔ عمومی دفترچه دیده نمی‌شود
+  try { if (window.navigator.standalone || (window.matchMedia && matchMedia("(display-mode: standalone)").matches)) document.documentElement.classList.add("hb-standalone"); } catch (e) {}
   var ISDRP = document.body.classList.contains("hb-drpage"), KEY = ISDRP ? "dm_hb_drdb" : "dm_hb", TMPKEY = "dm_hb_tmp";
   var MON = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"];
   var PLACES = ["مرکز دامپزشکی ونک (دکتر مساوات)", "کلینیک ژیوان، تجریش", "کلینیک ژیوان، هروی", "تهران پت کلینیک، تهرانپارس", "ویزیت در منزل"];
@@ -1608,7 +1609,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   }
   function checkImport() {
     if (location.hash === "#nolink") { try { history.replaceState(null, "", location.pathname); } catch (x) {} alert("این لینک ناقص باز شد: بخش آخر لینک (که کد شناسنامه در آن است) نرسیده است. بعضی برنامه‌های اسکن QR یا مرورگرهای داخل اپ آن را حذف می‌کنند. QR را با دوربین اصلی گوشی اسکن کنید، یا «فقط لینک» را از دکتر بگیرید و در مرورگر (سافاری یا کروم) باز کنید."); return; }
-    var ml = /^#p=([A-Za-z0-9\-]{3,20})\.([A-Za-z0-9]{10,40})$/.exec(location.hash || "");
+    var ml = /^#p=([A-Za-z0-9\-]{3,20})\.([A-Za-z0-9]{10,40})$/.exec(location.hash || "") || /^\?p=([A-Za-z0-9\-]{3,20})\.([A-Za-z0-9]{10,40})$/.exec(location.search || "");
     if (ml) {
       if (!srvOn()) { alert("این لینک زنده به سرور نیاز دارد که هنوز فعال نشده است."); return; }
       api({ a: "getOwner", code: ml[1], key: ml[2] }).then(function (j) {
@@ -1617,6 +1618,8 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
         var existed = db.pets.some(function (x) { return x.srv && x.srv.code === j.pet.code && !x.tmp; });
         var pi0 = upsertSrv(j.pet, j.recs, ml[2]); if (!existed) pi0.tmp = 1; db.cur = pi0.id; q("[data-hb-petform]").hidden = true; save();
         // نشانی (همراه با کد) را در نوار آدرس نگه می‌داریم تا «افزودن به صفحهٔ اصلی» همین شناسنامه را باز کند
+        // آیفون بخش # را برای آیکون صفحهٔ اصلی نگه نمی‌دارد؛ پس کد را به بخش ? منتقل می‌کنیم
+        try { history.replaceState(null, "", location.pathname + "?p=" + ml[1] + "." + ml[2]); } catch (xr) {}
         linkAsApp();
         render(); try { window.scrollTo(0, 0); } catch (x2) {}
       });
