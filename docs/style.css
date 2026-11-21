@@ -1901,3 +1901,7 @@ html:not(.hb-dr) .hb-actions { display: none; }
 .hb-priv, .hb-installbox { display: none; }
 
 .hb-standalone .hb-addbox { display: none !important; }
+
+/* دکمهٔ دیدن رمز: سمت راست، تا روی متن رمز (چپ‌به‌راست) نیفتد */
+.hb-pwf input { padding-left: 14px; padding-right: 52px; text-align: left; }
+.hb-eye { inset-inline-end: auto; left: auto; right: 8px; }
