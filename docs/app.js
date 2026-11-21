@@ -1393,6 +1393,16 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   var IOSMODE = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
   if (IOSMODE) document.documentElement.classList.add("hb-ios");
   function iosShow(i) { var tr = q("[data-hb-track]"); if (!tr) return; [].forEach.call(tr.children, function (sl, n) { sl.classList.toggle("hb-on", n === i); }); }
+  // آیفون/آیپد قدیمی: پنجره‌های شناور (فرم ثبت، QR، اشتراک، راهنما) درون صفحه و با اسکرول خودکار نشان داده می‌شوند
+  if (IOSMODE && window.MutationObserver) {
+    var iosMods = document.querySelectorAll(".hb-sheet, .hb-qrm, .hb-guide");
+    [].forEach.call(iosMods, function (m) {
+      new MutationObserver(function () {
+        if (m.hidden) return;
+        setTimeout(function () { try { window.scrollTo(0, Math.max(0, m.getBoundingClientRect().top + (window.pageYOffset || 0) - 12)); } catch (e) {} }, 60);
+      }).observe(m, { attributes: true, attributeFilter: ["hidden"] });
+    });
+  }
   function fitTrack() { var tr = q("[data-hb-track]"); if (!tr) return; if (IOSMODE) { tr.style.height = "auto"; iosShow(curPg); return; } var h = 0; [].forEach.call(tr.children, function (s) { h = Math.max(h, s.scrollHeight); }); tr.style.height = h + "px"; }
   window.addEventListener("resize", function () { if (q("[data-hb-track]")) fitTrack(); });
   (function () {

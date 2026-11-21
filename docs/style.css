@@ -1992,3 +1992,9 @@ html.hb-ios .hb-slide.hb-on { display: block; }
 html.hb-ios .hb-slide { display: block !important; width: 100%; margin: 0 0 16px; border-bottom: 1px dashed rgba(241,220,160,.45); padding-bottom: 54px; }
 html.hb-ios .hb-slide:last-child { border-bottom: 0; margin-bottom: 0; }
 html.hb-ios .hb-ptabs, html.hb-ios .hb-dots { display: none !important; }
+
+/* آیفون/آیپد قدیمی: پنجره‌های شناور به‌صورت بلوک داخل صفحه */
+html.hb-ios .hb-sheet, html.hb-ios .hb-qrm, html.hb-ios .hb-guide { position: static !important; top: auto !important; right: auto !important; bottom: auto !important; left: auto !important; display: block; background: transparent !important; padding: 10px 0; margin: 10px 0; z-index: auto; }
+html.hb-ios .hb-sheet[hidden], html.hb-ios .hb-qrm[hidden], html.hb-ios .hb-guide[hidden] { display: none !important; }
+html.hb-ios .hb-sheet-card, html.hb-ios .hb-qrc, html.hb-ios .hb-guide-in { max-height: none !important; margin: 0 auto; border-radius: 20px !important; border: 2px solid #1f5aa6; }
+html.hb-ios.gift-open { overflow: auto !important; }
