@@ -1988,3 +1988,7 @@ html.hb-ios .hb-track { display: block; overflow: hidden; scroll-snap-type: none
 html.hb-ios .hb-slide { display: none; width: 100%; }
 html.hb-ios .hb-slide.hb-on { display: block; }
 @media print { html.hb-ios .hb-slide { display: block !important; } }
+/* آیفون/آیپد: همهٔ صفحه‌های شناسنامه زیر هم نشان داده می‌شوند (بدون نیاز به تب) */
+html.hb-ios .hb-slide { display: block !important; width: 100%; margin: 0 0 16px; border-bottom: 1px dashed rgba(241,220,160,.45); padding-bottom: 54px; }
+html.hb-ios .hb-slide:last-child { border-bottom: 0; margin-bottom: 0; }
+html.hb-ios .hb-ptabs, html.hb-ios .hb-dots { display: none !important; }
