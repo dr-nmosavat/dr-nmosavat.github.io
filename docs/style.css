@@ -1924,3 +1924,6 @@ nav a[href="tools.html"][aria-current="page"] { color: var(--on-blue); border-ra
 .hb-addbtn, .hb-guide-in .btn { display: flex; align-items: center; justify-content: center; text-align: center; }
 .hb-pg-b { max-height: none; overflow: visible; }
 .fld.hb-doc-only { display: none; } html.hb-dr .fld.hb-doc-only { display: block; }
+
+.hb-drcall { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin: 10px 0; padding: 10px 12px; border-radius: 14px; background: #f1f6fd; border: 1px solid #cfdff1; font-size: 13.5px; } .hb-drcall[hidden] { display: none; } .hb-drcall small { color: var(--muted); }
+.hb-call { color: #1f5aa6; font-weight: 700; text-decoration: none; direction: ltr; unicode-bidi: embed; } .hb-callq { display: block; padding: 0 12px 8px; font-size: 13px; }

@@ -191,9 +191,9 @@ function drLogin_(b) {
 
 function search_(b) {
   var qq = norm_(b.q), pets = readAll_(hsheet_('Pets', PET_COLS), PET_COLS).filter(function (p) { return p.deleted !== '1'; });
-  if (qq) pets = pets.filter(function (p) { return norm_([p.code, p.name, p.en, p.owner, p.guardian].join(' ')).indexOf(qq) > -1; });
+  if (qq) pets = pets.filter(function (p) { return norm_([p.code, p.name, p.en, p.owner, p.guardian, p.phone].join(' ')).indexOf(qq) > -1; });
   pets.sort(function (x, y) { return x.updated < y.updated ? 1 : -1; });
-  return { ok: true, pets: pets.slice(0, 30).map(function (p) { return { code: p.code, name: p.name, en: p.en, owner: p.owner, species: p.species, birth: p.birth, updated: p.updated }; }) };
+  return { ok: true, pets: pets.slice(0, 30).map(function (p) { return { code: p.code, name: p.name, en: p.en, owner: p.owner || p.guardian, phone: p.phone || '', species: p.species, birth: p.birth, updated: p.updated }; }) };
 }
 
 function newCode_(all) {
