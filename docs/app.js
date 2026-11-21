@@ -1649,6 +1649,8 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if ((b = t.closest("[data-hb-dtab]"))) { var dv = b.getAttribute("data-hb-dtab"); dview(dv); if (dv === "new") { petForm(null); } else q("[data-hb-petform]").hidden = true; return; }
     if (t.closest("[data-hb-back]")) { q("[data-hb-petform]").hidden = true; dview("list"); return; }
     if ((b = t.closest("[data-hb-lopen]"))) { db.cur = b.getAttribute("data-hb-lopen"); q("[data-hb-petform]").hidden = true; save(); render(); dview("pet"); return; }
+    if (t.closest("[data-hb-addhome]")) { var gd = q("[data-hb-guide]"); if (gd) gd.hidden = false; return; }
+    if (t.closest("[data-hb-guide-x]") || t.matches("[data-hb-guide]")) { var gd2 = q("[data-hb-guide]"); if (gd2) gd2.hidden = true; return; }
     if (t.closest("[data-hb-keep]")) { if (!confirm("ذخیره در مرورگر چه فرقی با مراحل بالا دارد؟\n\n• مراحل بالا (افزودن به صفحهٔ اصلی) یک آیکون روی گوشی می‌سازد که با یک لمس شناسنامه را باز می‌کند.\n• ذخیره در مرورگر فقط شناسنامه را در همین مرورگر نگه می‌دارد و آیکونی نمی‌سازد؛ باید دوباره سایت را باز کنید. اگر اطلاعات مرورگر پاک شود، از بین می‌رود.\n\nادامه و ذخیره در مرورگر؟")) return; var kp = curPet(); if (kp) { delete kp.tmp; save(); render(); toast("✅ ذخیره شد. دفعهٔ بعد در همین مرورگر drniloofarmosavat.ir/shenasname را باز کنید"); } return; }
     if (t.closest("[data-hb-wipe]")) {
       if (!confirm("همهٔ شناسنامه‌هایی که روی این دستگاه ذخیره شده پاک شود؟ (روی سرور چیزی پاک نمی‌شود و با لینک دوباره می‌توانید اضافه کنید.)")) return;

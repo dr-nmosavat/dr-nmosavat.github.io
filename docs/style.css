@@ -1917,3 +1917,7 @@ body.hb-page footer { text-align: center; } body.hb-page footer > span { display
 .hb-seal-x { margin: 8px 0 4px; font-size: 12.5px; line-height: 1.9; text-align: justify; text-align-last: start; color: #5b6472; }
 body.hb-page main p, body.hb-page .note p, .page-head .sub, main section > p, .faq p, .note p { text-align: justify; text-align-last: start; }
 nav a[href="tools.html"][aria-current="page"] { color: var(--on-blue); border-radius: 999px; }
+
+.hb-addbtn { width: 100%; min-height: 48px; margin: 6px 0; }
+.hb-guide { position: fixed; inset: 0; z-index: 90; display: flex; align-items: flex-end; justify-content: center; background: rgba(15,25,40,.55); } .hb-guide[hidden] { display: none; }
+.hb-guide-in { width: 100%; max-width: 480px; max-height: 90vh; overflow: auto; padding: 18px 16px 22px; background: #fff; border-radius: 20px 20px 0 0; } .hb-guide-in > b { display: block; margin-bottom: 8px; font-size: 16px; color: #1f5aa6; text-align: center; } .hb-guide-in .btn { width: 100%; margin-top: 8px; }
