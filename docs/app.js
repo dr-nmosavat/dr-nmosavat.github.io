@@ -1373,7 +1373,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   }
   function sealBox(cp) {
     var sv = srvOf(cp); if (!sv) return "";
-    return '<div class="hb-seal"><b class="hb-seal-t">مهر و اصالت</b><div class="hb-seal-r"><span>شمارهٔ شناسنامه</span><b dir="ltr">' + esc(sv.code) + "</b></div>" + (sv.auth ? '<div class="hb-seal-r"><span>کد اصالت</span><b dir="ltr" class="hb-auth">✓ ' + esc(sv.auth) + "</b></div>" : "") + '<small>راستی‌آزمایی: drniloofarmosavat.ir/asalat</small></div>';
+    return '<div class="hb-seal"><b class="hb-seal-t">مهر و اصالت</b><div class="hb-seal-r"><span>شمارهٔ شناسنامه</span><b dir="ltr">' + esc(sv.code) + "</b></div>" + (sv.auth ? '<div class="hb-seal-r"><span>کد اصالت</span><b dir="ltr" class="hb-auth">✓ ' + esc(sv.auth) + "</b></div>" : "") + '<p class="hb-seal-x">این دو کد، شناسنامهٔ شما را در دفتر کلینیک ثبت می‌کنند و برای جلوگیری از جعل‌اند. هر کس می‌تواند در سایت بررسی کند که این شناسنامه واقعاً از طرف دکتر مساوات صادر شده است.</p><small>راستی‌آزمایی: drniloofarmosavat.ir/asalat</small></div>';
   }
   function renderPages(cp) {
     function pg(i, title, body) { return '<div class="hb-pg-h">' + title + '</div><div class="hb-pg-b">' + body + "</div>"; }

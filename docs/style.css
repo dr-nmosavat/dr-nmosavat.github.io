@@ -1912,3 +1912,8 @@ body.hb-page footer { text-align: center; } body.hb-page footer > span { display
 .hb-how { text-align: start; margin: 8px 0; padding: 8px 10px; border-radius: 12px; background: rgba(255,255,255,.7); } .hb-how h4 { margin: 0 0 4px; font-size: 13.5px; color: #1f5aa6; } .hb-how ol { margin: 0; }
 .hb-others { border-style: dashed; color: #1f5aa6; }
 .hb-how[hidden]{display:none}
+
+.hb-book { display: flex; width: 100%; max-width: 320px; margin: 12px auto 0; justify-content: center; }
+.hb-seal-x { margin: 8px 0 4px; font-size: 12.5px; line-height: 1.9; text-align: justify; text-align-last: start; color: #5b6472; }
+body.hb-page main p, body.hb-page .note p, .page-head .sub, main section > p, .faq p, .note p { text-align: justify; text-align-last: start; }
+nav a[href="tools.html"][aria-current="page"] { color: var(--on-blue); border-radius: 999px; }
