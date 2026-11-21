@@ -1317,13 +1317,14 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function errMsg(e) { return e === "net" ? "اتصال با سرور برقرار نشد. اینترنت را بررسی کنید." : e === "auth" ? "دسترسی مجاز نیست (دوباره وارد شوید یا لینک را بررسی کنید)." : e === "forbidden" ? "این مورد را فقط دکتر ثبت یا تغییر می‌دهد." : e === "locked" ? "ورود موقتاً قفل شد؛ چند دقیقه بعد دوباره تلاش کنید." : "خطای سرور؛ دوباره تلاش کنید."; }
   function setSeg(n, v) { [].forEach.call(q('[data-seg="' + n + '"]').children, function (b) { b.classList.toggle("on", b.getAttribute("data-v") === v); }); }
   function segVal(n) { var b = q('[data-seg="' + n + '"] .on'); return b ? b.getAttribute("data-v") : ""; }
-  function toSrvPet(p) { return { code: p.srv && p.srv.code, name: p.name, en: p.en, owner: p.owner, guardian: p.guardian, sex: p.sex || "", neut: p.neut || "", species: p.species, breed: p.breed, breedEn: p.breedEn, birth: p.birth, plan: p.plan || [], consent: p.consent ? 1 : 0 }; }
+  function toSrvPet(p) { return { code: p.srv && p.srv.code, name: p.name, en: p.en, owner: p.owner, guardian: p.guardian, sex: p.sex || "", neut: p.neut || "", phone: p.phone, species: p.species, breed: p.breed, breedEn: p.breedEn, birth: p.birth, plan: p.plan || [], consent: p.consent ? 1 : 0 }; }
   function toSrvRec(r) { var o = {}; ["id", "type", "date", "name", "brand", "serial", "place", "extra", "freq", "how", "dur", "end", "weight", "next", "closed", "src"].forEach(function (k) { if (r[k]) o[k] = r[k]; }); return o; }
   function normRec(r) { var o = {}; for (var k in r) o[k] = r[k]; o.dr = r.dr ? 1 : 0; o.closed = !!r.closed; return o; }
   function upsertSrv(sp, recs, key) {
     var p = db.pets.filter(function (x) { return (x.srv && x.srv.code === sp.code) || x.id === sp.code; })[0];
     if (!p) { p = { id: sp.code, plan: [] }; db.pets.push(p); }
     ["name", "en", "owner", "guardian", "sex", "neut", "species", "breed", "breedEn", "birth"].forEach(function (k) { p[k] = sp[k] || ""; });
+    if (isDr() && sp.phone !== undefined) p.phone = sp.phone || ""; else delete p.phone;
     p.plan = sp.plan || []; p.consent = !!sp.consent; p.srv = { code: sp.code, key: key || (p.srv && p.srv.key) || sp.key || "", auth: sp.auth || (p.srv && p.srv.auth) || "" };
     db.recs = db.recs.filter(function (r) { return r.pet !== p.id; }).concat((recs || []).map(function (r) { var o = normRec(r); o.pet = p.id; return o; }));
     return p;
@@ -1520,7 +1521,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function petForm(p) {
     q("[data-hb-petform]").classList.remove("photoonly");
     editId = p ? p.id : null; q("[data-hb-pf-title]").textContent = p ? "ویرایش شناسنامه" : srvOn() && isDr() ? "صدور شناسنامهٔ جدید" : "شناسنامهٔ پت"; q("[data-hb-save-pet]").textContent = !p && srvOn() && isDr() ? "صدور شناسنامه" : "ذخیره";
-    q("#hb-pn").value = p ? p.name : ""; q("#hb-pe").value = p && p.en || ""; q("#hb-po").value = p && p.owner || ""; q("#hb-pg").value = p && p.guardian || "";  q("#hb-pbe").value = p && p.breedEn || ""; q("#hb-pbe").setAttribute("data-auto", p && p.breedEn ? "" : "1"); JD.pb.set(p ? p.birth : ""); setSeg("hbsx", p && p.sex || ""); setSeg("hbne", p && p.neut || ""); formPhoto = p && p.photo || ""; showPhoto();
+    q("#hb-pn").value = p ? p.name : ""; q("#hb-pe").value = p && p.en || ""; q("#hb-po").value = p && p.owner || ""; q("#hb-pg").value = p && p.guardian || "";  q("#hb-pbe").value = p && p.breedEn || ""; q("#hb-pbe").setAttribute("data-auto", p && p.breedEn ? "" : "1"); JD.pb.set(p ? p.birth : ""); q("#hb-ph").value = p && p.phone || ""; setSeg("hbsx", p && p.sex || ""); setSeg("hbne", p && p.neut || ""); formPhoto = p && p.photo || ""; showPhoto();
     var segs = q('[data-seg="hbsp"]').children; [].forEach.call(segs, function (b) { b.classList.toggle("on", p ? b.getAttribute("data-v") === p.species : b.getAttribute("data-v") === "سگ"); });
     fillBreeds(p ? p.species : "سگ", p ? p.breed : "");
     q("[data-hb-petform]").hidden = false; q("[data-hb-main]").hidden = true;
@@ -1674,7 +1675,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (t.closest("[data-hb-save-pet]")) {
       var n2 = q("#hb-pn").value.trim(); if (!n2) { q("#hb-pn").focus(); return; }
       var sp = q('[data-seg="hbsp"] .on'), spv = sp ? sp.getAttribute("data-v") : "", bd = JD.pb.get(), ep0 = editId ? db.pets.filter(function (x) { return x.id === editId; })[0] : null;
-      var fv = { sex: segVal("hbsx"), neut: segVal("hbne"), name: n2, en: q("#hb-pe").value.trim(), owner: q("#hb-po").value.trim(), guardian: q("#hb-pg").value.trim(), breed: getBreed(), breedEn: q("#hb-pbe").value.trim(), species: spv, birth: bd };
+      var fv = { phone: q("#hb-ph").value.trim().replace(/[۰-۹]/g, function (d) { return "۰۱۲۳۴۵۶۷۸۹".indexOf(d); }).replace(/[٠-٩]/g, function (d) { return "٠١٢٣٤٥٦٧٨٩".indexOf(d); }), sex: segVal("hbsx"), neut: segVal("hbne"), name: n2, en: q("#hb-pe").value.trim(), owner: q("#hb-po").value.trim(), guardian: q("#hb-pg").value.trim(), breed: getBreed(), breedEn: q("#hb-pbe").value.trim(), species: spv, birth: bd };
       var perr = q("[data-hb-perr]"); perr.hidden = true;
       var useSrv = srvOn() && isDr() && (!ep0 || srvOf(ep0));
       if (srvOn() && ep0 && !isDr()) {   // سرپرست فقط عکس را عوض می‌کند
