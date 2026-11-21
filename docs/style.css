@@ -1931,3 +1931,13 @@ nav a[href="tools.html"][aria-current="page"] { color: var(--on-blue); border-ra
 .hb-qrw { position: relative; margin-bottom: 8px; } .hb-qrw .hb-qr1 { margin: 0; padding-inline-start: 150px; min-height: 58px; }
 .hb-qrw .hb-callq { position: absolute; inset-inline-start: 34px; top: 50%; transform: translateY(-50%); padding: 6px 8px; font-size: 13px; z-index: 1; white-space: nowrap; }
 @media (max-width: 480px) { .hb-qrw .hb-qr1 { padding-inline-start: 12px; padding-bottom: 34px; } .hb-qrw .hb-callq { inset-inline-start: 12px; top: auto; bottom: 6px; transform: none; padding: 2px 0; } }
+
+/* بیماران من */
+.hb-ptbox { display: none; } html.hb-dr [data-dview="pt"] .hb-ptbox { display: block; }
+html.hb-dr [data-dview="pt"] [data-hb-searchbox], html.hb-dr [data-dview="pt"] [data-hb-verifybox], html.hb-dr [data-dview="pt"] [data-hb-petform], html.hb-dr [data-dview="pt"] [data-hb-main] { display: none !important; }
+.hb-pttool { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; } .hb-pttool input { flex: 1 1 200px; min-width: 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; font: inherit; }
+.hb-ptform { margin: 0 0 12px; padding: 12px; border: 1px solid #cfdff1; border-radius: 16px; background: #f7fafe; } .hb-ptform[hidden] { display: none; } .hb-ptform textarea, .hb-ptform input[type="date"] { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; font: inherit; }
+.hb-ptdue { margin: 0 0 12px; padding: 10px 12px; border-radius: 14px; background: #fdf1da; border: 1px solid #ecd49a; } .hb-ptdue > b { display: block; margin-bottom: 6px; color: #8a5a0d; font-size: 14px; }
+.hb-ptdr { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; padding: 4px 0; font-size: 13.5px; border-top: 1px dotted #ecd49a; } .hb-ptdr small { color: #8a5a0d; } .hb-ptdr .hb-call { margin-inline-start: auto; }
+.hb-ptc { margin-bottom: 10px; } .hb-ptph { margin-inline-start: auto; font-size: 13.5px; } .hb-ptlast { color: var(--muted); }
+.hb-ptdet summary { cursor: pointer; font-size: 13px; color: #1f5aa6; margin-top: 6px; } .hb-ptv { margin-top: 8px; padding-top: 8px; border-top: 1px dotted var(--line); font-size: 13.5px; } .hb-ptn { white-space: pre-wrap; margin: 4px 0 6px; line-height: 1.9; }

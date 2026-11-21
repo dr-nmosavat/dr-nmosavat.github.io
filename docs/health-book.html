@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'"><noscript><link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800&display=swap" rel="stylesheet"></noscript>
-<link rel="stylesheet" href="style.css?v=20261121130545">
+<link rel="stylesheet" href="style.css?v=20261121131652">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="icon" href="favicon.ico" sizes="48x48">
 <link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png">
@@ -77,7 +77,7 @@
         <button type="button" class="btn primary" data-hb-req>📝 درخواست شناسنامه</button>
         <a class="btn small ghost hb-wa2" data-hb-wa href="contact.html" target="_blank" rel="noopener">یا پیام به دکتر در واتساپ</a>
       </div>
-      <div class="hb-drtabs" data-hb-drtabs role="tablist"><button type="button" data-hb-dtab="list">📒 شناسنامه‌ها</button><button type="button" data-hb-dtab="new">＋ صدور جدید</button><button type="button" data-hb-dtab="code">🔎 بررسی کد</button><button type="button" data-hb-dtab="adopt">🏡 واگذاری</button><button type="button" data-hb-dtab="req">📝 درخواست‌ها</button></div>
+      <div class="hb-drtabs" data-hb-drtabs role="tablist"><button type="button" data-hb-dtab="list">📒 شناسنامه‌ها</button><button type="button" data-hb-dtab="new">＋ صدور جدید</button><button type="button" data-hb-dtab="code">🔎 بررسی کد</button><button type="button" data-hb-dtab="adopt">🏡 واگذاری</button><button type="button" data-hb-dtab="req">📝 درخواست‌ها</button><button type="button" data-hb-dtab="pt">🩺 بیماران من</button></div>
       <div class="hb-search" data-hb-searchbox hidden>
         <input type="search" data-hb-q autocomplete="off" placeholder="🔎 جستجو: نام، سرپرست، تلفن یا کد">
         <div class="hb-qres" data-hb-qres></div>
@@ -100,6 +100,23 @@
       <div class="hb-adbox hb-reqbox" data-hb-reqbox>
         <div class="seg hb-adf" data-seg="hb-rqf"><button type="button" class="on" data-v="new">جدید</button><button type="button" data-v="closed">بسته‌شده</button></div>
         <div class="hb-adlist" data-hb-rqlist></div>
+      </div>
+      <div class="hb-adbox hb-ptbox" data-hb-ptbox>
+        <div class="hb-pttool"><input type="search" data-hb-ptq autocomplete="off" placeholder="🔎 جستجو: نام، سرپرست، تلفن یا تشخیص"><button type="button" class="btn small primary" data-hb-ptnew>＋ مراجعهٔ جدید</button><button type="button" class="btn small ghost" data-hb-ptref aria-label="تازه‌سازی">🔄</button></div>
+        <div class="hb-ptform" data-hb-ptform hidden>
+          <div class="fld"><label>نام پت</label><input data-pt="name" type="text" maxlength="40"></div>
+          <div class="fld"><label>گونه</label><div class="seg" data-seg="hb-ptsp"><button type="button" class="on" data-v="سگ">سگ</button><button type="button" data-v="گربه">گربه</button><button type="button" data-v="پرنده">پرنده</button><button type="button" data-v="دیگر">دیگر</button></div></div>
+          <div class="fld"><label>نام سرپرست</label><input data-pt="owner" type="text" maxlength="40"></div>
+          <div class="fld"><label>شمارهٔ تماس</label><input data-pt="phone" type="tel" inputmode="tel" dir="ltr" maxlength="16" placeholder="09123456789" autocomplete="off"></div>
+          <div class="fld"><label>تاریخ مراجعه</label><input data-pt="date" type="date"></div>
+          <div class="fld"><label>دلیل مراجعه / تشخیص</label><input data-pt="reason" type="text" maxlength="200"></div>
+          <div class="fld"><label>یادداشت</label><textarea data-pt="note" rows="4" maxlength="1500"></textarea></div>
+          <div class="fld"><label>تاریخ پیگیری <small>(اختیاری)</small></label><input data-pt="follow" type="date"></div>
+          <p class="hb-err" data-hb-pterr hidden></p>
+          <div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-ptsave>ذخیره</button><button type="button" class="btn small ghost" data-hb-ptcancel>انصراف</button></div>
+        </div>
+        <div data-hb-ptfollow></div>
+        <div class="hb-adlist" data-hb-ptlist></div>
       </div>
       <div class="hb-pets" data-hb-pets role="tablist" aria-label="پت‌ها"></div>
 
@@ -305,7 +322,7 @@
   </div>
 </div>
 <a class="fab" aria-label="نیاز به مشاوره؟" data-consult href="contact.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4V5z"/></svg><span><i class="l-long">نیاز به مشاوره؟</i><i class="l-short">مشاوره</i></span></a>
-<script src="app.js?v=20261121130545"></script>
+<script src="app.js?v=20261121131652"></script>
     </body>
     </html>
     

@@ -64,6 +64,7 @@ var H = {
   allTypes: ["واکسن", "ضدانگل داخلی", "ضدانگل خارجی (کک و کنه)", "ویزیت", "وزن", "دارو", "عقیم‌سازی", "آزمایش", "سایر"]
 };
 var PET_COLS = ['code', 'key', 'name', 'en', 'owner', 'guardian', 'species', 'breed', 'breedEn', 'birth', 'plan', 'consent', 'created', 'updated', 'deleted', 'auth', 'sex', 'neut', 'phone'];
+var PT_COLS = ['id', 'pkey', 'created', 'updated', 'date', 'name', 'species', 'owner', 'phone', 'reason', 'note', 'follow', 'code', 'deleted'];
 var REC_COLS = ['id', 'code', 'type', 'date', 'name', 'brand', 'serial', 'place', 'extra', 'freq', 'how', 'dur', 'end', 'weight', 'next', 'closed', 'dr', 'created', 'updated', 'deleted', 'src'];
 
 function hsheet_(name, cols) {
@@ -176,6 +177,9 @@ function health_(b) {
     if (a === 'adoptSet') return adoptSet_(b);
     if (a === 'petReqList') return petReqList_();
     if (a === 'petReqSet') return petReqSet_(b);
+    if (a === 'patList') return patList_();
+    if (a === 'patSave') return patSave_(b);
+    if (a === 'patDel') return patDel_(b);
   } finally { lock.releaseLock(); }
   return { ok: false, err: 'bad' };
 }
@@ -303,7 +307,7 @@ function doGet(e) {
   var p = (e && e.parameter) || {};
   if (p.action === 'spin') return json_(spin_(p));
   if (p.action === 'verify') return verifyPage_(p);
-  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v11-sex' });
+  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v12-patients' });
 }
 
 // ======================= چرخ هدیه =======================
@@ -446,6 +450,32 @@ function petReqList_() {
   rows.sort(function (x, y) { return x.created < y.created ? 1 : -1; });
   return { ok: true, items: rows.slice(0, 200).map(function (r) { return { id: r.id, created: r.created, status: r.status, name: r.name, species: r.species, owner: r.owner, contact: r.contact, birth: r.birth, note: r.note, code: r.code }; }) };
 }
+// ---- دفتر «بیماران من» (فقط دکتر؛ هر ردیف = یک مراجعه) ----
+function patOut_(r) { return { id: r.id, pkey: r.pkey, date: r.date, name: r.name, species: r.species, owner: r.owner, phone: r.phone, reason: r.reason, note: r.note, follow: r.follow, code: r.code }; }
+function patList_() {
+  var rows = readAll_(hsheet_('Patients', PT_COLS), PT_COLS).filter(function (r) { return r.deleted !== '1'; });
+  rows.sort(function (x, y) { return x.date < y.date ? 1 : x.date > y.date ? -1 : (x.created < y.created ? 1 : -1); });
+  return { ok: true, items: rows.slice(0, 1500).map(patOut_) };
+}
+function patSave_(b) {
+  var sh = hsheet_('Patients', PT_COLS), rows = readAll_(sh, PT_COLS), r = null, i, v = b.v || {};
+  var name = clip_(v.name, 40); if (!name) return { ok: false, err: 'bad' };
+  if (b.id) for (i = 0; i < rows.length; i++) if (rows[i].id === String(b.id)) { r = rows[i]; break; }
+  if (b.id && !r) return { ok: false, err: 'notfound' };
+  if (!r) r = { id: 'V-' + rnd_(7).toUpperCase(), created: nowIso_(), deleted: '' };
+  r.pkey = /^PT-[A-Z0-9]{5,10}$/.test(String(v.pkey || '')) ? v.pkey : (r.pkey || 'PT-' + rnd_(6).toUpperCase());
+  r.name = name; r.species = ['سگ', 'گربه', 'پرنده', 'دیگر'].indexOf(v.species) > -1 ? v.species : 'دیگر';
+  r.owner = clip_(v.owner, 40); r.phone = String(v.phone || '').replace(/[^0-9+]/g, '').slice(0, 16);
+  r.date = date_(v.date) || Utilities.formatDate(new Date(), CFG.tz, 'yyyy-MM-dd');
+  r.reason = clip_(v.reason, 200); r.note = clip_(v.note, 1500); r.follow = date_(v.follow); r.code = clip_(v.code, 20);
+  r.updated = nowIso_(); writeRow_(sh, PT_COLS, r, r._row || 0);
+  return { ok: true, item: patOut_(r) };
+}
+function patDel_(b) {
+  var sh = hsheet_('Patients', PT_COLS), rows = readAll_(sh, PT_COLS), i;
+  for (i = 0; i < rows.length; i++) if (rows[i].id === String(b.id || '')) { rows[i].deleted = '1'; rows[i].updated = nowIso_(); writeRow_(sh, PT_COLS, rows[i], rows[i]._row); return { ok: true }; }
+  return { ok: false, err: 'notfound' };
+}
 function petReqSet_(b) {
   var sh = hsheet_('PetReqs', PR_COLS), rows = readAll_(sh, PR_COLS), r = null, i;
   for (i = 0; i < rows.length; i++) if (rows[i].id === String(b.id || '')) { r = rows[i]; break; }
@@ -469,6 +499,8 @@ var LOOK = {
   Spins: { color: '#d97706', labels: ['زمان', 'کد', 'جایزه', 'انقضا', 'دستگاه', 'استفاده شد؟', 'زمان استفاده'], widths: [150, 120, 190, 110, 130, 100, 150], clip: [5] },
   Pets: { color: '#1f5aa6', labels: ['شمارهٔ شناسنامه (کد پت)', 'کلید لینک (محرمانه)', 'نام', 'نام انگلیسی', 'سرپرست', 'سرپرست دوم (قدیمی)', 'گونه', 'نژاد', 'نژاد (انگلیسی)', 'تاریخ تولد', 'برنامهٔ واکسن (داده)', 'رضایت (۱=بله)', 'ساخته شد', 'ویرایش', 'حذف‌شده؟ (۱=بله)', 'کد اصالت', 'جنسیت', 'وضعیت عقیم‌سازی', 'تلفن سرپرست (محرمانه، فقط آرشیو)'],
     widths: [130, 140, 110, 110, 130, 110, 80, 110, 120, 100, 120, 90, 150, 150, 90, 100, 90, 130, 150], clip: [2, 11], gray: [2, 11], green: [1, 16], del: 15 },
+  Patients: { color: '#0e7490', labels: ['شناسهٔ مراجعه', 'شناسهٔ بیمار', 'ثبت شد', 'ویرایش', 'تاریخ مراجعه', 'نام پت', 'گونه', 'سرپرست', 'تلفن (محرمانه)', 'دلیل / تشخیص', 'یادداشت', 'تاریخ پیگیری', 'کد شناسنامه', 'حذف‌شده؟ (۱=بله)'],
+    widths: [110, 100, 150, 150, 100, 110, 80, 130, 130, 200, 260, 100, 110, 90], clip: [11], gray: [2, 3, 4, 13], del: 14 },
   Records: { color: '#0f766e', labels: ['شناسه', 'کد پت', 'نوع', 'تاریخ', 'نام', 'برند', 'سریال', 'محل', 'توضیح', 'تکرار', 'روش', 'مدت', 'پایان', 'وزن', 'نوبت بعدی', 'بسته‌شده؟', 'ثبت دکتر؟', 'ساخته شد', 'ویرایش', 'حذف‌شده؟ (۱=بله)', 'منبع (old=سابقهٔ قبلی)'],
     widths: [110, 90, 130, 100, 150, 110, 110, 110, 140, 90, 90, 80, 100, 70, 100, 80, 80, 150, 150, 90, 110], gray: [1], del: 20 },
   Adoptions: { color: '#b36b00', labels: ['کد', 'زمان ثبت', 'وضعیت', 'گونه', 'نام', 'سن', 'جنس', 'عقیم', 'واکسن', 'رفتار', 'دلیل واگذاری', 'شهر', 'تلفن (محرمانه)', 'عکس (داده)', 'یادداشت', 'تاریخ تأیید', 'ویرایش'],
