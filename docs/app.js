@@ -1395,11 +1395,14 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function iosShow(i) { var tr = q("[data-hb-track]"); if (!tr) return; [].forEach.call(tr.children, function (sl, n) { sl.classList.toggle("hb-on", n === i); }); }
   // آیفون/آیپد قدیمی: پنجره‌های شناور (فرم ثبت، QR، اشتراک، راهنما) درون صفحه و با اسکرول خودکار نشان داده می‌شوند
   if (IOSMODE && window.MutationObserver) {
+    // فرم و پنجره‌ها را درست زیر دکمه‌های ثبت سریع می‌گذاریم تا بعد از لمس همان‌جا دیده شوند
+    var iosAnchor = q(".hb-dacts") || q(".hb-oacts");
     var iosMods = document.querySelectorAll(".hb-sheet, .hb-qrm, .hb-guide");
     [].forEach.call(iosMods, function (m) {
+      if (iosAnchor && iosAnchor.parentNode && !m.classList.contains("hb-guide")) iosAnchor.parentNode.insertBefore(m, iosAnchor.nextSibling);
       new MutationObserver(function () {
         if (m.hidden) return;
-        setTimeout(function () { try { window.scrollTo(0, Math.max(0, m.getBoundingClientRect().top + (window.pageYOffset || 0) - 12)); } catch (e) {} }, 60);
+        setTimeout(function () { try { m.scrollIntoView(true); } catch (e) { try { window.scrollTo(0, Math.max(0, m.getBoundingClientRect().top + (window.pageYOffset || 0) - 12)); } catch (e2) {} } }, 80);
       }).observe(m, { attributes: true, attributeFilter: ["hidden"] });
     });
   }
