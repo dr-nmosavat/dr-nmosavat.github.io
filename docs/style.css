@@ -1982,3 +1982,9 @@ html.hb-dr [data-dcollapsed="1"] [data-hb-searchbox], html.hb-dr [data-dcollapse
 html.hb-dr .hb-sendrow { display: flex; justify-content: center; margin: 6px 0 12px; } html.hb-dr .hb-sendrow .hb-sendbtn { width: 100%; justify-content: center; text-align: center; }
 
 .hb-ver { margin: 6px 0 0; text-align: center; font-size: 10px; color: #9aa5b1; opacity: .8; }
+
+/* آیفون/آیپد: نمایش یک صفحه در هر لحظه (بدون اسکرول افقی) */
+html.hb-ios .hb-track { display: block; overflow: hidden; scroll-snap-type: none; height: auto !important; }
+html.hb-ios .hb-slide { display: none; width: 100%; }
+html.hb-ios .hb-slide.hb-on { display: block; }
+@media print { html.hb-ios .hb-slide { display: block !important; } }

@@ -1389,13 +1389,23 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     q("[data-hb-dots]").innerHTML = PGS.map(function (t, i) { return '<i class="' + (i === curPg ? "on" : "") + '"></i>'; }).join("");
     var tr = q("[data-hb-track]"); try { tr.scrollLeft = (getComputedStyle(tr).direction === "rtl" ? -1 : 1) * curPg * tr.clientWidth; } catch (e0) {} fitTrack();
   }
-  function fitTrack() { var tr = q("[data-hb-track]"); if (!tr) return; var h = 0; [].forEach.call(tr.children, function (s) { h = Math.max(h, s.scrollHeight); }); tr.style.height = h + "px"; }
+  // آیفون/آیپد: به‌جای اسکرین scroll-snap، فقط صفحهٔ انتخاب‌شده نشان داده می‌شود و کشیدن انگشت جدا مدیریت می‌شود
+  var IOSMODE = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  if (IOSMODE) document.documentElement.classList.add("hb-ios");
+  function iosShow(i) { var tr = q("[data-hb-track]"); if (!tr) return; [].forEach.call(tr.children, function (sl, n) { sl.classList.toggle("hb-on", n === i); }); }
+  function fitTrack() { var tr = q("[data-hb-track]"); if (!tr) return; if (IOSMODE) { tr.style.height = "auto"; iosShow(curPg); return; } var h = 0; [].forEach.call(tr.children, function (s) { h = Math.max(h, s.scrollHeight); }); tr.style.height = h + "px"; }
   window.addEventListener("resize", function () { if (q("[data-hb-track]")) fitTrack(); });
+  (function () {
+    if (!IOSMODE) return; var tr = q("[data-hb-track]"); if (!tr) return; var x0 = 0, y0 = 0;
+    tr.addEventListener("touchstart", function (e) { var t = e.touches[0]; x0 = t.clientX; y0 = t.clientY; }, { passive: true });
+    tr.addEventListener("touchend", function (e) { var t = e.changedTouches[0], dx = t.clientX - x0, dy = t.clientY - y0; if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 1.5) return; var n = curPg + (dx > 0 ? 1 : -1); if (n < 0 || n >= PGS.length) return; setPg(n); }, { passive: true });
+  })();
   function setPg(i) { curPg = i; try { goPg(i); } catch (e1) {} [].forEach.call(q("[data-hb-ptabs]").children, function (c, n) { c.classList.toggle("on", n === i); }); [].forEach.call(q("[data-hb-dots]").children, function (c, n) { c.classList.toggle("on", n === i); }); fitTrack(); }
   // سافاری آیفون/آیپد با scroll-snap و حرکت نرم برنامه‌ای کار نمی‌کند و مدل scrollLeft در راست‌به‌چپ هم بین نسخه‌ها فرق دارد؛
   // پس snap را لحظه‌ای خاموش می‌کنیم و فاصلهٔ واقعی اسلاید تا لبهٔ کارت را اندازه می‌گیریم (مستقل از علامت scrollLeft)
   (function () { try { var sc = document.querySelector('script[src*="app.js?v="]'), v = sc ? sc.getAttribute("src").split("v=")[1] : ""; var el = document.createElement("p"); el.className = "hb-ver"; el.setAttribute("dir", "ltr"); el.textContent = "v" + v; root.appendChild(el); } catch (e) {} })();
   function goPg(i) {
+    if (IOSMODE) { iosShow(i); return; }
     var tr = q("[data-hb-track]"), sl = tr.children[i]; if (!sl) return;
     tr.style.scrollSnapType = "none"; tr.style.scrollBehavior = "auto";
     function gap() { return sl.getBoundingClientRect().left - tr.getBoundingClientRect().left; }
