@@ -16,8 +16,8 @@
 <p><a id="go" href="health-book.html">اگر باز نشد اینجا را بزنید</a></p>
 <script>
 (function () {
-  var h = location.hash.replace(/^#/, "").replace(/^p=/, "");
-  var url = "health-book.html" + (h ? "#p=" + h : "#nolink");
+  var h = (location.hash.replace(/^#/, "") || location.search.replace(/^\?/, "")).replace(/^p=/, "").replace(/[^A-Za-z0-9.\-]/g, "");
+  var url = "health-book.html" + (h ? "?p=" + h : "#nolink");
   document.getElementById("go").href = url;
   location.replace(url);
 })();
