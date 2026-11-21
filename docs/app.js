@@ -1387,11 +1387,11 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     q('[data-hb-pg="3"]').innerHTML = pg(3, "🩺 ویزیت، آزمایش، وزن و سایر", weightChart(cp) + pageRows(cp, ["ویزیت", "آزمایش", "عقیم‌سازی", "دارو", "وزن", "سایر"], "oth") + sealBox(cp));
     q("[data-hb-ptabs]").innerHTML = PGS.map(function (t, i) { return '<button type="button" class="chip' + (i === curPg ? " on" : "") + '" data-hb-pgo="' + i + '">' + t + "</button>"; }).join("");
     q("[data-hb-dots]").innerHTML = PGS.map(function (t, i) { return '<i class="' + (i === curPg ? "on" : "") + '"></i>'; }).join("");
-    var tr = q("[data-hb-track]"); tr.scrollTo({ left: (getComputedStyle(tr).direction === "rtl" ? -1 : 1) * curPg * tr.clientWidth, behavior: "auto" }); fitTrack();
+    var tr = q("[data-hb-track]"); try { tr.scrollLeft = (getComputedStyle(tr).direction === "rtl" ? -1 : 1) * curPg * tr.clientWidth; } catch (e0) {} fitTrack();
   }
   function fitTrack() { var tr = q("[data-hb-track]"); if (!tr) return; var h = 0; [].forEach.call(tr.children, function (s) { h = Math.max(h, s.scrollHeight); }); tr.style.height = h + "px"; }
   window.addEventListener("resize", function () { if (q("[data-hb-track]")) fitTrack(); });
-  function setPg(i) { curPg = i; goPg(i); [].forEach.call(q("[data-hb-ptabs]").children, function (c, n) { c.classList.toggle("on", n === i); }); [].forEach.call(q("[data-hb-dots]").children, function (c, n) { c.classList.toggle("on", n === i); }); fitTrack(); }
+  function setPg(i) { curPg = i; try { goPg(i); } catch (e1) {} [].forEach.call(q("[data-hb-ptabs]").children, function (c, n) { c.classList.toggle("on", n === i); }); [].forEach.call(q("[data-hb-dots]").children, function (c, n) { c.classList.toggle("on", n === i); }); fitTrack(); }
   // سافاری آیفون/آیپد با scroll-snap و حرکت نرم برنامه‌ای کار نمی‌کند و مدل scrollLeft در راست‌به‌چپ هم بین نسخه‌ها فرق دارد؛
   // پس snap را لحظه‌ای خاموش می‌کنیم و فاصلهٔ واقعی اسلاید تا لبهٔ کارت را اندازه می‌گیریم (مستقل از علامت scrollLeft)
   (function () { try { var sc = document.querySelector('script[src*="app.js?v="]'), v = sc ? sc.getAttribute("src").split("v=")[1] : ""; var el = document.createElement("p"); el.className = "hb-ver"; el.setAttribute("dir", "ltr"); el.textContent = "v" + v; root.appendChild(el); } catch (e) {} })();
