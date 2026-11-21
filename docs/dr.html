@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=202611211046">
+<link rel="stylesheet" href="style.css?v=20261121105704">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="icon" href="favicon.ico" sizes="48x48">
 <link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png">
@@ -128,13 +128,14 @@
           </div>
           <div class="hb-dots" data-hb-dots aria-hidden="true"></div>
         </div>
-        <div class="hb-editrow"><button type="button" class="btn small hb-showbtn" data-hb-present>🪪 نمایش شناسنامه به دیگران</button></div>
+        <div class="hb-editrow"><button type="button" class="btn small hb-showbtn" data-hb-present>🪪 نمایش شناسنامه</button></div>
         <div class="hb-sendrow hb-doc-only"><button type="button" class="btn hb-sendbtn" data-hb-share>📤 ارسال برای صاحب پت</button></div>
         <div class="hb-rem" data-hb-rem></div>
         <div class="hb-plan" data-hb-plan></div>
         <div class="hb-addbox" data-hb-addbox>
           <b>📲 شناسنامه را روی صفحهٔ اصلی گوشی بگذارید</b>
-          <ol><li>آیفون: دکمهٔ اشتراک ⬆︎ · اندروید: منوی ⋮</li><li>آیفون: «Add to Home Screen» · اندروید: «Install and create shortcut» (اگر پرسید، «Create shortcut» را بزنید)</li><li>از این به بعد با یک لمس باز می‌شود</li></ol>
+          <div class="hb-how" data-how="ios"><h4>📱 آیفون (سافاری)</h4><ol><li>دکمهٔ اشتراک ⬆︎ را بزنید</li><li>«Add to Home Screen» را انتخاب کنید</li><li>«Add» را بزنید</li></ol></div>
+          <div class="hb-how" data-how="android"><h4>🤖 اندروید (کروم)</h4><ol><li>منوی ⋮ را بزنید</li><li>«Install and create shortcut» را انتخاب کنید</li><li>اگر پرسید، «Create shortcut» را بزنید</li></ol></div>
           <small>همین صفحه را اضافه کنید.</small>
           <div class="hb-keeprow" data-hb-tmpnote hidden><span>این شناسنامه فقط تا بستن صفحه روی این دستگاه می‌ماند.</span><button type="button" class="hb-lnk" data-hb-keep>ذخیره در مرورگر</button></div>
         </div>
@@ -240,16 +241,11 @@
         </div>
       </div>
     </section>
-    <section>
-      <div class="cta">
-        <h2>گرفتن نوبت برای پت شما</h2>
-        <a class="btn" href="booking.html">ثبت نوبت</a>
-      </div>
-    </section>
+    <section><div class="hb-bottombtns"><a class="btn" href="verify.html">🔎 اصالت‌سنجی</a><a class="btn" href="adopt.html">🏡 واگذاری پت</a></div></section>
   </main>
   <footer>
     <span>کلینیک دامپزشکی دکتر نیلوفر مساوات</span>
-    <nav class="flinks" aria-label="راه‌های ارتباط"><a data-book href="contact.html">واتساپ</a><a data-ig href="contact.html">اینستاگرام</a><a data-bale href="contact.html">بله</a><a data-map href="contact.html">مسیریابی</a><a href="locations.html">مکان‌ها</a><a href="tools.html">ابزارها</a><a href="adopt.html">واگذاری پت</a><a href="verify.html">اصالت‌سنجی</a></nav>
+    <nav class="flinks" aria-label="راه‌های ارتباط"><a data-book href="contact.html">واتساپ</a><a data-ig href="contact.html">اینستاگرام</a><a data-bale href="contact.html">بله</a><a data-map href="contact.html">مسیریابی</a><a href="locations.html">مکان‌ها</a><a href="tools.html">ابزارها</a><a href="booking.html">نوبت‌گیری</a></nav>
     <p class="credit">© <span data-year>۱۴۰۵</span> دکتر نیلوفر مساوات · همهٔ حقوق این وب‌سایت محفوظ است<br><span class="by">طراحی و توسعه: <a href="https://instagram.com/hossein.tallachiyan" target="_blank" rel="noopener nofollow"><bdi>TALACHIYAN</bdi></a></span></p>
   </footer>
 </div>
@@ -297,7 +293,7 @@
   </div>
 </div>
 <a class="fab" aria-label="نیاز به مشاوره؟" data-consult href="contact.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4V5z"/></svg><span><i class="l-long">نیاز به مشاوره؟</i><i class="l-short">مشاوره</i></span></a>
-<script src="app.js?v=202611211046"></script>
+<script src="app.js?v=20261121105704"></script>
     </body>
     </html>
     

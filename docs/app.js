@@ -1264,7 +1264,8 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (!db.pets.length) { var guest = srvOn() && !isDr(); pets.innerHTML = ""; main.hidden = true; pf.hidden = guest; if (noAcct) noAcct.hidden = !(guest && !DRPAGE); if (gate) gate.hidden = !(guest && DRPAGE); document.documentElement.classList.remove("hb-has-pet"); return; }
     if (noAcct) noAcct.hidden = true; if (gate) gate.hidden = true;
     var cp = curPet(); db.cur = cp.id;
-    pets.innerHTML = db.pets.map(function (p) { return '<button type="button" class="chip' + (p.id === cp.id ? " on" : "") + '" data-hb-pet="' + p.id + '">' + avatar(p, "hb-mini") + " " + esc(p.name) + "</button>"; }).join("") + (srvOn() && !isDr() ? "" : '<button type="button" class="chip" data-hb-newpet>＋ پت جدید</button>');
+    var hideOthers = linkPetId && !showOthers && !isDr() && db.pets.length > 1 && db.pets.some(function (x) { return x.id === linkPetId; });
+    pets.innerHTML = (hideOthers ? db.pets.filter(function (p) { return p.id === linkPetId; }) : db.pets).map(function (p) { return '<button type="button" class="chip' + (p.id === cp.id ? " on" : "") + '" data-hb-pet="' + p.id + '">' + avatar(p, "hb-mini") + " " + esc(p.name) + "</button>"; }).join("") + (hideOthers ? '<button type="button" class="chip hb-others" data-hb-others>پت‌های دیگر من (' + toolFa(db.pets.length - 1) + ")</button>" : "") + (srvOn() && !isDr() ? "" : '<button type="button" class="chip" data-hb-newpet>＋ پت جدید</button>');
     main.hidden = !pf.hidden; if (!pf.hidden) return;
     renderCover(cp); var tn = q("[data-hb-tmpnote]"); if (tn) tn.hidden = !(cp.tmp && !ISDRP);
     // کارت برنامهٔ واکسن
@@ -1397,7 +1398,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     }, { passive: true });
   })();
   // ---- برگهٔ ثبت: فیلدها بر پایهٔ نوع ----
-  var editRecId = null, keepNext = false, lastSrc = "";
+  var editRecId = null, keepNext = false, lastSrc = "", linkPetId = null, showOthers = false;
   function renderTypes() {
     var avail = ORDER.filter(function (t) { return !locked(t); });
     q("[data-hb-types]").innerHTML = '<div class="fld"><label for="hb-tsel">نوع خدمت</label><select id="hb-tsel" data-hb-tsel' + (editRecId ? " disabled" : "") + ">" + avail.map(function (t) { return '<option value="' + esc(t) + '"' + (t === curType ? " selected" : "") + ">" + tl(t) + "</option>"; }).join("") + "</select></div>";
@@ -1616,7 +1617,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
         if (!j.ok) { alert(j.err === "auth" ? "این لینک معتبر نیست یا باطل شده است. از دکتر لینک تازه بخواهید." : errMsg(j.err)); return; }
         // لینک را که باز کنند، شناسنامه همان لحظه نمایش داده می‌شود (موقت)؛ با دکمهٔ «ذخیره در این گوشی» ماندگار می‌شود
         var existed = db.pets.some(function (x) { return x.srv && x.srv.code === j.pet.code && !x.tmp; });
-        var pi0 = upsertSrv(j.pet, j.recs, ml[2]); if (!existed) pi0.tmp = 1; db.cur = pi0.id; q("[data-hb-petform]").hidden = true; save();
+        var pi0 = upsertSrv(j.pet, j.recs, ml[2]); if (!existed) pi0.tmp = 1; db.cur = pi0.id; linkPetId = pi0.id; showOthers = false; q("[data-hb-petform]").hidden = true; save();
         // نشانی (همراه با کد) را در نوار آدرس نگه می‌داریم تا «افزودن به صفحهٔ اصلی» همین شناسنامه را باز کند
         // آیفون بخش # را برای آیکون صفحهٔ اصلی نگه نمی‌دارد؛ پس کد را به بخش ? منتقل می‌کنیم
         try { history.replaceState(null, "", location.pathname + "?p=" + ml[1] + "." + ml[2]); } catch (xr) {}
@@ -1643,7 +1644,8 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if ((b = t.closest("[data-hb-goto]")) && !t.closest("button")) { var gt = b.getAttribute("data-hb-goto"); setPg(gt === "واکسن" ? 1 : /ضدانگل/.test(gt) ? 2 : 3); q("[data-hb-ptabs]").scrollIntoView({ behavior: "smooth", block: "start" }); return; }
     if ((b = t.closest("[data-hb-opt]"))) { [].forEach.call(b.parentNode.children, function (x) { x.classList.toggle("on", x === b); }); var n = q("#hb-n"); if (n) n.value = b.getAttribute("data-hb-opt"); return; }
     if ((b = t.closest("[data-hb-tab]"))) { curTab = Number(b.getAttribute("data-hb-tab")); return render(); }
-    if ((b = t.closest("[data-hb-pet]"))) { db.cur = b.getAttribute("data-hb-pet"); q("[data-hb-petform]").hidden = true; save(); render(); return syncCur(); }
+    if (t.closest("[data-hb-others]")) { showOthers = true; render(); return; }
+    if ((b = t.closest("[data-hb-pet]"))) { showOthers = true; db.cur = b.getAttribute("data-hb-pet"); q("[data-hb-petform]").hidden = true; save(); render(); return syncCur(); }
     if ((b = t.closest("[data-hb-dtab]"))) { var dv = b.getAttribute("data-hb-dtab"); dview(dv); if (dv === "new") { petForm(null); } else q("[data-hb-petform]").hidden = true; return; }
     if (t.closest("[data-hb-back]")) { q("[data-hb-petform]").hidden = true; dview("list"); return; }
     if ((b = t.closest("[data-hb-lopen]"))) { db.cur = b.getAttribute("data-hb-lopen"); q("[data-hb-petform]").hidden = true; save(); render(); dview("pet"); return; }
@@ -2127,4 +2129,13 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       });
   });
   (function () { try { var sp = new URLSearchParams(location.search), c0 = sp.get("c"), a0 = sp.get("a"); if (c0) root.querySelector("#vf-code").value = c0; if (a0) root.querySelector("#vf-auth").value = a0; if (c0 && a0) root.querySelector("[data-vf-go]").click(); } catch (e) {} })();
+})();
+
+(function () {
+  try {
+    var ua = navigator.userAgent || "", ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1), and = /Android/i.test(ua);
+    if (!ios && !and) return;
+    var hide = ios ? "android" : "ios", n = document.querySelectorAll('[data-how="' + hide + '"]');
+    for (var i = 0; i < n.length; i++) n[i].hidden = true;
+  } catch (e) {}
 })();

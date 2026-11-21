@@ -1905,3 +1905,10 @@ html:not(.hb-dr) .hb-actions { display: none; }
 /* دکمهٔ دیدن رمز: سمت راست، تا روی متن رمز (چپ‌به‌راست) نیفتد */
 .hb-pwf input { padding-left: 14px; padding-right: 52px; text-align: left; }
 .hb-eye { inset-inline-end: auto; left: auto; right: 8px; }
+
+/* ته صفحهٔ شناسنامه */
+.hb-bottombtns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 8px 0 4px; } .hb-bottombtns .btn { width: 100%; min-height: 48px; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; background: #fff; color: #1f5aa6; border: 1.5px solid #1f5aa6; }
+body.hb-page footer { text-align: center; } body.hb-page footer > span { display: block; text-align: center; font-weight: 700; margin-bottom: 8px; } body.hb-page .flinks { justify-content: center; }
+.hb-how { text-align: start; margin: 8px 0; padding: 8px 10px; border-radius: 12px; background: rgba(255,255,255,.7); } .hb-how h4 { margin: 0 0 4px; font-size: 13.5px; color: #1f5aa6; } .hb-how ol { margin: 0; }
+.hb-others { border-style: dashed; color: #1f5aa6; }
+.hb-how[hidden]{display:none}
