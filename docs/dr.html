@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20261121112013">
+<link rel="stylesheet" href="style.css?v=20261121112701">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="icon" href="favicon.ico" sizes="48x48">
 <link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png">
@@ -104,13 +104,15 @@
         <h2 data-hb-pf-title>شناسنامهٔ پت</h2>
         <div class="fld"><label for="hb-pn">نام پت</label><input id="hb-pn" type="text" maxlength="30" placeholder="مثلاً لوسی"></div>
         <div class="fld"><label for="hb-pe">نام انگلیسی <small>(اختیاری)</small></label><input id="hb-pe" type="text" dir="ltr" maxlength="30" placeholder="e.g. Lucy" autocapitalize="words"></div>
-        <div class="fld"><label for="hb-po">نام صاحب پت</label><input id="hb-po" type="text" maxlength="40" placeholder="نام و نام خانوادگی"></div>
-        <div class="fld"><label for="hb-pg">نام سرپرست <small>(اگر با صاحب فرق دارد، اختیاری)</small></label><input id="hb-pg" type="text" maxlength="40" placeholder="نام نگهدارنده یا سرپرست"></div>
+        <div class="fld"><label for="hb-po">نام سرپرست</label><input id="hb-po" type="text" maxlength="40" placeholder="نام و نام خانوادگی"></div>
+        <div class="fld" hidden><input id="hb-pg" type="hidden"></div>
         <div class="fld"><label>گونه</label><div class="seg" data-seg="hbsp"><button type="button" class="on" data-v="سگ">سگ</button><button type="button" data-v="گربه">گربه</button><button type="button" data-v="پرنده">پرنده</button><button type="button" data-v="دیگر">دیگر</button></div></div>
+        <div class="fld"><label>جنسیت</label><div class="seg" data-seg="hbsx"><button type="button" data-v="نر">نر</button><button type="button" data-v="ماده">ماده</button><button type="button" class="on" data-v="">نامشخص</button></div></div>
+        <div class="fld"><label>وضعیت عقیم‌سازی</label><div class="seg" data-seg="hbne"><button type="button" data-v="عقیم‌شده">عقیم‌شده</button><button type="button" data-v="عقیم‌نشده">عقیم‌نشده</button><button type="button" class="on" data-v="">نامشخص</button></div></div>
         <div class="fld"><label for="hb-pbr">نژاد <small>(اختیاری)</small></label><select id="hb-pbr"></select><input id="hb-pbro" type="text" maxlength="40" hidden placeholder="نام نژاد را بنویسید"></div>
         <div class="fld"><label for="hb-pbe">نژاد به انگلیسی <small>(خودکار برای نژادهای رایج)</small></label><input id="hb-pbe" data-auto="1" type="text" dir="ltr" maxlength="40" placeholder="e.g. Persian"></div>
         <div class="fld"><label>تاریخ تولد <small>(اختیاری، شمسی؛ میلادی خودکار نوشته می‌شود)</small></label><div class="jd" data-jd="pb"></div></div>
-        <label class="hb-cons hb-doc-only"><input type="checkbox" id="hb-pcons"> رضایت صاحب پت برای ذخیرهٔ این اطلاعات روی سرور گرفته شد</label>
+        <label class="hb-cons hb-doc-only"><input type="checkbox" id="hb-pcons"> رضایت سرپرست برای ذخیرهٔ این اطلاعات روی سرور گرفته شد</label>
         <p class="hb-err" data-hb-perr hidden></p>
         <div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-save-pet>ذخیره</button><button type="button" class="btn small ghost" data-hb-cancel-pet>انصراف</button></div>
       </form>
@@ -129,7 +131,7 @@
           <div class="hb-dots" data-hb-dots aria-hidden="true"></div>
         </div>
         <div class="hb-editrow"><button type="button" class="btn small hb-showbtn" data-hb-present>🪪 نمایش شناسنامه</button></div>
-        <div class="hb-sendrow hb-doc-only"><button type="button" class="btn hb-sendbtn" data-hb-share>📤 ارسال برای صاحب پت</button></div>
+        <div class="hb-sendrow hb-doc-only"><button type="button" class="btn hb-sendbtn" data-hb-share>📤 ارسال برای سرپرست</button></div>
         <div class="hb-rem" data-hb-rem></div>
         <div class="hb-plan" data-hb-plan></div>
         <div class="hb-addbox" data-hb-addbox>
@@ -164,7 +166,7 @@
             <p>اطلاعات پت را بنویسید. دکتر شناسنامه را می‌سازد و لینک یا QR آن را برایتان می‌فرستد.</p>
             <div class="fld"><label for="hb-rq-name">نام پت</label><input id="hb-rq-name" type="text" maxlength="40" autocomplete="off"></div>
             <div class="fld"><label>گونه</label><div class="seg" data-seg="hb-rq-sp"><button type="button" class="on" data-v="سگ">سگ</button><button type="button" data-v="گربه">گربه</button><button type="button" data-v="پرنده">پرنده</button><button type="button" data-v="دیگر">دیگر</button></div></div>
-            <div class="fld"><label for="hb-rq-owner">نام صاحب پت</label><input id="hb-rq-owner" type="text" maxlength="60" autocomplete="off"></div>
+            <div class="fld"><label for="hb-rq-owner">نام سرپرست</label><input id="hb-rq-owner" type="text" maxlength="60" autocomplete="off"></div>
             <div class="fld"><label for="hb-rq-contact">شمارهٔ تماس <small>(فقط دکتر می‌بیند)</small></label><input id="hb-rq-contact" type="tel" inputmode="tel" dir="ltr" placeholder="09123456789" autocomplete="off"></div>
             <div class="fld"><label for="hb-rq-birth">تاریخ تولد تقریبی <small>(اختیاری)</small></label><input id="hb-rq-birth" type="text" maxlength="30" placeholder="مثلاً ۲ سال پیش یا ۱۴۰۳/۵" autocomplete="off"></div>
             <div class="fld"><label for="hb-rq-note">توضیح <small>(اختیاری، مثلاً پت دوم هستم)</small></label><input id="hb-rq-note" type="text" maxlength="200" autocomplete="off"></div>
@@ -176,16 +178,16 @@
         </div>
       </div>
 
-      <div class="hb-qrm" data-hb-shm hidden role="dialog" aria-modal="true" aria-label="ارسال شناسنامه برای صاحب پت">
+      <div class="hb-qrm" data-hb-shm hidden role="dialog" aria-modal="true" aria-label="ارسال شناسنامه برای سرپرست">
         <div class="hb-qrc hb-shc">
-          <h2>ارسال برای صاحب پت</h2>
-          <p>لینک زیر شناسنامهٔ این پت (به‌همراه واکسن‌ها، ضدانگل‌ها و ویزیت‌ها) را دارد. صاحب پت لینک را در گوشی خودش باز می‌کند و با یک دکمه در دفترچهٔ خودش ذخیره می‌شود.</p>
-          <div class="fld"><label for="hb-shnum">شمارهٔ واتساپ صاحب پت <small>(اختیاری)</small></label><input id="hb-shnum" data-hb-shnum type="tel" inputmode="tel" dir="ltr" placeholder="09123456789"></div>
+          <h2>ارسال برای سرپرست</h2>
+          <p>لینک زیر شناسنامهٔ این پت (به‌همراه واکسن‌ها، ضدانگل‌ها و ویزیت‌ها) را دارد. سرپرست لینک را در گوشی خودش باز می‌کند و با یک دکمه در دفترچهٔ خودش ذخیره می‌شود.</p>
+          <div class="fld"><label for="hb-shnum">شمارهٔ واتساپ سرپرست <small>(اختیاری)</small></label><input id="hb-shnum" data-hb-shnum type="tel" inputmode="tel" dir="ltr" placeholder="09123456789"></div>
           <div class="hb-qrbox hb-shqr" data-hb-shqr></div>
           <p class="hb-shqrnote">گوشی دیگر را جلوی صفحه بگیرید و با دوربین این QR را اسکن کنید تا شناسنامه باز شود؛ یا تصویر آن را ذخیره و ارسال کنید.</p>
           <textarea class="hb-shlink" data-hb-shlink readonly rows="7"></textarea><small class="hb-shlen" data-hb-shlen></small>
           <div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-sh-wa>ارسال در واتساپ</button><button type="button" class="btn small" data-hb-sh-copy>کپی پیام و لینک</button><button type="button" class="btn small ghost" data-hb-sh-copylink>فقط لینک</button><button type="button" class="btn small" data-hb-shqr-save>ذخیره QR</button><button type="button" class="btn small ghost" data-hb-sh-close>بستن</button></div>
-          <p class="hb-shnote">لینک شامل اطلاعات پت است و هر کس آن را داشته باشد می‌بیند؛ فقط برای خود صاحب پت بفرستید. عکس پت داخل لینک نمی‌آید. اطلاعات فقط در لینک است و روی سرور سایت ذخیره نمی‌شود.</p>
+          <p class="hb-shnote">لینک شامل اطلاعات پت است و هر کس آن را داشته باشد می‌بیند؛ فقط برای خود سرپرست بفرستید. عکس پت داخل لینک نمی‌آید. اطلاعات فقط در لینک است و روی سرور سایت ذخیره نمی‌شود.</p>
         </div>
       </div>
       <div class="hb-qrm" data-hb-impm hidden role="dialog" aria-modal="true" aria-label="دریافت شناسنامه">
@@ -214,7 +216,7 @@
       <div class="hb-qrm" data-hb-drm hidden role="dialog" aria-modal="true" aria-label="ورود دکتر">
         <div class="hb-qrc">
           <h2>ورود دکتر</h2>
-          <p>ثبت واکسن و ارسال شناسنامه برای صاحب پت فقط با رمز دکتر ممکن است.</p>
+          <p>ثبت واکسن و ارسال شناسنامه برای سرپرست فقط با رمز دکتر ممکن است.</p>
           <div class="fld hb-pwf"><input data-hb-drpw type="password" dir="ltr" autocomplete="off" placeholder="رمز"><button type="button" class="hb-eye" data-hb-eye aria-label="نمایش رمز">👁</button></div>
           <label class="hb-remme"><input type="checkbox" data-hb-remember checked> مرا به خاطر بسپار (۳۰ روز روی این دستگاه)</label>
           <p class="hb-err" data-hb-drerr hidden>رمز درست نیست.</p>
@@ -225,7 +227,7 @@
         <div class="hb-qrc">
           <h2>QR شناسنامهٔ پت</h2>
           <div class="hb-qrbox" data-hb-qrbox></div>
-          <p>با دوربین گوشی اسکن کنید تا اصالت این شناسنامه در سایت دکتر بررسی شود. سوابق واکسن و ضدانگل را صاحب پت در گوشی خودش نشان می‌دهد.</p>
+          <p>با دوربین گوشی اسکن کنید تا اصالت این شناسنامه در سایت دکتر بررسی شود. سوابق واکسن و ضدانگل را سرپرست در گوشی خودش نشان می‌دهد.</p>
           <div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-qr-save>ذخیره تصویر</button><button type="button" class="btn small ghost" data-hb-qr-close>بستن</button></div>
         </div>
       </div>
@@ -296,7 +298,7 @@
   </div>
 </div>
 <a class="fab" aria-label="نیاز به مشاوره؟" data-consult href="contact.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4V5z"/></svg><span><i class="l-long">نیاز به مشاوره؟</i><i class="l-short">مشاوره</i></span></a>
-<script src="app.js?v=20261121112013"></script>
+<script src="app.js?v=20261121112701"></script>
     </body>
     </html>
     

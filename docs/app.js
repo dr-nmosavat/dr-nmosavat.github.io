@@ -1212,7 +1212,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     function line(r) { return "- " + [r.brand, r.name || tl(r.type)].filter(Boolean).join(" · ") + (r.serial ? " Lot:" + r.serial : "") + (r.extra && !r.serial ? " (" + String(r.extra).slice(0, 24) + ")" : "") + ": " + fl(r.date) + " / " + r.date; }
     function nextOf(t) { var n = allRem().filter(function (r) { return r.pet === cp.id && r.type === t; })[0]; return n ? n.date : ""; }
     var lw = last("وزن", 1)[0], be = cp.breedEn || breedEn(cp.breed), o = [];
-    o.push("HEALTH RECORD | شناسنامه سلامت" + (srvOf(cp) ? " | ID " + cp.srv.code + (cp.srv.auth ? " | Auth " + cp.srv.auth : "") : ""), cp.name + (cp.en ? " / " + cp.en : "") + (cp.owner ? " | Owner/صاحب: " + cp.owner : "") + (cp.guardian ? " | Guardian/سرپرست: " + cp.guardian : ""), (SPEN[cp.species] || cp.species || "") + (cp.breed ? " | " + cp.breed + (be ? " / " + be : "") : ""));
+    o.push("HEALTH RECORD | شناسنامه سلامت" + (srvOf(cp) ? " | ID " + cp.srv.code + (cp.srv.auth ? " | Auth " + cp.srv.auth : "") : ""), cp.name + (cp.en ? " / " + cp.en : "") + ((cp.owner || cp.guardian) ? " | Guardian/سرپرست: " + (cp.owner || cp.guardian) : "") + "", (SPEN[cp.species] || cp.species || "") + (cp.breed ? " | " + cp.breed + (be ? " / " + be : "") : ""));
     if (cp.birth) o.push("Birth/تولد: " + fl(cp.birth) + " (" + cp.birth + ")");
     if (lw) o.push("Weight/وزن: " + lw.weight + " kg (" + lw.date + ")");
     [["واکسن", "Vaccines/واکسن", 3], ["ضدانگل داخلی", "Deworming/ضدانگل داخلی", 2], ["ضدانگل خارجی (کک و کنه)", "Flea-tick/ضدانگل خارجی", 2]].forEach(function (x) {
@@ -1237,10 +1237,12 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   }
   function renderCover(cp) {
     var lw = db.recs.filter(function (r) { return r.pet === cp.id && r.weight; }).sort(function (a, b) { return a.date < b.date ? 1 : -1; })[0], rows = [];
-    rows.push(["صاحب پت / Owner", cp.owner ? esc(cp.owner) : '<span class="nil">—</span>']);
-    if (cp.guardian) rows.push(["سرپرست / Guardian", esc(cp.guardian)]);
+    var gname = cp.owner || cp.guardian;
+    rows.push(["سرپرست / Guardian", gname ? esc(gname) : '<span class="nil">—</span>']);
     function enp(s) { return s ? ' <span class="en">' + esc(s) + "</span>" : ""; }
     if (cp.species) rows.push(["گونه / Species", esc(cp.species) + enp(SPEN[cp.species])]);
+    if (cp.sex) rows.push(["جنسیت / Sex", esc(cp.sex) + enp(cp.sex === "نر" ? "Male" : "Female")]);
+    if (cp.neut) rows.push(["عقیم‌سازی / Neutered", esc(cp.neut) + enp(cp.neut === "عقیم‌شده" ? "Yes" : "No")]);
     var be = cp.breedEn || breedEn(cp.breed);
     if (cp.breed) rows.push(["نژاد / Breed", esc(cp.breed) + enp(be)]);
     if (cp.birth) rows.push(["تولد / Birth", esc(fd(cp.birth)) + enp(enDate(cp.birth))]);
@@ -1313,13 +1315,15 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function isDr() { if (!DRPAGE) return false; try { var f = localStorage.getItem("dm_hb_dr") === "1"; if (f && srvOn() && !tokGet()) { drDrop("مدت اعتبار ورود تمام شد؛ لطفاً دوباره وارد شوید."); return false; } return f; } catch (e) { return false; } }
   function srvOf(p) { return p && p.srv && p.srv.code ? p.srv : null; }
   function errMsg(e) { return e === "net" ? "اتصال با سرور برقرار نشد. اینترنت را بررسی کنید." : e === "auth" ? "دسترسی مجاز نیست (دوباره وارد شوید یا لینک را بررسی کنید)." : e === "forbidden" ? "این مورد را فقط دکتر ثبت یا تغییر می‌دهد." : e === "locked" ? "ورود موقتاً قفل شد؛ چند دقیقه بعد دوباره تلاش کنید." : "خطای سرور؛ دوباره تلاش کنید."; }
-  function toSrvPet(p) { return { code: p.srv && p.srv.code, name: p.name, en: p.en, owner: p.owner, guardian: p.guardian, species: p.species, breed: p.breed, breedEn: p.breedEn, birth: p.birth, plan: p.plan || [], consent: p.consent ? 1 : 0 }; }
+  function setSeg(n, v) { [].forEach.call(q('[data-seg="' + n + '"]').children, function (b) { b.classList.toggle("on", b.getAttribute("data-v") === v); }); }
+  function segVal(n) { var b = q('[data-seg="' + n + '"] .on'); return b ? b.getAttribute("data-v") : ""; }
+  function toSrvPet(p) { return { code: p.srv && p.srv.code, name: p.name, en: p.en, owner: p.owner, guardian: p.guardian, sex: p.sex || "", neut: p.neut || "", species: p.species, breed: p.breed, breedEn: p.breedEn, birth: p.birth, plan: p.plan || [], consent: p.consent ? 1 : 0 }; }
   function toSrvRec(r) { var o = {}; ["id", "type", "date", "name", "brand", "serial", "place", "extra", "freq", "how", "dur", "end", "weight", "next", "closed", "src"].forEach(function (k) { if (r[k]) o[k] = r[k]; }); return o; }
   function normRec(r) { var o = {}; for (var k in r) o[k] = r[k]; o.dr = r.dr ? 1 : 0; o.closed = !!r.closed; return o; }
   function upsertSrv(sp, recs, key) {
     var p = db.pets.filter(function (x) { return (x.srv && x.srv.code === sp.code) || x.id === sp.code; })[0];
     if (!p) { p = { id: sp.code, plan: [] }; db.pets.push(p); }
-    ["name", "en", "owner", "guardian", "species", "breed", "breedEn", "birth"].forEach(function (k) { p[k] = sp[k] || ""; });
+    ["name", "en", "owner", "guardian", "sex", "neut", "species", "breed", "breedEn", "birth"].forEach(function (k) { p[k] = sp[k] || ""; });
     p.plan = sp.plan || []; p.consent = !!sp.consent; p.srv = { code: sp.code, key: key || (p.srv && p.srv.key) || sp.key || "", auth: sp.auth || (p.srv && p.srv.auth) || "" };
     db.recs = db.recs.filter(function (r) { return r.pet !== p.id; }).concat((recs || []).map(function (r) { var o = normRec(r); o.pet = p.id; return o; }));
     return p;
@@ -1361,7 +1365,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
         return '<div class="hb-pr"><div class="hb-pn"><b>' + k.ic + " " + esc(r.name || "دارو") + (act ? ' <span class="hb-act">فعال</span>' : "") + "</b>" + (line2 ? "<small>" + line2 + "</small>" : "") + '</div><div class="hb-pd"><span><i>شروع</i>' + fd(r.date) + "</span><span><i>تا</i>" + (r.dur === "دائمی" ? "دائمی" : r.end ? fd(r.end) : "—") + "</span></div></div>";
       }
       var det = [r.name, r.place, r.extra].filter(Boolean).map(esc).join(" · ") + (r.weight ? (r.name || r.place || r.extra ? " · " : "") + toolFa(r.weight) + " کیلوگرم" : "");
-      return '<div class="hb-pr">' + recDel(r) + '<div class="hb-pn"><b>' + k.ic + " " + tl(r.type) + "</b>" + oldB(r) + (!r.dr && (r.type === "سایر" || r.type === "دارو") ? "<span>ثبت صاحب پت</span>" : "") + (det ? "<small>" + det + "</small>" : "") + '</div><div class="hb-pd"><span>' + fd(r.date) + "</span></div></div>";
+      return '<div class="hb-pr">' + recDel(r) + '<div class="hb-pn"><b>' + k.ic + " " + tl(r.type) + "</b>" + oldB(r) + (!r.dr && (r.type === "سایر" || r.type === "دارو") ? "<span>ثبت سرپرست</span>" : "") + (det ? "<small>" + det + "</small>" : "") + '</div><div class="hb-pd"><span>' + fd(r.date) + "</span></div></div>";
     }).join("");
   }
   function weightChart(cp) {
@@ -1516,7 +1520,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function petForm(p) {
     q("[data-hb-petform]").classList.remove("photoonly");
     editId = p ? p.id : null; q("[data-hb-pf-title]").textContent = p ? "ویرایش شناسنامه" : srvOn() && isDr() ? "صدور شناسنامهٔ جدید" : "شناسنامهٔ پت"; q("[data-hb-save-pet]").textContent = !p && srvOn() && isDr() ? "صدور شناسنامه" : "ذخیره";
-    q("#hb-pn").value = p ? p.name : ""; q("#hb-pe").value = p && p.en || ""; q("#hb-po").value = p && p.owner || ""; q("#hb-pg").value = p && p.guardian || "";  q("#hb-pbe").value = p && p.breedEn || ""; q("#hb-pbe").setAttribute("data-auto", p && p.breedEn ? "" : "1"); JD.pb.set(p ? p.birth : ""); formPhoto = p && p.photo || ""; showPhoto();
+    q("#hb-pn").value = p ? p.name : ""; q("#hb-pe").value = p && p.en || ""; q("#hb-po").value = p && p.owner || ""; q("#hb-pg").value = p && p.guardian || "";  q("#hb-pbe").value = p && p.breedEn || ""; q("#hb-pbe").setAttribute("data-auto", p && p.breedEn ? "" : "1"); JD.pb.set(p ? p.birth : ""); setSeg("hbsx", p && p.sex || ""); setSeg("hbne", p && p.neut || ""); formPhoto = p && p.photo || ""; showPhoto();
     var segs = q('[data-seg="hbsp"]').children; [].forEach.call(segs, function (b) { b.classList.toggle("on", p ? b.getAttribute("data-v") === p.species : b.getAttribute("data-v") === "سگ"); });
     fillBreeds(p ? p.species : "سگ", p ? p.breed : "");
     q("[data-hb-petform]").hidden = false; q("[data-hb-main]").hidden = true;
@@ -1538,7 +1542,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   q("[data-hb-file2]").addEventListener("change", function () { var inp = this; cropPhoto(inp.files[0], function (d) { var cp = curPet(); if (cp) { cp.photo = d; save(); render(); } }); inp.value = ""; });
   // جمع‌شدن سربرگ سایت هنگام پایین رفتن
   (function () { var hd = document.querySelector("header.top"), ly = window.scrollY; if (!hd || !document.body.classList.contains("hb-page")) return; window.addEventListener("scroll", function () { var y = window.scrollY; if (y > ly + 6 && y > 90) hd.classList.add("fold"); else if (y < ly - 6 || y < 40) hd.classList.remove("fold"); ly = y; }, { passive: true }); })();
-  // ---- ارسال شناسنامه برای صاحب پت (لینک) و دریافت ----
+  // ---- ارسال شناسنامه برای سرپرست (لینک) و دریافت ----
   function b64u(bytes) { var s = "", i; for (i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000)); return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
   function unb64u(t) { t = t.replace(/-/g, "+").replace(/_/g, "/"); while (t.length % 4) t += "="; var s = atob(t), b = new Uint8Array(s.length), i; for (i = 0; i < s.length; i++) b[i] = s.charCodeAt(i); return b; }
   function pipe(bytes, S) { var st = new S("deflate-raw"), w = st.writable.getWriter(); w.write(bytes); w.close(); return new Response(st.readable).arrayBuffer().then(function (b) { return new Uint8Array(b); }); }
@@ -1563,10 +1567,10 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       while (r.length > 3 && (r[r.length - 1] === "" || r[r.length - 1] === 0)) r.pop(); return r;
     });
     var plan = (cp.plan || []).map(function (x) { return [ORDER.indexOf(x.type), dayN(x.date), x.label || "", x.done ? 1 : 0]; });
-    return [2, cp.id, cp.name, cp.en || "", cp.owner || "", cp.guardian || "", Object.keys(SPE).indexOf(cp.species), cp.breed || "", cp.breedEn || "", cp.birth ? dayN(cp.birth) : 0, plan, recs];
+    return [2, cp.id, cp.name, cp.en || "", cp.owner || "", cp.guardian || "", Object.keys(SPE).indexOf(cp.species), cp.breed || "", cp.breedEn || "", cp.birth ? dayN(cp.birth) : 0, plan, recs, cp.sex || "", cp.neut || ""];
   }
   function expandShare(a) {
-    var p = { id: a[1], name: a[2], en: a[3], owner: a[4], guardian: a[5], species: Object.keys(SPE)[a[6]] || "دیگر", breed: a[7], breedEn: a[8], birth: a[9] ? dayD(a[9]) : "", plan: [] };
+    var p = { id: a[1], name: a[2], en: a[3], owner: a[4], guardian: a[5], species: Object.keys(SPE)[a[6]] || "دیگر", breed: a[7], breedEn: a[8], birth: a[9] ? dayD(a[9]) : "", sex: a[12] === "نر" || a[12] === "ماده" ? a[12] : "", neut: a[13] === "عقیم‌شده" || a[13] === "عقیم‌نشده" ? a[13] : "", plan: [] };
     (a[10] || []).forEach(function (x) { if (ORDER[x[0]]) p.plan.push({ type: ORDER[x[0]], date: dayD(x[1]), label: x[2], done: !!x[3] }); });
     var r = (a[11] || []).filter(function (x) { return ORDER[x[0]]; }).map(function (x) { var fl = x[9] || 0; return { type: ORDER[x[0]], date: dayD(x[1]), name: dDec(x[2]), brand: dDec(x[3]), serial: x[4], place: dDec(x[5]), extra: x[6], weight: x[7], next: x[8] ? dayD(x[8]) : "", closed: !!(fl & 2), d: fl & 1 ? 1 : 0, freq: dDec(x[10]), how: dDec(x[11]), dur: dDec(x[12]), end: x[13] ? dayD(x[13]) : "" }; });
     return { v: 1, p: p, r: r };
@@ -1576,7 +1580,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function sanitizeShare(d) {
     if (Array.isArray(d)) d = expandShare(d);
     if (!d || d.v !== 1 || !d.p || !Array.isArray(d.r)) throw new Error("bad");
-    var p = d.p, pet = { id: /^[a-z0-9]{3,30}$/.test(p.id || "") ? p.id : uid(), name: cleanStr(p.name, 30), en: cleanStr(p.en, 30), owner: cleanStr(p.owner, 40), guardian: cleanStr(p.guardian, 40), species: SPE[p.species] ? p.species : "دیگر", breed: cleanStr(p.breed, 40), breedEn: cleanStr(p.breedEn, 40), birth: cleanDate(p.birth), plan: [] };
+    var p = d.p, pet = { id: /^[a-z0-9]{3,30}$/.test(p.id || "") ? p.id : uid(), name: cleanStr(p.name, 30), en: cleanStr(p.en, 30), owner: cleanStr(p.owner, 40), guardian: cleanStr(p.guardian, 40), species: SPE[p.species] ? p.species : "دیگر", breed: cleanStr(p.breed, 40), breedEn: cleanStr(p.breedEn, 40), birth: cleanDate(p.birth), sex: p.sex === "نر" || p.sex === "ماده" ? p.sex : "", neut: p.neut === "عقیم‌شده" || p.neut === "عقیم‌نشده" ? p.neut : "", plan: [] };
     if (!pet.name) throw new Error("bad");
     (Array.isArray(p.plan) ? p.plan : []).slice(0, 60).forEach(function (x) { if (x && CFG[x.type] && cleanDate(x.date)) pet.plan.push({ id: /^[a-z0-9]{3,30}$/.test(x.id || "") ? x.id : uid(), type: x.type, label: cleanStr(x.label, 90), date: x.date, done: !!x.done }); });
     var recs = []; d.r.slice(0, 400).forEach(function (x) { if (!x || !CFG[x.type] || !cleanDate(x.date)) return; var w = Number(x.weight) || 0; recs.push({ id: /^[a-z0-9]{3,30}$/.test(x.id || "") ? x.id : uid(), pet: pet.id, type: x.type, date: x.date, name: cleanStr(x.name, 90), brand: cleanStr(x.brand, 60), serial: cleanStr(x.serial, 60), place: cleanStr(x.place, 90), extra: cleanStr(x.extra, 90), freq: cleanStr(x.freq, 40), how: cleanStr(x.how, 40), dur: cleanStr(x.dur, 20), end: cleanDate(x.end), weight: w > 0 && w < 200 ? w : 0, next: cleanDate(x.next), closed: !!x.closed, dr: x.d === 1 ? 1 : 0 }); });
@@ -1670,14 +1674,14 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (t.closest("[data-hb-save-pet]")) {
       var n2 = q("#hb-pn").value.trim(); if (!n2) { q("#hb-pn").focus(); return; }
       var sp = q('[data-seg="hbsp"] .on'), spv = sp ? sp.getAttribute("data-v") : "", bd = JD.pb.get(), ep0 = editId ? db.pets.filter(function (x) { return x.id === editId; })[0] : null;
-      var fv = { name: n2, en: q("#hb-pe").value.trim(), owner: q("#hb-po").value.trim(), guardian: q("#hb-pg").value.trim(), breed: getBreed(), breedEn: q("#hb-pbe").value.trim(), species: spv, birth: bd };
+      var fv = { sex: segVal("hbsx"), neut: segVal("hbne"), name: n2, en: q("#hb-pe").value.trim(), owner: q("#hb-po").value.trim(), guardian: q("#hb-pg").value.trim(), breed: getBreed(), breedEn: q("#hb-pbe").value.trim(), species: spv, birth: bd };
       var perr = q("[data-hb-perr]"); perr.hidden = true;
       var useSrv = srvOn() && isDr() && (!ep0 || srvOf(ep0));
-      if (srvOn() && ep0 && !isDr()) {   // صاحب پت فقط عکس را عوض می‌کند
+      if (srvOn() && ep0 && !isDr()) {   // سرپرست فقط عکس را عوض می‌کند
         ep0.photo = formPhoto; editId = null; q("[data-hb-petform]").hidden = true; save(); return render();
       }
       if (useSrv) {
-        var cons = q("#hb-pcons").checked; if (!ep0 && !cons) { perr.textContent = "گرفتن رضایت صاحب پت لازم است."; perr.hidden = false; return; }
+        var cons = q("#hb-pcons").checked; if (!ep0 && !cons) { perr.textContent = "گرفتن رضایت سرپرست لازم است."; perr.hidden = false; return; }
         var pin = {}; for (var kp in fv) pin[kp] = fv[kp]; pin.code = ep0 ? ep0.srv.code : ""; pin.plan = ep0 ? ep0.plan || [] : []; pin.consent = cons || (ep0 && ep0.consent) ? 1 : 0;
         var sbtn = t.closest("[data-hb-save-pet]"); sbtn.disabled = true;
         api({ a: "savePet", t: tokGet(), pet: pin }).then(function (j) {
@@ -1717,7 +1721,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     }
     if (t.closest("[data-hb-tosrv]")) {
       var cpm = curPet(); if (!cpm || srvOf(cpm) || !srvOn() || !isDr()) return;
-      if (!confirm("رضایت صاحب پت برای ذخیرهٔ اطلاعات روی سرور گرفته شده است؟")) return;
+      if (!confirm("رضایت سرپرست برای ذخیرهٔ اطلاعات روی سرور گرفته شده است؟")) return;
       var btn = t.closest("[data-hb-tosrv]"); btn.disabled = true; btn.textContent = "در حال ذخیره…";
       var pin = toSrvPet(cpm); pin.consent = 1;
       api({ a: "savePet", t: tokGet(), pet: pin }).then(function (j) {
@@ -1798,7 +1802,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
         api(isDr() ? { a: "saveRec", t: tokGet(), code: sv.code, rec: toSrvRec(tmp) } : { a: "ownerAddRec", code: sv.code, key: sv.key, rec: toSrvRec(tmp) }).then(function (j) {
           q("[data-hb-save]").disabled = false;
           if (!j.ok) { er.textContent = errMsg(j.err); er.hidden = false; return; }
-          var srec = normRec(j.rec); srec.pet = cp.id; commit(ed ? null : srec);
+          if (j.pet && j.pet.neut) cp.neut = j.pet.neut; var srec = normRec(j.rec); srec.pet = cp.id; commit(ed ? null : srec);
         });
         return;
       }
@@ -1862,7 +1866,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   q("[data-hb-do-install]").addEventListener("click", function () { if (dp) { dp.prompt(); dp = null; q("[data-hb-install]").hidden = true; } });
   if (/iphone|ipad/i.test(navigator.userAgent) && !window.navigator.standalone) q("[data-hb-ios]").hidden = false;
   (function () { var w = q("[data-hb-wa]"); if (w && INFO.whatsapp) w.href = "https://wa.me/" + INFO.whatsapp + "?text=" + encodeURIComponent("سلام دکتر مساوات، می‌خواهم شناسنامهٔ سلامت پتم را بگیرم."); var vci = q("[data-hb-vcode]"); if (vci) vci.addEventListener("keydown", function (e) { if (e.key === "Enter") q("[data-hb-vgo]").click(); }); var pwi = q("[data-hb-drpw]"); if (pwi) pwi.addEventListener("keydown", function (e) { if (e.key === "Enter") q("[data-hb-dr-ok]").click(); }); })();
-  // ---- درخواست شناسنامه (صاحب پت) ----
+  // ---- درخواست شناسنامه (سرپرست) ----
   (function () {
     var m = q("[data-hb-reqm]"); if (!m) return;
     var form = m.querySelector("[data-hb-rqform]"), okb = m.querySelector("[data-hb-rqok]"), err = m.querySelector("[data-hb-rqerr]");
@@ -1880,7 +1884,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
         var btn = t.closest("[data-hb-rq-send]"), digits = g("hb-rq-contact").replace(/[۰-۹]/g, function (c) { return c.charCodeAt(0) - 1776; }).replace(/\D/g, "");
         err.hidden = true;
         if (!g("hb-rq-name")) { err.textContent = "نام پت را بنویسید."; err.hidden = false; return; }
-        if (!g("hb-rq-owner")) { err.textContent = "نام صاحب پت را بنویسید."; err.hidden = false; return; }
+        if (!g("hb-rq-owner")) { err.textContent = "نام سرپرست را بنویسید."; err.hidden = false; return; }
         if (digits.length < 10) { err.textContent = "شمارهٔ تماس را کامل بنویسید."; err.hidden = false; return; }
         btn.disabled = true; btn.textContent = "در حال ارسال…";
         api({ a: "petReqSubmit", name: g("hb-rq-name"), species: seg(), owner: g("hb-rq-owner"), contact: g("hb-rq-contact"), birth: g("hb-rq-birth"), note: g("hb-rq-note"), hp: g("hb-rq-hp") }).then(function (j) {
@@ -1914,7 +1918,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     box.innerHTML = list.length ? list.map(function (r) {
       var btns = r.status === "new" ? '<button type="button" class="btn small primary" data-hb-rqissue data-id="' + esc(r.id) + '">✅ صدور شناسنامه</button><button type="button" class="btn small hb-danger" data-hb-rqact="rejected" data-id="' + esc(r.id) + '">رد</button>'
         : '<button type="button" class="btn small" data-hb-rqact="new" data-id="' + esc(r.id) + '">بازگرداندن به جدید</button>';
-      return '<article class="hb-adc"><div class="hb-adh"><b>' + esc(r.name) + "</b><span>" + esc(r.species) + " · صاحب: " + esc(r.owner) + '</span><em class="ad-' + (r.status === "new" ? "pending" : r.status === "done" ? "done" : "rejected") + '">' + (r.status === "new" ? "جدید" : r.status === "done" ? "صادر شد" : "ردشده") + "</em></div>"
+      return '<article class="hb-adc"><div class="hb-adh"><b>' + esc(r.name) + "</b><span>" + esc(r.species) + " · سرپرست: " + esc(r.owner) + '</span><em class="ad-' + (r.status === "new" ? "pending" : r.status === "done" ? "done" : "rejected") + '">' + (r.status === "new" ? "جدید" : r.status === "done" ? "صادر شد" : "ردشده") + "</em></div>"
         + (r.birth ? "<p>تولد: " + esc(r.birth) + "</p>" : "") + (r.note ? "<p>توضیح: " + esc(r.note) + "</p>" : "")
         + '<p>📞 <a href="tel:' + esc(r.contact) + '" dir="ltr">' + esc(r.contact) + '</a> · کد <bdi dir="ltr">' + esc(r.id) + "</bdi>" + (r.code ? ' · شناسنامه <bdi dir="ltr">' + esc(r.code) + "</bdi>" : "") + "</p>"
         + '<div class="hb-adb">' + btns + '<button type="button" class="btn small ghost hb-danger" data-hb-rqact="deleted" data-id="' + esc(r.id) + '">🗑 حذف</button></div></article>';
@@ -1946,7 +1950,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     box.innerHTML = '<div class="hb-vbox"><b>در حال بررسی…</b></div>';
     api({ a: "verifyPet", t: tokGet(), code: code, auth: au }).then(function (j) {
       if (!j.ok) { box.innerHTML = '<div class="hb-vbox bad"><b>' + esc(errMsg(j.err)) + "</b></div>"; return; }
-      if (j.valid) box.innerHTML = '<div class="hb-vbox ok"><b>✅ شناسنامه معتبر است</b><span>' + esc(j.pet.name) + " (" + esc(j.pet.species) + ")" + (j.pet.owner ? " · صاحب: " + esc(j.pet.owner) : "") + (j.pet.created ? " · صدور: " + esc(fd(j.pet.created)) : "") + '</span><span dir="ltr">' + esc(j.pet.code) + "</span></div>";
+      if (j.valid) box.innerHTML = '<div class="hb-vbox ok"><b>✅ شناسنامه معتبر است</b><span>' + esc(j.pet.name) + " (" + esc(j.pet.species) + ")" + (j.pet.owner ? " · سرپرست: " + esc(j.pet.owner) : "") + (j.pet.created ? " · صدور: " + esc(fd(j.pet.created)) : "") + '</span><span dir="ltr">' + esc(j.pet.code) + "</span></div>";
       else box.innerHTML = '<div class="hb-vbox bad"><b>❌ معتبر نیست</b><span>' + (j.reason === "notfound" ? "شناسنامه‌ای با این کد پیدا نشد." : "کد اصالت با این شناسنامه نمی‌خواند؛ اشتباه تایپی یا شناسنامهٔ تقلبی.") + "</span></div>";
     });
   });
@@ -2126,7 +2130,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       .then(function (r) { return r.json(); }).catch(function () { return { ok: false, err: "net" }; }).then(function (j) {
         btn.disabled = false;
         if (!j.ok) { show("bad", "<b>" + (j.err === "locked" ? "این کد چند بار اشتباه بررسی شد و موقتاً قفل است. یک ساعت دیگر دوباره امتحان کنید." : j.err === "net" ? "اتصال با سرور برقرار نشد. اینترنت را بررسی کنید." : "تعداد بررسی‌ها زیاد است؛ کمی بعد دوباره امتحان کنید.") + "</b>"); return; }
-        if (j.valid) show("ok", "<b>✅ شناسنامه معتبر است</b><span>" + esc(j.pet.name) + " (" + esc(j.pet.species) + ")</span><span>تاریخ صدور: " + esc(jy(j.pet.created)) + "</span><span>نام پت را با شناسنامه مقایسه کنید. سوابق واکسن و ضدانگل را صاحب پت در گوشی خودش نشان می‌دهد.</span>");
+        if (j.valid) show("ok", "<b>✅ شناسنامه معتبر است</b><span>" + esc(j.pet.name) + " (" + esc(j.pet.species) + ")</span><span>تاریخ صدور: " + esc(jy(j.pet.created)) + "</span><span>نام پت را با شناسنامه مقایسه کنید. سوابق واکسن و ضدانگل را سرپرست در گوشی خودش نشان می‌دهد.</span>");
         else show("bad", "<b>❌ معتبر نیست</b><span>کدها با هم نمی‌خوانند یا شناسنامه‌ای با این کد وجود ندارد. دو کد را دوباره بررسی کنید؛ اگر باز هم همین بود، شناسنامه را معتبر ندانید.</span>");
       });
   });

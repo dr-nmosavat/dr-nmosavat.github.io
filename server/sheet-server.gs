@@ -63,7 +63,7 @@ var H = {
   ownerTypes: ['ضدانگل داخلی', 'ضدانگل خارجی (کک و کنه)', 'وزن', 'دارو', 'سایر'],   // صاحب پت می‌تواند ثبت کند
   allTypes: ["واکسن", "ضدانگل داخلی", "ضدانگل خارجی (کک و کنه)", "ویزیت", "وزن", "دارو", "عقیم‌سازی", "آزمایش", "سایر"]
 };
-var PET_COLS = ['code', 'key', 'name', 'en', 'owner', 'guardian', 'species', 'breed', 'breedEn', 'birth', 'plan', 'consent', 'created', 'updated', 'deleted', 'auth'];
+var PET_COLS = ['code', 'key', 'name', 'en', 'owner', 'guardian', 'species', 'breed', 'breedEn', 'birth', 'plan', 'consent', 'created', 'updated', 'deleted', 'auth', 'sex', 'neut'];
 var REC_COLS = ['id', 'code', 'type', 'date', 'name', 'brand', 'serial', 'place', 'extra', 'freq', 'how', 'dur', 'end', 'weight', 'next', 'closed', 'dr', 'created', 'updated', 'deleted', 'src'];
 
 function hsheet_(name, cols) {
@@ -124,7 +124,7 @@ function findPet_(code) {
 }
 function petOut_(p, withKey) {
   var plan = []; try { plan = JSON.parse(p.plan || '[]'); } catch (e) {}
-  var o = { code: p.code, name: p.name, en: p.en, owner: p.owner, guardian: p.guardian, species: p.species, breed: p.breed, breedEn: p.breedEn, birth: p.birth, plan: plan, consent: p.consent === '1', updated: p.updated, auth: authCode_(p.code), created: String(p.created || '').slice(0, 10) };
+  var o = { code: p.code, name: p.name, en: p.en, owner: p.owner, guardian: p.guardian, sex: p.sex || '', neut: p.neut || '', species: p.species, breed: p.breed, breedEn: p.breedEn, birth: p.birth, plan: plan, consent: p.consent === '1', updated: p.updated, auth: authCode_(p.code), created: String(p.created || '').slice(0, 10) };
   if (withKey) o.key = p.key; return o;
 }
 function recOut_(r) {
@@ -211,6 +211,7 @@ function savePet_(b) {
   var cur = null, i; if (pin.code) for (i = 0; i < all.length; i++) if (all[i].code === String(pin.code).toUpperCase() && all[i].deleted !== '1') cur = all[i];
   var o = cur || { code: newCode_(all), key: rnd_(14), created: nowIso_(), deleted: '' };
   o.name = name; o.en = clip_(pin.en, 30); o.owner = clip_(pin.owner, 40); o.guardian = clip_(pin.guardian, 40); o.species = species;
+  o.sex = ['نر', 'ماده'].indexOf(pin.sex) > -1 ? pin.sex : ''; o.neut = ['عقیم‌شده', 'عقیم‌نشده'].indexOf(pin.neut) > -1 ? pin.neut : '';
   o.breed = clip_(pin.breed, 40); o.breedEn = clip_(pin.breedEn, 40); o.birth = date_(pin.birth); o.plan = JSON.stringify(plan);
   o.consent = pin.consent ? '1' : (cur ? cur.consent : ''); o.updated = nowIso_(); o.auth = authCode_(o.code);
   writeRow_(sh, PET_COLS, o, cur ? cur._row : 0);
@@ -224,8 +225,9 @@ function saveRec_(b) {
   for (i = 0; i < all.length; i++) if (all[i].id === r.id && all[i].code === pet.code) cur = all[i];
   r.created = cur ? cur.created : nowIso_(); r.updated = nowIso_(); r.deleted = '';
   writeRow_(sh, REC_COLS, r, cur ? cur._row : 0);
+  if (r.type === 'عقیم‌سازی') pet.neut = 'عقیم‌شده';   // ثبت عقیم‌سازی، وضعیت را خودکار «عقیم‌شده» می‌کند
   touchPet_(pet);
-  return { ok: true, rec: recOut_(r) };
+  return { ok: true, rec: recOut_(r), pet: petOut_(pet, true) };
 }
 
 function ownerWrite_(a, b) {
@@ -299,7 +301,7 @@ function doGet(e) {
   var p = (e && e.parameter) || {};
   if (p.action === 'spin') return json_(spin_(p));
   if (p.action === 'verify') return verifyPage_(p);
-  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v10-icons' });
+  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v11-sex' });
 }
 
 // ======================= چرخ هدیه =======================
@@ -463,8 +465,8 @@ var STATUS_COLORS = {
 };
 var LOOK = {
   Spins: { color: '#d97706', labels: ['زمان', 'کد', 'جایزه', 'انقضا', 'دستگاه', 'استفاده شد؟', 'زمان استفاده'], widths: [150, 120, 190, 110, 130, 100, 150], clip: [5] },
-  Pets: { color: '#1f5aa6', labels: ['شمارهٔ شناسنامه (کد پت)', 'کلید لینک (محرمانه)', 'نام', 'نام انگلیسی', 'صاحب', 'سرپرست', 'گونه', 'نژاد', 'نژاد (انگلیسی)', 'تاریخ تولد', 'برنامهٔ واکسن (داده)', 'رضایت (۱=بله)', 'ساخته شد', 'ویرایش', 'حذف‌شده؟ (۱=بله)', 'کد اصالت'],
-    widths: [130, 140, 110, 110, 130, 110, 80, 110, 120, 100, 120, 90, 150, 150, 90, 100], clip: [2, 11], gray: [2, 11], green: [1, 16], del: 15 },
+  Pets: { color: '#1f5aa6', labels: ['شمارهٔ شناسنامه (کد پت)', 'کلید لینک (محرمانه)', 'نام', 'نام انگلیسی', 'سرپرست', 'سرپرست دوم (قدیمی)', 'گونه', 'نژاد', 'نژاد (انگلیسی)', 'تاریخ تولد', 'برنامهٔ واکسن (داده)', 'رضایت (۱=بله)', 'ساخته شد', 'ویرایش', 'حذف‌شده؟ (۱=بله)', 'کد اصالت', 'جنسیت', 'وضعیت عقیم‌سازی'],
+    widths: [130, 140, 110, 110, 130, 110, 80, 110, 120, 100, 120, 90, 150, 150, 90, 100, 90, 130], clip: [2, 11], gray: [2, 11], green: [1, 16], del: 15 },
   Records: { color: '#0f766e', labels: ['شناسه', 'کد پت', 'نوع', 'تاریخ', 'نام', 'برند', 'سریال', 'محل', 'توضیح', 'تکرار', 'روش', 'مدت', 'پایان', 'وزن', 'نوبت بعدی', 'بسته‌شده؟', 'ثبت دکتر؟', 'ساخته شد', 'ویرایش', 'حذف‌شده؟ (۱=بله)', 'منبع (old=سابقهٔ قبلی)'],
     widths: [110, 90, 130, 100, 150, 110, 110, 110, 140, 90, 90, 80, 100, 70, 100, 80, 80, 150, 150, 90, 110], gray: [1], del: 20 },
   Adoptions: { color: '#b36b00', labels: ['کد', 'زمان ثبت', 'وضعیت', 'گونه', 'نام', 'سن', 'جنس', 'عقیم', 'واکسن', 'رفتار', 'دلیل واگذاری', 'شهر', 'تلفن (محرمانه)', 'عکس (داده)', 'یادداشت', 'تاریخ تأیید', 'ویرایش'],
