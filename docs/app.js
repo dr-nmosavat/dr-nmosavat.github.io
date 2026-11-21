@@ -1997,7 +1997,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       ptInitVisit(ptEditV); if (ptEditV) { q("[data-hb-ptvt]").textContent = "ویرایش مراجعه"; q("[data-hb-ptsavev]").textContent = "ذخیرهٔ ویرایش"; q("[data-hb-ptvcancel]").hidden = false; }
       return;
     }
-    box.innerHTML = '<div class="hb-pttool"><input type="search" data-hb-ptq autocomplete="off" placeholder="🔎 جستجو: نام، سرپرست، تلفن یا تشخیص"><button type="button" class="btn small primary" data-hb-ptnew>＋ بیمار جدید</button><button type="button" class="btn small ghost" data-hb-ptref aria-label="تازه‌سازی">🔄</button></div><div data-hb-ptfollow></div><div class="hb-adlist" data-hb-ptlist></div>';
+    box.innerHTML = '<div class="hb-pttool"><input type="search" data-hb-ptq autocomplete="off" placeholder="🔎 جستجو: نام، سرپرست، تلفن یا تشخیص"><button type="button" class="btn small primary" data-hb-ptnew>＋ ثبت بیمار جدید</button><button type="button" class="btn small ghost" data-hb-ptref aria-label="تازه‌سازی">🔄</button></div><div data-hb-ptfollow></div><div class="hb-adlist" data-hb-ptlist></div>';
     ptRenderList();
   }
   function ptRenderList() {
@@ -2009,7 +2009,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     box.innerHTML = shown.length ? shown.map(function (g) {
       var r = g[0];
       return '<div class="hb-qrw"><button type="button" class="hb-qr1" data-hb-ptopen="' + esc(r.pkey) + '"><b>' + esc(r.name) + "</b><small>" + esc(r.species) + (r.owner ? " · " + esc(r.owner) : "") + " · " + toolFa(g.length) + " مراجعه</small><small>آخرین: " + esc(fd(r.date)) + (r.reason ? " · " + esc(r.reason) : "") + "</small></button>" + (r.phone ? '<a class="hb-call hb-callq" dir="ltr" href="tel:' + esc(r.phone) + '">📞 ' + esc(r.phone) + "</a>" : "") + "</div>";
-    }).join("") : '<p class="hb-qmsg">' + (ptItems.length ? "موردی پیدا نشد." : "هنوز بیماری ثبت نشده است. با «بیمار جدید» شروع کنید.") + "</p>";
+    }).join("") : '<p class="hb-qmsg">' + (ptItems.length ? "موردی پیدا نشد." : "هنوز بیماری ثبت نشده است. با «ثبت بیمار جدید» شروع کنید.") + "</p>";
   }
   function ptIdVals() { var o = { species: segVal("hb-ptsp") }; ["name", "owner", "phone"].forEach(function (k) { o[k] = k === "phone" ? faDigits(ptF(k).value.trim()) : ptF(k).value.trim(); }); return o; }
   document.addEventListener("input", function (e) { if (e.target && e.target.matches && e.target.matches("[data-hb-ptq]")) ptRenderList(); });
