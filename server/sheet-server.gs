@@ -746,5 +746,12 @@ function migrate_(ss) {
       var codes = ps.getRange(2, 1, n, 1).getValues(), crng = ps.getRange(2, 16, n, 1);
       crng.setValues(codes.map(function (r) { return [r[0] ? authCode_(r[0]) : '']; }));
     }
+    // پت‌هایی که سابقهٔ عقیم‌سازی دارند و وضعیتشان خالی است، «عقیم‌شده» می‌شوند
+    try {
+      var recs = readAll_(hsheet_('Records', REC_COLS), REC_COLS), done = {};
+      recs.forEach(function (r) { if (r.type === 'عقیم‌سازی' && r.deleted !== '1') done[r.code] = 1; });
+      var allp = readAll_(ps, PET_COLS);
+      allp.forEach(function (p2) { if (p2.deleted !== '1' && !p2.neut && done[p2.code]) { p2.neut = 'عقیم‌شده'; writeRow_(ps, PET_COLS, p2, p2._row); } });
+    } catch (en) { lastLookError_ = 'neut: ' + String(en); }
   }
 }
