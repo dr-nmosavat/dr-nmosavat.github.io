@@ -1241,8 +1241,8 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     rows.push(["سرپرست / Guardian", gname ? esc(gname) : '<span class="nil">—</span>']);
     function enp(s) { return s ? ' <span class="en">' + esc(s) + "</span>" : ""; }
     if (cp.species) rows.push(["گونه / Species", esc(cp.species) + enp(SPEN[cp.species])]);
-    if (cp.sex) rows.push(["جنسیت / Sex", esc(cp.sex) + enp(cp.sex === "نر" ? "Male" : "Female")]);
-    if (cp.neut) rows.push(["عقیم‌سازی / Neutered", esc(cp.neut) + enp(cp.neut === "عقیم‌شده" ? "Yes" : "No")]);
+    rows.push(["جنسیت / Sex", cp.sex ? esc(cp.sex) + enp(cp.sex === "نر" ? "Male" : "Female") : "نامشخص" + enp("Unknown")]);
+    rows.push(["عقیم‌سازی / Neutered", cp.neut ? esc(cp.neut) + enp(cp.neut === "عقیم‌شده" ? "Yes" : "No") : "نامشخص" + enp("Unknown")]);
     var be = cp.breedEn || breedEn(cp.breed);
     if (cp.breed) rows.push(["نژاد / Breed", esc(cp.breed) + enp(be)]);
     if (cp.birth) rows.push(["تولد / Birth", esc(fd(cp.birth)) + enp(enDate(cp.birth))]);
