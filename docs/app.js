@@ -1390,7 +1390,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     var tr = q("[data-hb-track]"); try { tr.scrollLeft = (getComputedStyle(tr).direction === "rtl" ? -1 : 1) * curPg * tr.clientWidth; } catch (e0) {} fitTrack();
   }
   // آیفون/آیپد: به‌جای اسکرین scroll-snap، فقط صفحهٔ انتخاب‌شده نشان داده می‌شود و کشیدن انگشت جدا مدیریت می‌شود
-  var IOSMODE = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  var IOSMODE = (function () { var m = /(iPhone|iPad|iPod).*? OS (\d+)_/.exec(navigator.userAgent); return !!(m && Number(m[2]) <= 14); })();   // فقط آیفون/آیپد با iOS ۱۴ و قدیمی‌تر
   if (IOSMODE) document.documentElement.classList.add("hb-ios");
   function iosShow(i) { var tr = q("[data-hb-track]"); if (!tr) return; [].forEach.call(tr.children, function (sl, n) { sl.classList.toggle("hb-on", n === i); }); }
   // آیفون/آیپد قدیمی: پنجره‌های شناور (فرم ثبت، QR، اشتراک، راهنما) درون صفحه و با اسکرول خودکار نشان داده می‌شوند
