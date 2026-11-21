@@ -1309,7 +1309,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function tokSet(t) { try { if (t) localStorage.setItem("dm_hb_tok", JSON.stringify({ t: t, exp: (Number(String(t).split(".")[0]) || Date.now() + 3 * 86400000) - 60000 })); else localStorage.removeItem("dm_hb_tok"); } catch (e) {} }
   var DRPAGE = document.body.classList.contains("hb-drpage");
   var drListRun = null, pendingReq = "";
-  function dview(v) { root.setAttribute("data-dview", v); [].forEach.call(root.querySelectorAll("[data-hb-dtab]"), function (b) { b.classList.toggle("on", b.getAttribute("data-hb-dtab") === v); }); if (v === "list" && isDr() && srvOn() && drListRun) drListRun(); if (v === "adopt" && isDr() && srvOn()) adLoad(); if (v === "req" && isDr() && srvOn()) rqLoad(); if (v === "pt" && isDr() && srvOn()) ptLoad(); if (v === "list") tabCounts(); if (v !== "new" && v !== "pet") pendingReq = ""; }
+  function dview(v) { root.setAttribute("data-dview", v); [].forEach.call(root.querySelectorAll("[data-hb-dtab]"), function (b) { b.classList.toggle("on", b.getAttribute("data-hb-dtab") === v); }); if (v === "list" && isDr() && srvOn() && drListRun) drListRun(); if (v === "adopt" && isDr() && srvOn()) adLoad(); if (v === "req" && isDr() && srvOn()) rqLoad(); if (v === "pt" && isDr() && srvOn() && ptBox() && !ptBox().hasAttribute("data-on")) { ptBox().setAttribute("data-on", "1"); ptEnter(); } if (v !== "pt" && ptBox()) ptBox().removeAttribute("data-on"); if (v === "list") tabCounts(); if (v !== "new" && v !== "pet") pendingReq = ""; }
   function purgeDrCache() { db.pets = db.pets.filter(function (p) { return !srvOf(p); }); db.recs = db.recs.filter(function (r) { return db.pets.some(function (p) { return p.id === r.pet; }); }); db.cur = db.pets[0] ? db.pets[0].id : null; save(); }
   function drDrop(msg) { try { localStorage.removeItem("dm_hb_dr"); } catch (e) {} purgeDrCache(); tokSet(""); setTimeout(function () { applyRole(); render(); toast(msg); }, 0); }
   function isDr() { if (!DRPAGE) return false; try { var f = localStorage.getItem("dm_hb_dr") === "1"; if (f && srvOn() && !tokGet()) { drDrop("مدت اعتبار ورود تمام شد؛ لطفاً دوباره وارد شوید."); return false; } return f; } catch (e) { return false; } }
@@ -1945,58 +1945,107 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   });
 
   // ---- بیماران من (دفتر مراجعات دکتر) ----
-  var ptItems = [], ptEdit = null;
+  var PT_REASONS = ["معاینهٔ عمومی / چکاپ", "واکسیناسیون", "ضدانگل (کرم‌کشی، کک و کنه)", "ویزیت بیماری", "مشکل گوارشی (استفراغ، اسهال)", "مشکل پوست و مو", "مشکل چشم و گوش", "مشکل دهان و دندان", "لنگش، شکستگی یا تصادف", "آزمایش یا تصویربرداری", "عقیم‌سازی", "جراحی", "پیگیری درمان", "مشاوره (تغذیه، رفتار)"];
+  var ptItems = [], ptLoaded = false, ptMode = "list", ptCur = "", ptEditV = null, PTJ = {};
   function isoNow() { var d = new Date(), p = function (n) { return (n < 10 ? "0" : "") + n; }; return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()); }
+  function isoPlus(iso, n) { var d = new Date(iso + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
   function faDigits(s) { return String(s || "").replace(/[۰-۹]/g, function (d) { return "۰۱۲۳۴۵۶۷۸۹".indexOf(d); }).replace(/[٠-٩]/g, function (d) { return "٠١٢٣٤٥٦٧٨٩".indexOf(d); }); }
-  function ptF(n) { return q('[data-pt="' + n + '"]'); }
+  function ptBox() { return q("[data-hb-ptbox]"); }
+  function ptF(n) { return ptBox().querySelector('[data-pt="' + n + '"]'); }
+  function ptGroup(k) { return ptItems.filter(function (r) { return r.pkey === k; }); }
+  function ptGroups() { var map = {}, order = []; ptItems.forEach(function (r) { if (!map[r.pkey]) { map[r.pkey] = []; order.push(r.pkey); } map[r.pkey].push(r); }); return order.map(function (k) { return map[k]; }); }
   function ptLoad() {
-    var box = q("[data-hb-ptlist]"); box.innerHTML = '<p class="hb-qmsg">در حال بارگذاری…</p>';
-    api({ a: "patList", t: tokGet() }).then(function (j) { if (!j.ok) { box.innerHTML = '<p class="hb-qmsg">' + esc(errMsg(j.err)) + "</p>"; return; } ptItems = j.items || []; ptRender(); });
+    if (ptBox() && ptMode === "list" && !ptLoaded) ptBox().innerHTML = '<p class="hb-qmsg">در حال بارگذاری…</p>';
+    api({ a: "patList", t: tokGet() }).then(function (j) { if (!j.ok) { ptBox().innerHTML = '<p class="hb-qmsg">' + esc(errMsg(j.err)) + "</p>"; return; } ptItems = j.items || []; ptLoaded = true; ptShow(); });
   }
-  function ptGroups() {
-    var map = {}, order = [];
-    ptItems.forEach(function (r) { if (!map[r.pkey]) { map[r.pkey] = []; order.push(r.pkey); } map[r.pkey].push(r); });
-    return order.map(function (k) { return map[k]; });
+  function ptEnter() { ptMode = "list"; ptEditV = null; if (ptLoaded) ptShow(); else ptLoad(); }
+  function ptVisitFields(v) {
+    return '<div class="fld"><label>تاریخ مراجعه</label><div class="jd" data-pjd="d"></div></div>'
+      + '<div class="fld"><label>دلیل مراجعه</label><select data-pt="reason">' + PT_REASONS.map(function (r) { return '<option value="' + esc(r) + '">' + esc(r) + "</option>"; }).join("") + '<option value="__other">سایر (خودم می‌نویسم)…</option></select><input data-pt="reasonx" type="text" maxlength="150" placeholder="دلیل مراجعه را بنویسید" hidden></div>'
+      + '<div class="fld"><label>تشخیص و یادداشت</label><textarea data-pt="note" rows="4" maxlength="1500"></textarea></div>'
+      + '<div class="fld"><label>تاریخ پیگیری <small>(اختیاری)</small></label><div class="jd" data-pjd="f"></div></div>';
   }
-  function ptRender() {
-    var qs = faDigits(q("[data-hb-ptq]").value).trim().toLowerCase(), box = q("[data-hb-ptlist]"), fb = q("[data-hb-ptfollow]"), now = isoNow();
+  function ptInitVisit(v) {
+    var box = ptBox(); PTJ.d = initJd(box.querySelector('[data-pjd="d"]'), { minY: -10, maxY: 0 }); PTJ.f = initJd(box.querySelector('[data-pjd="f"]'), { optional: true, minY: -1, maxY: 2 });
+    PTJ.d.set(v && v.date || isoNow()); PTJ.f.set(v && v.follow || "");
+    var sel = ptF("reason"), rx = ptF("reasonx"), r = v && v.reason || "";
+    if (r && PT_REASONS.indexOf(r) < 0) { sel.value = "__other"; rx.value = r; rx.hidden = false; } else sel.value = r || PT_REASONS[0];
+    ptF("note").value = v && v.note || "";
+    sel.addEventListener("change", function () { rx.hidden = sel.value !== "__other"; if (!rx.hidden) rx.focus(); });
+  }
+  function ptVisitVals() { var sel = ptF("reason"); return { date: PTJ.d.get(), reason: sel.value === "__other" ? ptF("reasonx").value.trim() : sel.value, note: ptF("note").value.trim(), follow: PTJ.f.get() }; }
+  function ptSpecies(sel) { return '<div class="seg" data-seg="hb-ptsp">' + ["سگ", "گربه", "پرنده", "دیگر"].map(function (x) { return '<button type="button"' + (x === (sel || "سگ") ? ' class="on"' : "") + ' data-v="' + x + '">' + x + "</button>"; }).join("") + "</div>"; }
+  function ptIdFields(r) {
+    return '<div class="fld"><label>نام پت</label><input data-pt="name" type="text" maxlength="40" value="' + esc(r && r.name || "") + '"></div><div class="fld"><label>گونه</label>' + ptSpecies(r && r.species) + "</div>"
+      + '<div class="fld"><label>نام سرپرست</label><input data-pt="owner" type="text" maxlength="40" value="' + esc(r && r.owner || "") + '"></div><div class="fld"><label>شمارهٔ تماس</label><input data-pt="phone" type="tel" inputmode="tel" dir="ltr" maxlength="16" placeholder="09123456789" autocomplete="off" value="' + esc(r && r.phone || "") + '"></div>';
+  }
+  function ptShow() {
+    var box = ptBox(); if (!box) return;
+    if (ptMode === "new") {
+      box.innerHTML = '<div class="hb-ptform"><h3 class="hb-pth">ثبت بیمار جدید</h3>' + ptIdFields(null) + '<h4 class="hb-pth2">اولین مراجعه</h4>' + ptVisitFields() + '<p class="hb-err" data-hb-pterr hidden></p><div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-ptsavenew>ثبت بیمار و مراجعه</button><button type="button" class="btn small ghost" data-hb-ptback>انصراف</button></div></div>';
+      ptInitVisit(null); return;
+    }
+    if (ptMode === "file") {
+      var g = ptGroup(ptCur); if (!g.length) { ptMode = "list"; return ptShow(); }
+      var r = g[0];
+      box.innerHTML = '<button type="button" class="btn small ghost hb-ptbk" data-hb-ptback>→ بازگشت به فهرست</button>'
+        + '<div class="hb-ptfile" data-hb-ptfile><div class="hb-ptinfo"><b class="hb-ptn1">' + esc(r.name) + "</b><span>" + esc(r.species) + (r.owner ? " · سرپرست: " + esc(r.owner) : "") + "</span>" + (r.phone ? '<a class="hb-call" dir="ltr" href="tel:' + esc(r.phone) + '">📞 ' + esc(r.phone) + "</a>" : "<small>شمارهٔ تماس ثبت نشده</small>") + "</div>"
+        + '<p class="hb-ptlastl">' + (g.length > 1 ? "قبلاً: " + g.slice(0, 3).map(function (v) { return esc(fd(v.date)) + (v.reason ? " (" + esc(v.reason) + ")" : ""); }).join(" · ") : "اولین مراجعه: " + esc(fd(r.date)) + (r.reason ? " (" + esc(r.reason) + ")" : "")) + "</p>"
+        + '<div class="hb-adb"><button type="button" class="btn small ghost" data-hb-ptidedit>✏️ ویرایش اطلاعات</button><button type="button" class="btn small" data-hb-ptbook>🪪 صدور شناسنامه</button></div><div class="hb-ptidf" data-hb-ptidf hidden>' + ptIdFields(r) + '<p class="hb-err" data-hb-pterr hidden></p><div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-ptidsave>ذخیرهٔ اطلاعات</button><button type="button" class="btn small ghost" data-hb-ptidcancel>انصراف</button></div></div></div>'
+        + '<div class="hb-ptform"><h4 class="hb-pth2" data-hb-ptvt>ثبت مراجعهٔ جدید</h4>' + ptVisitFields() + '<p class="hb-err" data-hb-pterr2 hidden></p><div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-ptsavev>ثبت مراجعه</button><button type="button" class="btn small ghost" data-hb-ptvcancel hidden>انصراف از ویرایش</button></div></div>'
+        + '<h4 class="hb-pth2">سوابق مراجعه (' + toolFa(g.length) + ")</h4>" + g.map(function (v) { return '<div class="hb-ptv"><b>' + esc(fd(v.date)) + "</b>" + (v.reason ? " · " + esc(v.reason) : "") + (v.follow ? ' <small class="hb-ptfu">پیگیری: ' + esc(fd(v.follow)) + "</small>" : "") + (v.note ? '<p class="hb-ptn">' + esc(v.note) + "</p>" : "") + '<div class="hb-adb"><button type="button" class="btn small ghost" data-hb-ptedit="' + esc(v.id) + '">✏️ ویرایش</button><button type="button" class="btn small ghost hb-danger" data-hb-ptdel="' + esc(v.id) + '">🗑 حذف</button></div></div>'; }).join("");
+      ptInitVisit(ptEditV); if (ptEditV) { q("[data-hb-ptvt]").textContent = "ویرایش مراجعه"; q("[data-hb-ptsavev]").textContent = "ذخیرهٔ ویرایش"; q("[data-hb-ptvcancel]").hidden = false; }
+      return;
+    }
+    box.innerHTML = '<div class="hb-pttool"><input type="search" data-hb-ptq autocomplete="off" placeholder="🔎 جستجو: نام، سرپرست، تلفن یا تشخیص"><button type="button" class="btn small primary" data-hb-ptnew>＋ بیمار جدید</button><button type="button" class="btn small ghost" data-hb-ptref aria-label="تازه‌سازی">🔄</button></div><div data-hb-ptfollow></div><div class="hb-adlist" data-hb-ptlist></div>';
+    ptRenderList();
+  }
+  function ptRenderList() {
+    var qi = ptBox().querySelector("[data-hb-ptq]"), qs = faDigits(qi ? qi.value : "").trim().toLowerCase(), box = ptBox().querySelector("[data-hb-ptlist]"), fb = ptBox().querySelector("[data-hb-ptfollow]"), now = isoNow();
+    if (!box) return;
     var groups = ptGroups(), shown = groups.filter(function (g) { return !qs || faDigits(g.map(function (r) { return [r.name, r.owner, r.phone, r.reason, r.note].join(" "); }).join(" ")).toLowerCase().indexOf(qs) > -1; });
-    var due = groups.filter(function (g) { var f = g[0].follow; return f && f <= isoPlus(now, 2); });
-    due.sort(function (a, b) { return a[0].follow < b[0].follow ? -1 : 1; });
-    fb.innerHTML = due.length && !qs ? '<div class="hb-ptdue"><b>🔔 پیگیری‌ها (' + toolFa(due.length) + ")</b>" + due.slice(0, 8).map(function (g) { var r = g[0]; return '<div class="hb-ptdr"><span>' + esc(r.name) + (r.owner ? " · " + esc(r.owner) : "") + "</span><small>" + (r.follow < now ? "عقب‌افتاده · " : r.follow === now ? "امروز · " : "") + esc(fd(r.follow)) + "</small>" + (r.phone ? '<a class="hb-call" dir="ltr" href="tel:' + esc(r.phone) + '">📞 ' + esc(r.phone) + "</a>" : "") + "</div>"; }).join("") + "</div>" : "";
+    var due = groups.filter(function (g) { var f = g[0].follow; return f && f <= isoPlus(now, 2); }); due.sort(function (a, b) { return a[0].follow < b[0].follow ? -1 : 1; });
+    fb.innerHTML = due.length && !qs ? '<div class="hb-ptdue"><b>🔔 پیگیری‌ها (' + toolFa(due.length) + ")</b>" + due.slice(0, 8).map(function (g) { var r = g[0]; return '<button type="button" class="hb-ptdr" data-hb-ptopen="' + esc(r.pkey) + '"><span>' + esc(r.name) + (r.owner ? " · " + esc(r.owner) : "") + "</span><small>" + (r.follow < now ? "عقب‌افتاده · " : r.follow === now ? "امروز · " : "") + esc(fd(r.follow)) + "</small></button>"; }).join("") + "</div>" : "";
     box.innerHTML = shown.length ? shown.map(function (g) {
       var r = g[0];
-      return '<article class="hb-adc hb-ptc"><div class="hb-adh"><b>' + esc(r.name) + "</b><span>" + esc(r.species) + (r.owner ? " · سرپرست: " + esc(r.owner) : "") + "</span>" + (r.phone ? '<a class="hb-call hb-ptph" dir="ltr" href="tel:' + esc(r.phone) + '">📞 ' + esc(r.phone) + "</a>" : "") + "</div>"
-        + '<p class="hb-ptlast">آخرین مراجعه: ' + esc(fd(r.date)) + (r.reason ? " · " + esc(r.reason) : "") + (r.follow ? " · پیگیری: " + esc(fd(r.follow)) : "") + "</p>"
-        + '<details class="hb-ptdet"><summary>مراجعه‌ها (' + toolFa(g.length) + ")</summary>" + g.map(function (v) { return '<div class="hb-ptv"><b>' + esc(fd(v.date)) + "</b>" + (v.reason ? " · " + esc(v.reason) : "") + (v.note ? '<p class="hb-ptn">' + esc(v.note) + "</p>" : "") + '<div class="hb-adb"><button type="button" class="btn small ghost" data-hb-ptedit="' + esc(v.id) + '">✏️ ویرایش</button><button type="button" class="btn small ghost hb-danger" data-hb-ptdel="' + esc(v.id) + '">🗑 حذف</button></div></div>'; }).join("") + "</details>"
-        + '<div class="hb-adb"><button type="button" class="btn small primary" data-hb-ptvisit="' + esc(r.pkey) + '">＋ مراجعهٔ جدید</button><button type="button" class="btn small" data-hb-ptbook="' + esc(r.pkey) + '">🪪 صدور شناسنامه</button></div></article>';
-    }).join("") : '<p class="hb-qmsg">' + (ptItems.length ? "موردی پیدا نشد." : "هنوز بیماری ثبت نشده است. با «مراجعهٔ جدید» شروع کنید.") + "</p>";
+      return '<div class="hb-qrw"><button type="button" class="hb-qr1" data-hb-ptopen="' + esc(r.pkey) + '"><b>' + esc(r.name) + "</b><small>" + esc(r.species) + (r.owner ? " · " + esc(r.owner) : "") + " · " + toolFa(g.length) + " مراجعه</small><small>آخرین: " + esc(fd(r.date)) + (r.reason ? " · " + esc(r.reason) : "") + "</small></button>" + (r.phone ? '<a class="hb-call hb-callq" dir="ltr" href="tel:' + esc(r.phone) + '">📞 ' + esc(r.phone) + "</a>" : "") + "</div>";
+    }).join("") : '<p class="hb-qmsg">' + (ptItems.length ? "موردی پیدا نشد." : "هنوز بیماری ثبت نشده است. با «بیمار جدید» شروع کنید.") + "</p>";
   }
-  function isoPlus(iso, n) { var d = new Date(iso + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
-  function ptOpen(r) {
-    ptEdit = r && r.id ? { id: r.id } : null;
-    ["name", "owner", "phone", "reason", "note"].forEach(function (k) { ptF(k).value = r && r[k] || ""; });
-    ptF("date").value = r && r.date || isoNow(); ptF("follow").value = r && r.follow || "";
-    q("[data-hb-pterr]").hidden = true; q("[data-hb-ptform]").hidden = false; q("[data-hb-ptform]").dataset.pkey = r && r.pkey || "";
-    setSeg("hb-ptsp", r && r.species || "سگ");
-    try { q("[data-hb-ptform]").scrollIntoView({ behavior: "smooth", block: "start" }); } catch (e) {}
-  }
-  document.addEventListener("input", function (e) { if (e.target && e.target.matches && e.target.matches("[data-hb-ptq]")) ptRender(); });
+  function ptIdVals() { var o = { species: segVal("hb-ptsp") }; ["name", "owner", "phone"].forEach(function (k) { o[k] = k === "phone" ? faDigits(ptF(k).value.trim()) : ptF(k).value.trim(); }); return o; }
+  document.addEventListener("input", function (e) { if (e.target && e.target.matches && e.target.matches("[data-hb-ptq]")) ptRenderList(); });
   document.addEventListener("click", function (e) {
-    var t = e.target, b; if (!t.closest || !q("[data-hb-ptbox]")) return;
-    if (t.closest("[data-hb-ptnew]")) return ptOpen(null);
-    if (t.closest("[data-hb-ptref]")) return ptLoad();
-    if (t.closest("[data-hb-ptcancel]")) { q("[data-hb-ptform]").hidden = true; return; }
-    if ((b = t.closest("[data-hb-ptvisit]"))) { var g1 = ptItems.filter(function (x) { return x.pkey === b.getAttribute("data-hb-ptvisit"); })[0]; if (g1) ptOpen({ pkey: g1.pkey, name: g1.name, species: g1.species, owner: g1.owner, phone: g1.phone }); return; }
-    if ((b = t.closest("[data-hb-ptedit]"))) { var v1 = ptItems.filter(function (x) { return x.id === b.getAttribute("data-hb-ptedit"); })[0]; if (v1) ptOpen(v1); return; }
-    if ((b = t.closest("[data-hb-ptdel]"))) { if (!confirm("این مراجعه حذف شود؟")) return; api({ a: "patDel", t: tokGet(), id: b.getAttribute("data-hb-ptdel") }).then(function (j) { if (!j.ok) return alert(errMsg(j.err)); ptLoad(); }); return; }
-    if ((b = t.closest("[data-hb-ptbook]"))) { var g2 = ptItems.filter(function (x) { return x.pkey === b.getAttribute("data-hb-ptbook"); })[0]; if (!g2) return; dview("new"); petForm(null); q("#hb-pn").value = g2.name; q("#hb-po").value = g2.owner || ""; q("#hb-ph").value = g2.phone || ""; var sb2 = q('[data-seg="hbsp"] [data-v="' + g2.species + '"]'); if (sb2) sb2.click(); toast("اطلاعات بیمار وارد شد؛ تاریخ تولد و رضایت را کامل کنید"); return; }
-    if (t.closest("[data-hb-ptsave]")) {
-      var er = q("[data-hb-pterr]"), sbt = q("[data-hb-ptsave]"), v = { pkey: q("[data-hb-ptform]").dataset.pkey || "", species: segVal("hb-ptsp") };
-      ["name", "owner", "phone", "date", "reason", "note", "follow"].forEach(function (k) { v[k] = k === "phone" ? faDigits(ptF(k).value.trim()) : ptF(k).value.trim(); });
-      if (!v.name) { er.textContent = "نام پت را بنویسید."; er.hidden = false; ptF("name").focus(); return; }
-      er.hidden = true; sbt.disabled = true;
-      api({ a: "patSave", t: tokGet(), id: ptEdit ? ptEdit.id : "", v: v }).then(function (j) { sbt.disabled = false; if (!j.ok) { er.textContent = errMsg(j.err); er.hidden = false; return; } q("[data-hb-ptform]").hidden = true; ptEdit = null; toast("✅ ثبت شد"); ptLoad(); });
+    var t = e.target, b; if (!t.closest || !ptBox()) return;
+    if (t.closest("[data-hb-ptnew]")) { ptMode = "new"; return ptShow(); }
+    if (t.closest("[data-hb-ptref]")) { ptLoaded = false; return ptLoad(); }
+    if (t.closest("[data-hb-ptback]")) { ptMode = "list"; ptEditV = null; return ptShow(); }
+    if ((b = t.closest("[data-hb-ptopen]"))) { ptCur = b.getAttribute("data-hb-ptopen"); ptMode = "file"; ptEditV = null; ptShow(); try { window.scrollTo(0, ptBox().getBoundingClientRect().top + window.pageYOffset - 80); } catch (x) {} return; }
+    if (t.closest("[data-hb-ptidedit]")) { q("[data-hb-ptidf]").hidden = false; return; }
+    if (t.closest("[data-hb-ptidcancel]")) { q("[data-hb-ptidf]").hidden = true; return; }
+    if (t.closest("[data-hb-ptvcancel]")) { ptEditV = null; return ptShow(); }
+    if ((b = t.closest("[data-hb-ptedit]"))) { ptEditV = ptItems.filter(function (x) { return x.id === b.getAttribute("data-hb-ptedit"); })[0] || null; ptShow(); try { q("[data-hb-ptvt]").scrollIntoView({ behavior: "smooth", block: "center" }); } catch (x) {} return; }
+    if ((b = t.closest("[data-hb-ptdel]"))) { if (!confirm("این مراجعه حذف شود؟")) return; api({ a: "patDel", t: tokGet(), id: b.getAttribute("data-hb-ptdel") }).then(function (j) { if (!j.ok) return alert(errMsg(j.err)); ptItems = ptItems.filter(function (x) { return x.id !== b.getAttribute("data-hb-ptdel"); }); ptShow(); }); return; }
+    if (t.closest("[data-hb-ptbook]")) { var g2 = ptGroup(ptCur)[0]; if (!g2) return; dview("new"); petForm(null); q("#hb-pn").value = g2.name; q("#hb-po").value = g2.owner || ""; q("#hb-ph").value = g2.phone || ""; var sb2 = q('[data-seg="hbsp"] [data-v="' + g2.species + '"]'); if (sb2) sb2.click(); toast("اطلاعات بیمار وارد شد؛ تاریخ تولد و رضایت را کامل کنید"); return; }
+    if (t.closest("[data-hb-ptsavenew]")) {
+      var er = q("[data-hb-pterr]"), btn = q("[data-hb-ptsavenew]"), id = ptIdVals(), vv = ptVisitVals(); if (!id.name) { er.textContent = "نام پت را بنویسید."; er.hidden = false; ptF("name").focus(); return; }
+      if (!vv.reason) { er.textContent = "دلیل مراجعه را بنویسید."; er.hidden = false; return; }
+      er.hidden = true; btn.disabled = true; var v = { name: id.name, species: id.species, owner: id.owner, phone: id.phone, date: vv.date, reason: vv.reason, note: vv.note, follow: vv.follow, pkey: "" };
+      api({ a: "patSave", t: tokGet(), id: "", v: v }).then(function (j) { btn.disabled = false; if (!j.ok) { er.textContent = errMsg(j.err); er.hidden = false; return; } ptItems.unshift(j.item); ptCur = j.item.pkey; ptMode = "file"; ptEditV = null; toast("✅ اولین مراجعه ثبت شد"); ptShow(); });
+      return;
+    }
+    if (t.closest("[data-hb-ptsavev]")) {
+      var er2 = q("[data-hb-pterr2]"), btn2 = q("[data-hb-ptsavev]"), g = ptGroup(ptCur)[0], vv2 = ptVisitVals(); if (!g) return;
+      if (!vv2.reason) { er2.textContent = "دلیل مراجعه را بنویسید."; er2.hidden = false; return; }
+      er2.hidden = true; btn2.disabled = true; var v2 = { name: g.name, species: g.species, owner: g.owner, phone: g.phone, date: vv2.date, reason: vv2.reason, note: vv2.note, follow: vv2.follow, pkey: ptCur };
+      api({ a: "patSave", t: tokGet(), id: ptEditV ? ptEditV.id : "", v: v2 }).then(function (j) {
+        btn2.disabled = false; if (!j.ok) { er2.textContent = errMsg(j.err); er2.hidden = false; return; }
+        if (ptEditV) ptItems = ptItems.map(function (x) { return x.id === j.item.id ? j.item : x; }); else ptItems.unshift(j.item);
+        ptItems.sort(function (x, y) { return x.date < y.date ? 1 : x.date > y.date ? -1 : 0; }); ptEditV = null; toast("✅ مراجعه ثبت شد"); ptShow();
+      });
+      return;
+    }
+    if (t.closest("[data-hb-ptidsave]")) {
+      var er3 = q("[data-hb-pterr]"), id3 = ptIdVals(); if (!id3.name) { er3.textContent = "نام پت را بنویسید."; er3.hidden = false; return; }
+      api({ a: "patPatient", t: tokGet(), pkey: ptCur, v: id3 }).then(function (j) { if (!j.ok) { er3.textContent = errMsg(j.err); er3.hidden = false; return; } ptItems.forEach(function (x) { if (x.pkey === ptCur) { x.name = id3.name; x.species = id3.species; x.owner = id3.owner; x.phone = id3.phone; } }); toast("✅ اطلاعات ذخیره شد"); ptShow(); });
     }
   });
   // ---- بررسی اصالت شناسنامه (دکتر) ----

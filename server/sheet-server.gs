@@ -180,6 +180,7 @@ function health_(b) {
     if (a === 'patList') return patList_();
     if (a === 'patSave') return patSave_(b);
     if (a === 'patDel') return patDel_(b);
+    if (a === 'patPatient') return patPatient_(b);
   } finally { lock.releaseLock(); }
   return { ok: false, err: 'bad' };
 }
@@ -470,6 +471,16 @@ function patSave_(b) {
   r.reason = clip_(v.reason, 200); r.note = clip_(v.note, 1500); r.follow = date_(v.follow); r.code = clip_(v.code, 20);
   r.updated = nowIso_(); writeRow_(sh, PT_COLS, r, r._row || 0);
   return { ok: true, item: patOut_(r) };
+}
+function patPatient_(b) {
+  var sh = hsheet_('Patients', PT_COLS), rows = readAll_(sh, PT_COLS), v = b.v || {}, n = 0, i;
+  var name = clip_(v.name, 40); if (!name || !/^PT-[A-Z0-9]{5,10}$/.test(String(b.pkey || ''))) return { ok: false, err: 'bad' };
+  var species = ['سگ', 'گربه', 'پرنده', 'دیگر'].indexOf(v.species) > -1 ? v.species : 'دیگر';
+  for (i = 0; i < rows.length; i++) if (rows[i].pkey === b.pkey && rows[i].deleted !== '1') {
+    rows[i].name = name; rows[i].species = species; rows[i].owner = clip_(v.owner, 40); rows[i].phone = String(v.phone || '').replace(/[^0-9+]/g, '').slice(0, 16);
+    rows[i].updated = nowIso_(); writeRow_(sh, PT_COLS, rows[i], rows[i]._row); n++;
+  }
+  return n ? { ok: true, n: n } : { ok: false, err: 'notfound' };
 }
 function patDel_(b) {
   var sh = hsheet_('Patients', PT_COLS), rows = readAll_(sh, PT_COLS), i;
