@@ -1309,7 +1309,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function tokSet(t) { try { if (t) localStorage.setItem("dm_hb_tok", JSON.stringify({ t: t, exp: (Number(String(t).split(".")[0]) || Date.now() + 3 * 86400000) - 60000 })); else localStorage.removeItem("dm_hb_tok"); } catch (e) {} }
   var DRPAGE = document.body.classList.contains("hb-drpage");
   var drListRun = null, pendingReq = "";
-  function dview(v) { root.setAttribute("data-dview", v); [].forEach.call(root.querySelectorAll("[data-hb-dtab]"), function (b) { b.classList.toggle("on", b.getAttribute("data-hb-dtab") === v); }); if (v === "list" && isDr() && srvOn() && drListRun) drListRun(); if (v === "adopt" && isDr() && srvOn()) adLoad(); if (v === "req" && isDr() && srvOn()) rqLoad(); if (v === "pt" && isDr() && srvOn() && ptBox() && !ptBox().hasAttribute("data-on")) { ptBox().setAttribute("data-on", "1"); ptEnter(); } if (v !== "pt" && ptBox()) ptBox().removeAttribute("data-on"); if (v === "list") tabCounts(); if (v !== "new" && v !== "pet") pendingReq = ""; }
+  function dview(v) { root.removeAttribute("data-dcollapsed"); root.setAttribute("data-dview", v); [].forEach.call(root.querySelectorAll("[data-hb-dtab]"), function (b) { b.classList.toggle("on", b.getAttribute("data-hb-dtab") === v); }); if (v === "list" && isDr() && srvOn() && drListRun) drListRun(); if (v === "adopt" && isDr() && srvOn()) adLoad(); if (v === "req" && isDr() && srvOn()) rqLoad(); if (v === "pt" && isDr() && srvOn() && ptBox() && !ptBox().hasAttribute("data-on")) { ptBox().setAttribute("data-on", "1"); ptEnter(); } if (v !== "pt" && ptBox()) ptBox().removeAttribute("data-on"); if (v === "list") tabCounts(); if (v !== "new" && v !== "pet") pendingReq = ""; }
   function purgeDrCache() { db.pets = db.pets.filter(function (p) { return !srvOf(p); }); db.recs = db.recs.filter(function (r) { return db.pets.some(function (p) { return p.id === r.pet; }); }); db.cur = db.pets[0] ? db.pets[0].id : null; save(); }
   function drDrop(msg) { try { localStorage.removeItem("dm_hb_dr"); } catch (e) {} purgeDrCache(); tokSet(""); setTimeout(function () { applyRole(); render(); toast(msg); }, 0); }
   function isDr() { if (!DRPAGE) return false; try { var f = localStorage.getItem("dm_hb_dr") === "1"; if (f && srvOn() && !tokGet()) { drDrop("مدت اعتبار ورود تمام شد؛ لطفاً دوباره وارد شوید."); return false; } return f; } catch (e) { return false; } }
@@ -1651,7 +1651,14 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if ((b = t.closest("[data-hb-tab]"))) { curTab = Number(b.getAttribute("data-hb-tab")); return render(); }
     if (t.closest("[data-hb-others]")) { showOthers = true; render(); return; }
     if ((b = t.closest("[data-hb-pet]"))) { showOthers = true; db.cur = b.getAttribute("data-hb-pet"); q("[data-hb-petform]").hidden = true; save(); render(); return syncCur(); }
-    if ((b = t.closest("[data-hb-dtab]"))) { var dv = b.getAttribute("data-hb-dtab"); dview(dv); if (dv === "new") { petForm(null); } else q("[data-hb-petform]").hidden = true; return; }
+    if ((b = t.closest("[data-hb-dtab]"))) {
+      var dv = b.getAttribute("data-hb-dtab");
+      if (dv === root.getAttribute("data-dview")) {   // زدن تب فعال: برگشت به فهرست، یا جمع/باز کردن
+        if (dv === "pt" && ptMode !== "list") { ptMode = "list"; ptEditV = null; ptShow(); root.removeAttribute("data-dcollapsed"); return; }
+        if (root.getAttribute("data-dcollapsed") === "1") root.removeAttribute("data-dcollapsed"); else root.setAttribute("data-dcollapsed", "1");
+        return;
+      }
+      dview(dv); if (dv === "new") { petForm(null); } else q("[data-hb-petform]").hidden = true; return; }
     if (t.closest("[data-hb-back]")) { q("[data-hb-petform]").hidden = true; dview("list"); return; }
     if ((b = t.closest("[data-hb-lopen]"))) { db.cur = b.getAttribute("data-hb-lopen"); q("[data-hb-petform]").hidden = true; save(); render(); dview("pet"); return; }
     if (t.closest("[data-hb-addhome]")) { var gd = q("[data-hb-guide]"); if (gd) gd.hidden = false; return; }

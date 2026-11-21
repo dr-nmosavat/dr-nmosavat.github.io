@@ -1956,3 +1956,6 @@ button.hb-ptdr { display: flex; width: 100%; text-align: right; background: tran
 .hb-ptbox .hb-qr1 small { color: #4d5b6e; }
 .hb-qr1 { background: #e9eef5; border: 1px solid #c3cfdf; box-shadow: 0 1px 3px rgba(31,60,100,.08); } .hb-qr1:hover, .hb-qr1:active { background: #dfe7f1; } .hb-qr1 small { color: #4d5b6e; }
 .hb-adc, .hb-ptv { background: #e9eef5; border-color: #c3cfdf; box-shadow: 0 1px 3px rgba(31,60,100,.08); } .hb-adc p, .hb-ptv .hb-ptn { color: #34455a; }
+
+html.hb-dr [data-dcollapsed="1"] [data-hb-searchbox], html.hb-dr [data-dcollapsed="1"] [data-hb-verifybox], html.hb-dr [data-dcollapsed="1"] [data-hb-petform], html.hb-dr [data-dcollapsed="1"] .hb-adbox, html.hb-dr [data-dcollapsed="1"] [data-hb-main] { display: none !important; }
+.hb-drtabs button.on::after { content: " ▴"; font-size: 11px; opacity: .85; } [data-dcollapsed="1"] .hb-drtabs button.on::after { content: " ▾"; }
