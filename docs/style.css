@@ -1959,3 +1959,8 @@ button.hb-ptdr { display: flex; width: 100%; text-align: right; background: tran
 
 html.hb-dr [data-dcollapsed="1"] [data-hb-searchbox], html.hb-dr [data-dcollapsed="1"] [data-hb-verifybox], html.hb-dr [data-dcollapsed="1"] [data-hb-petform], html.hb-dr [data-dcollapsed="1"] .hb-adbox, html.hb-dr [data-dcollapsed="1"] [data-hb-main] { display: none !important; }
 .hb-drtabs button.on::after { content: " ▴"; font-size: 11px; opacity: .85; } [data-dcollapsed="1"] .hb-drtabs button.on::after { content: " ▾"; }
+
+.hb-ptsec { margin: 0 0 10px; padding: 4px 10px; border-radius: 8px; background: #1f5aa6; color: #fff; font-size: 13.5px; display: inline-block; } .hb-ptsec2 { background: #1b7a4b; }
+.hb-ptfile { background: #e3ebf5; border: 1px solid #b3c6de; }
+.hb-ptform.hb-ptvform { background: #e7f5ec; border: 1px solid #aed4bd; } .hb-ptvform .fld input, .hb-ptvform .fld select, .hb-ptvform .fld textarea { background: #fff; }
+.hb-pth2 { color: #1f5aa6; }
