@@ -1975,3 +1975,8 @@ html.hb-dr [data-dcollapsed="1"] [data-hb-searchbox], html.hb-dr [data-dcollapse
 .hb-qrw .hb-qr1::after { display: none; }
 .hb-qrw .hb-callq { position: static; inset: auto; transform: none; flex: 0 0 auto; display: flex; align-items: center; margin: 0; padding: 0 14px; border: 1px solid #c3cfdf; border-radius: 12px; background: #fff; font-size: 13.5px; white-space: nowrap; }
 @media (max-width: 480px) { .hb-qrw { flex-direction: column; gap: 4px; } .hb-qrw .hb-qr1 { padding: 8px 12px; } .hb-qrw .hb-callq { padding: 6px 12px; justify-content: flex-start; } }
+
+/* دکمه‌های ثبت سریع برای دکتر + ارسال برای سرپرست در وسط */
+.hb-dacts { display: none; } html.hb-dr .hb-dacts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0 6px; }
+.hb-dacts .btn { width: 100%; min-height: 48px; font-size: 14.5px; display: inline-flex; align-items: center; justify-content: center; text-align: center; background: #fff; color: #1f5aa6; border: 1.5px solid #1f5aa6; }
+html.hb-dr .hb-sendrow { display: flex; justify-content: center; margin: 6px 0 12px; } html.hb-dr .hb-sendrow .hb-sendbtn { width: 100%; justify-content: center; text-align: center; }
