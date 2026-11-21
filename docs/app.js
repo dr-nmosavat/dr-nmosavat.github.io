@@ -1392,13 +1392,18 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function fitTrack() { var tr = q("[data-hb-track]"); if (!tr) return; var h = 0; [].forEach.call(tr.children, function (s) { h = Math.max(h, s.scrollHeight); }); tr.style.height = h + "px"; }
   window.addEventListener("resize", function () { if (q("[data-hb-track]")) fitTrack(); });
   function setPg(i) { curPg = i; goPg(i); [].forEach.call(q("[data-hb-ptabs]").children, function (c, n) { c.classList.toggle("on", n === i); }); [].forEach.call(q("[data-hb-dots]").children, function (c, n) { c.classList.toggle("on", n === i); }); fitTrack(); }
-  // سافاری آیفون/آیپد با scroll-snap و حرکت نرم (smooth) برنامه‌ای کار نمی‌کند؛ پس snap را لحظه‌ای خاموش و مستقیم جابه‌جا می‌کنیم
+  // سافاری آیفون/آیپد با scroll-snap و حرکت نرم برنامه‌ای کار نمی‌کند و مدل scrollLeft در راست‌به‌چپ هم بین نسخه‌ها فرق دارد؛
+  // پس snap را لحظه‌ای خاموش می‌کنیم و فاصلهٔ واقعی اسلاید تا لبهٔ کارت را اندازه می‌گیریم (مستقل از علامت scrollLeft)
   function goPg(i) {
-    var tr = q("[data-hb-track]"), x = (getComputedStyle(tr).direction === "rtl" ? -1 : 1) * i * tr.clientWidth;
+    var tr = q("[data-hb-track]"), sl = tr.children[i]; if (!sl) return;
     tr.style.scrollSnapType = "none"; tr.style.scrollBehavior = "auto";
-    try { tr.scrollLeft = x; } catch (e) {}
-    if (Math.abs(tr.scrollLeft - x) > 2) { try { tr.scrollTo(x, 0); } catch (e2) {} }
-    setTimeout(function () { tr.style.scrollSnapType = ""; if (Math.abs(tr.scrollLeft - x) > 2) { try { tr.scrollLeft = x; } catch (e3) {} } }, 120);
+    function gap() { return sl.getBoundingClientRect().left - tr.getBoundingClientRect().left; }
+    var d = gap();
+    if (Math.abs(d) > 2) {
+      var before = tr.scrollLeft; tr.scrollLeft = before + d;
+      if (Math.abs(gap()) >= Math.abs(d) - 1) tr.scrollLeft = before - d;
+    }
+    setTimeout(function () { tr.style.scrollSnapType = ""; if (Math.abs(gap()) > 2) { var b2 = tr.scrollLeft, d3 = gap(); tr.scrollLeft = b2 + d3; if (Math.abs(gap()) >= Math.abs(d3) - 1) tr.scrollLeft = b2 - d3; } }, 150);
   }
   (function () {
     var tr = q("[data-hb-track]"), raf = 0; if (!tr) return;
