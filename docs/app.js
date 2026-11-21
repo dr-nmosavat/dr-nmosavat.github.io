@@ -1394,6 +1394,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function setPg(i) { curPg = i; goPg(i); [].forEach.call(q("[data-hb-ptabs]").children, function (c, n) { c.classList.toggle("on", n === i); }); [].forEach.call(q("[data-hb-dots]").children, function (c, n) { c.classList.toggle("on", n === i); }); fitTrack(); }
   // سافاری آیفون/آیپد با scroll-snap و حرکت نرم برنامه‌ای کار نمی‌کند و مدل scrollLeft در راست‌به‌چپ هم بین نسخه‌ها فرق دارد؛
   // پس snap را لحظه‌ای خاموش می‌کنیم و فاصلهٔ واقعی اسلاید تا لبهٔ کارت را اندازه می‌گیریم (مستقل از علامت scrollLeft)
+  (function () { try { var sc = document.querySelector('script[src*="app.js?v="]'), v = sc ? sc.getAttribute("src").split("v=")[1] : ""; var el = document.createElement("p"); el.className = "hb-ver"; el.setAttribute("dir", "ltr"); el.textContent = "v" + v; root.appendChild(el); } catch (e) {} })();
   function goPg(i) {
     var tr = q("[data-hb-track]"), sl = tr.children[i]; if (!sl) return;
     tr.style.scrollSnapType = "none"; tr.style.scrollBehavior = "auto";
