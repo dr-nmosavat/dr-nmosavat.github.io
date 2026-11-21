@@ -1392,7 +1392,14 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function fitTrack() { var tr = q("[data-hb-track]"); if (!tr) return; var h = 0; [].forEach.call(tr.children, function (s) { h = Math.max(h, s.scrollHeight); }); tr.style.height = h + "px"; }
   window.addEventListener("resize", function () { if (q("[data-hb-track]")) fitTrack(); });
   function setPg(i) { curPg = i; goPg(i); [].forEach.call(q("[data-hb-ptabs]").children, function (c, n) { c.classList.toggle("on", n === i); }); [].forEach.call(q("[data-hb-dots]").children, function (c, n) { c.classList.toggle("on", n === i); }); fitTrack(); }
-  function goPg(i) { var tr = q("[data-hb-track]"); tr.scrollTo({ left: (getComputedStyle(tr).direction === "rtl" ? -1 : 1) * i * tr.clientWidth, behavior: "smooth" }); }
+  // سافاری آیفون/آیپد با scroll-snap و حرکت نرم (smooth) برنامه‌ای کار نمی‌کند؛ پس snap را لحظه‌ای خاموش و مستقیم جابه‌جا می‌کنیم
+  function goPg(i) {
+    var tr = q("[data-hb-track]"), x = (getComputedStyle(tr).direction === "rtl" ? -1 : 1) * i * tr.clientWidth;
+    tr.style.scrollSnapType = "none"; tr.style.scrollBehavior = "auto";
+    try { tr.scrollLeft = x; } catch (e) {}
+    if (Math.abs(tr.scrollLeft - x) > 2) { try { tr.scrollTo(x, 0); } catch (e2) {} }
+    setTimeout(function () { tr.style.scrollSnapType = ""; if (Math.abs(tr.scrollLeft - x) > 2) { try { tr.scrollLeft = x; } catch (e3) {} } }, 120);
+  }
   (function () {
     var tr = q("[data-hb-track]"), raf = 0; if (!tr) return;
     tr.addEventListener("scroll", function () {
