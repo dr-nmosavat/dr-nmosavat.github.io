@@ -1927,3 +1927,7 @@ nav a[href="tools.html"][aria-current="page"] { color: var(--on-blue); border-ra
 
 .hb-drcall { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin: 10px 0; padding: 10px 12px; border-radius: 14px; background: #f1f6fd; border: 1px solid #cfdff1; font-size: 13.5px; } .hb-drcall[hidden] { display: none; } .hb-drcall small { color: var(--muted); }
 .hb-call { color: #1f5aa6; font-weight: 700; text-decoration: none; direction: ltr; unicode-bidi: embed; } .hb-callq { display: block; padding: 0 12px 8px; font-size: 13px; }
+
+.hb-qrw { position: relative; margin-bottom: 8px; } .hb-qrw .hb-qr1 { margin: 0; padding-inline-start: 150px; min-height: 58px; }
+.hb-qrw .hb-callq { position: absolute; inset-inline-start: 34px; top: 50%; transform: translateY(-50%); padding: 6px 8px; font-size: 13px; z-index: 1; white-space: nowrap; }
+@media (max-width: 480px) { .hb-qrw .hb-qr1 { padding-inline-start: 12px; padding-bottom: 34px; } .hb-qrw .hb-callq { inset-inline-start: 12px; top: auto; bottom: 6px; transform: none; padding: 2px 0; } }
