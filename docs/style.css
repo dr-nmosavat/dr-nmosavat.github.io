@@ -1954,3 +1954,4 @@ button.hb-ptdr { display: flex; width: 100%; text-align: right; background: tran
 .hb-ptbox .btn[hidden], .hb-ptbox [hidden] { display: none !important; } .hb-ptlastl { margin: 0 0 8px; font-size: 13px; color: var(--muted); line-height: 1.9; }
 .hb-ptbox .hb-qr1 { background: #e9eef5; border: 1px solid #c3cfdf; box-shadow: 0 1px 3px rgba(31,60,100,.08); } .hb-ptbox .hb-qr1:hover, .hb-ptbox .hb-qr1:active { background: #dfe7f1; }
 .hb-ptbox .hb-qr1 small { color: #4d5b6e; }
+.hb-qr1 { background: #e9eef5; border: 1px solid #c3cfdf; box-shadow: 0 1px 3px rgba(31,60,100,.08); } .hb-qr1:hover, .hb-qr1:active { background: #dfe7f1; } .hb-qr1 small { color: #4d5b6e; }
