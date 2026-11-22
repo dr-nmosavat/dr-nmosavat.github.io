@@ -65,9 +65,9 @@ var H = {
 };
 var PET_COLS = ['code', 'key', 'name', 'en', 'owner', 'guardian', 'species', 'breed', 'breedEn', 'birth', 'plan', 'consent', 'created', 'updated', 'deleted', 'auth', 'sex', 'neut', 'phone', 'smsok'];
 var SMS_COLS = ['time', 'to', 'kind', 'text', 'status', 'response', 'raw'];
-var PT_COLS = ['id', 'pkey', 'created', 'updated', 'date', 'name', 'species', 'owner', 'phone', 'reason', 'note', 'follow', 'code', 'deleted', 'fee', 'paid', 'pay'];
+var PT_COLS = ['id', 'pkey', 'created', 'updated', 'date', 'name', 'species', 'owner', 'phone', 'reason', 'note', 'follow', 'code', 'deleted', 'fee', 'paid', 'pay', 'breed'];
 var ACT_COLS = ['day', 'time', 'kind', 'ref', 'name'];
-var AP_COLS = ['id', 'created', 'updated', 'date', 'time', 'name', 'species', 'owner', 'phone', 'reason', 'note', 'status', 'pkey', 'deleted', 'rem'];
+var AP_COLS = ['id', 'created', 'updated', 'date', 'time', 'name', 'species', 'owner', 'phone', 'reason', 'note', 'status', 'pkey', 'deleted', 'rem', 'breed'];
 var REC_COLS = ['id', 'code', 'type', 'date', 'name', 'brand', 'serial', 'place', 'extra', 'freq', 'how', 'dur', 'end', 'weight', 'next', 'closed', 'dr', 'created', 'updated', 'deleted', 'src'];
 
 function hsheet_(name, cols) {
@@ -121,7 +121,7 @@ function roleOf_(t) {
   return sig16_('dr|' + m[1]) === m[2] ? 'dr' : '';
 }
 // کارهایی که منشی اجازه دارد (فقط نوبت، بیماران و امروز؛ نه شناسنامه و واگذاری)
-var SEC_OK = { apRemind: 1, patList: 1, patSave: 1, patPatient: 1, patSms: 1, touch: 1, todayList: 1, apList: 1, apSave: 1, apSet: 1 };
+var SEC_OK = { lookup: 1, apRemind: 1, patList: 1, patSave: 1, patPatient: 1, patSms: 1, touch: 1, todayList: 1, apList: 1, apSave: 1, apSet: 1 };
 function ownerOk_(code, key) {
   var pet = findPet_(code); return pet && !pet.deleted && key && pet.key === String(key) ? pet : null;
 }
@@ -199,6 +199,7 @@ function health_(b) {
     if (a === 'apSave') return apSave_(b);
     if (a === 'apSet') return apSet_(b);
     if (a === 'apRemind') return apRemind_(b);
+    if (a === 'lookup') return lookup_(b);
   } finally { lock.releaseLock(); }
   return { ok: false, err: 'bad' };
 }
@@ -328,7 +329,7 @@ function doGet(e) {
   var p = (e && e.parameter) || {};
   if (p.action === 'spin') return json_(spin_(p));
   if (p.action === 'verify') return verifyPage_(p);
-  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v26-panel' });
+  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v27-panel' });
 }
 
 // ======================= چرخ هدیه =======================
@@ -572,7 +573,7 @@ function todayList_() {
   out.sort(function (x, y) { return x.time < y.time ? 1 : -1; });
   return { ok: true, day: day, items: out.slice(0, 200) };
 }
-function apOut_(r) { return { id: r.id, date: r.date, time: r.time, name: r.name, species: r.species, owner: r.owner, phone: r.phone, reason: r.reason, note: r.note, status: r.status || 'booked', pkey: r.pkey, rem: r.rem === '1' ? 1 : 0 }; }
+function apOut_(r) { return { breed: r.breed || '', id: r.id, date: r.date, time: r.time, name: r.name, species: r.species, owner: r.owner, phone: r.phone, reason: r.reason, note: r.note, status: r.status || 'booked', pkey: r.pkey, rem: r.rem === '1' ? 1 : 0 }; }
 function apList_() {
   var from = Utilities.formatDate(new Date(Date.now() - 14 * 86400000), CFG.tz, 'yyyy-MM-dd');
   var rows = readAll_(hsheet_('Appts', AP_COLS), AP_COLS).filter(function (r) { return r.deleted !== '1' && r.date >= from; });
@@ -590,8 +591,9 @@ function apSave_(b) {
   r.name = name; r.species = ['سگ', 'گربه', 'پرنده', 'دیگر'].indexOf(v.species) > -1 ? v.species : 'دیگر';
   r.owner = clip_(v.owner, 40); r.phone = String(v.phone || '').replace(/[^0-9+]/g, '').slice(0, 16);
   r.reason = clip_(v.reason, 150); r.note = clip_(v.note, 600); r.pkey = /^PT-[A-Z0-9]{5,10}$/.test(String(v.pkey || '')) ? v.pkey : (r.pkey || '');
-  r.rem = v.rem ? '1' : '';
-  if (!sh.getRange(1, AP_COLS.length).getValue()) sh.getRange(1, AP_COLS.length).setValue('یادآور پیامکی');
+  r.rem = v.rem ? '1' : ''; r.breed = clip_(v.breed, 40);
+  if (!sh.getRange(1, AP_COLS.length).getValue()) sh.getRange(1, AP_COLS.length).setValue('نژاد');
+  if (!sh.getRange(1, AP_COLS.length - 1).getValue()) sh.getRange(1, AP_COLS.length - 1).setValue('یادآور پیامکی (۱=بله)');
   r.updated = nowIso_(); writeRow_(sh, AP_COLS, r, r._row || 0);
   return { ok: true, item: apOut_(r) };
 }
@@ -702,12 +704,25 @@ function petRemind_(b) {
   return o.sent ? { ok: true, sent: o.sent, failed: o.failed } : { ok: false, err: 'fail', msg: o.errs[0] || '' };
 }
 // ---- دفتر «بیماران من» (فقط دکتر؛ هر ردیف = یک مراجعه) ----
-function patOut_(r) { return { id: r.id, pkey: r.pkey, date: r.date, name: r.name, species: r.species, owner: r.owner, phone: r.phone, reason: r.reason, note: r.note, follow: r.follow, code: r.code, fee: r.fee || '', paid: r.paid === '1', pay: r.pay || '' }; }
+function patOut_(r) { return { breed: r.breed || '', id: r.id, pkey: r.pkey, date: r.date, name: r.name, species: r.species, owner: r.owner, phone: r.phone, reason: r.reason, note: r.note, follow: r.follow, code: r.code, fee: r.fee || '', paid: r.paid === '1', pay: r.pay || '' }; }
 // آخرین پیامک موفق برای هر پرونده/نوبت (از شیت SMS)، تا روی همهٔ دستگاه‌ها دیده شود
 function smsAtMap_(prefix) {
   var m = {}, re = new RegExp('^' + prefix + ':([^:]+)');
   readAll_(hsheet_('SMS', SMS_COLS), SMS_COLS).forEach(function (r) { var x = re.exec(r.kind); if (x && /^(✅|2)/.test(r.status)) { var d = String(r.time).slice(0, 10); if (!m[x[1]] || d > m[x[1]]) m[x[1]] = d; } });
   return m;
+}
+// جستجوی شماره تماس (یا نام) در بیماران، شناسنامه‌ها و نوبت‌ها — برای پرکردن خودکار فرم
+function lookup_(b) {
+  var qd = String(b.q || '').replace(/[۰-۹]/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'.indexOf(d); }).replace(/\D/g, '');
+  if (qd.length < 4) return { ok: true, items: [] };
+  var out = [], seen = {};
+  function add(o) { var k = (o.phone || '') + '|' + norm_(o.name); if (seen[k]) return; seen[k] = 1; out.push(o); }
+  var pts = readAll_(hsheet_('Patients', PT_COLS), PT_COLS).filter(function (r) { return r.deleted !== '1' && String(r.phone).indexOf(qd) > -1; });
+  pts.sort(function (x, y) { return x.date < y.date ? 1 : -1; });
+  pts.forEach(function (r) { add({ kind: 'patient', pkey: r.pkey, name: r.name, species: r.species, breed: r.breed || '', owner: r.owner, phone: r.phone, last: r.date }); });
+  readAll_(hsheet_('Pets', PET_COLS), PET_COLS).forEach(function (p) { if (p.deleted !== '1' && String(p.phone).replace(/\D/g, '').indexOf(qd) > -1) add({ kind: 'pet', code: p.code, name: p.name, species: p.species, breed: p.breed || '', owner: p.owner || p.guardian, phone: p.phone }); });
+  readAll_(hsheet_('Appts', AP_COLS), AP_COLS).forEach(function (r) { if (r.deleted !== '1' && String(r.phone).indexOf(qd) > -1) add({ kind: 'appt', pkey: r.pkey, name: r.name, species: r.species, breed: r.breed || '', owner: r.owner, phone: r.phone, last: r.date }); });
+  return { ok: true, items: out.slice(0, 12) };
 }
 function patList_() {
   var rows = readAll_(hsheet_('Patients', PT_COLS), PT_COLS).filter(function (r) { return r.deleted !== '1'; });
@@ -723,12 +738,13 @@ function patSave_(b) {
   if (!r) r = { id: 'V-' + rnd_(7).toUpperCase(), created: nowIso_(), deleted: '' };
   r.pkey = /^PT-[A-Z0-9]{5,10}$/.test(String(v.pkey || '')) ? v.pkey : (r.pkey || 'PT-' + rnd_(6).toUpperCase());
   r.name = name; r.species = ['سگ', 'گربه', 'پرنده', 'دیگر'].indexOf(v.species) > -1 ? v.species : 'دیگر';
-  r.owner = clip_(v.owner, 40); r.phone = String(v.phone || '').replace(/[^0-9+]/g, '').slice(0, 16);
+  r.owner = clip_(v.owner, 40); r.phone = String(v.phone || '').replace(/[^0-9+]/g, '').slice(0, 16); r.breed = clip_(v.breed, 40);
   r.date = date_(v.date) || Utilities.formatDate(new Date(), CFG.tz, 'yyyy-MM-dd');
   r.reason = clip_(v.reason, 200); r.note = clip_(v.note, 1500); r.follow = date_(v.follow); r.code = clip_(v.code, 20);
   if (v.fee !== undefined) r.fee = String(v.fee).replace(/[^0-9]/g, '').slice(0, 12);   // زیرساخت هزینه (فعلاً بدون رابط)
   if (v.paid !== undefined) r.paid = v.paid ? '1' : '';
   if (v.pay !== undefined) r.pay = clip_(v.pay, 20);
+  if (!sh.getRange(1, PT_COLS.length).getValue()) sh.getRange(1, PT_COLS.length).setValue('نژاد');
   r.updated = nowIso_(); writeRow_(sh, PT_COLS, r, r._row || 0);
   return { ok: true, item: patOut_(r) };
 }
@@ -737,7 +753,7 @@ function patPatient_(b) {
   var name = clip_(v.name, 40); if (!name || !/^PT-[A-Z0-9]{5,10}$/.test(String(b.pkey || ''))) return { ok: false, err: 'bad' };
   var species = ['سگ', 'گربه', 'پرنده', 'دیگر'].indexOf(v.species) > -1 ? v.species : 'دیگر';
   for (i = 0; i < rows.length; i++) if (rows[i].pkey === b.pkey && rows[i].deleted !== '1') {
-    rows[i].name = name; rows[i].species = species; rows[i].owner = clip_(v.owner, 40); rows[i].phone = String(v.phone || '').replace(/[^0-9+]/g, '').slice(0, 16);
+    rows[i].name = name; rows[i].species = species; rows[i].owner = clip_(v.owner, 40); rows[i].phone = String(v.phone || '').replace(/[^0-9+]/g, '').slice(0, 16); rows[i].breed = clip_(v.breed, 40);
     rows[i].updated = nowIso_(); writeRow_(sh, PT_COLS, rows[i], rows[i]._row); n++;
   }
   return n ? { ok: true, n: n } : { ok: false, err: 'notfound' };
@@ -770,11 +786,11 @@ var LOOK = {
   Spins: { color: '#d97706', labels: ['زمان', 'کد', 'جایزه', 'انقضا', 'دستگاه', 'استفاده شد؟', 'زمان استفاده'], widths: [150, 120, 190, 110, 130, 100, 150], clip: [5] },
   Pets: { color: '#1f5aa6', labels: ['شمارهٔ شناسنامه (کد پت)', 'کلید لینک (محرمانه)', 'نام', 'نام انگلیسی', 'سرپرست', 'سرپرست دوم (قدیمی)', 'گونه', 'نژاد', 'نژاد (انگلیسی)', 'تاریخ تولد', 'برنامهٔ واکسن (داده)', 'رضایت (۱=بله)', 'ساخته شد', 'ویرایش', 'حذف‌شده؟ (۱=بله)', 'کد اصالت', 'جنسیت', 'وضعیت عقیم‌سازی', 'تلفن سرپرست (محرمانه، فقط آرشیو)', 'رضایت پیامک یادآوری (۱=بله)'],
     widths: [130, 140, 110, 110, 130, 110, 80, 110, 120, 100, 120, 90, 150, 150, 90, 100, 90, 130, 150, 120], clip: [2, 11], gray: [2, 11], green: [1, 16], del: 15 },
-  Patients: { color: '#0e7490', labels: ['شناسهٔ مراجعه', 'شناسهٔ بیمار', 'ثبت شد', 'ویرایش', 'تاریخ مراجعه', 'نام پت', 'گونه', 'سرپرست', 'تلفن (محرمانه)', 'دلیل / تشخیص', 'یادداشت', 'تاریخ پیگیری', 'کد شناسنامه', 'حذف‌شده؟ (۱=بله)', 'هزینه (تومان)', 'پرداخت‌شده؟ (۱=بله)', 'روش پرداخت'],
-    widths: [110, 100, 150, 150, 100, 110, 80, 130, 130, 200, 260, 100, 110, 90, 110, 110, 110], clip: [11], gray: [2, 3, 4, 13], del: 14 },
+  Patients: { color: '#0e7490', labels: ['شناسهٔ مراجعه', 'شناسهٔ بیمار', 'ثبت شد', 'ویرایش', 'تاریخ مراجعه', 'نام پت', 'گونه', 'سرپرست', 'تلفن (محرمانه)', 'دلیل / تشخیص', 'یادداشت', 'تاریخ پیگیری', 'کد شناسنامه', 'حذف‌شده؟ (۱=بله)', 'هزینه (تومان)', 'پرداخت‌شده؟ (۱=بله)', 'روش پرداخت', 'نژاد'],
+    widths: [110, 100, 150, 150, 100, 110, 80, 130, 130, 200, 260, 100, 110, 90, 110, 110, 110, 110], clip: [11], gray: [2, 3, 4, 13], del: 14 },
   Activity: { color: '#475569', labels: ['روز', 'ساعت', 'نوع', 'شناسه', 'نام'], widths: [100, 80, 80, 120, 140], gray: [1, 2, 3] },
-  Appts: { color: '#0e7490', labels: ['شناسهٔ نوبت', 'ثبت شد', 'ویرایش', 'تاریخ نوبت', 'ساعت', 'نام پت', 'گونه', 'سرپرست', 'تلفن (محرمانه)', 'دلیل', 'یادداشت', 'وضعیت', 'شناسهٔ بیمار', 'حذف‌شده؟ (۱=بله)', 'یادآور پیامکی (۱=بله)'],
-    widths: [110, 150, 150, 100, 70, 110, 80, 130, 130, 180, 240, 100, 100, 90, 90], clip: [11], gray: [2, 3, 13], del: 14 },
+  Appts: { color: '#0e7490', labels: ['شناسهٔ نوبت', 'ثبت شد', 'ویرایش', 'تاریخ نوبت', 'ساعت', 'نام پت', 'گونه', 'سرپرست', 'تلفن (محرمانه)', 'دلیل', 'یادداشت', 'وضعیت', 'شناسهٔ بیمار', 'حذف‌شده؟ (۱=بله)', 'یادآور پیامکی (۱=بله)', 'نژاد'],
+    widths: [110, 150, 150, 100, 70, 110, 80, 130, 130, 180, 240, 100, 100, 90, 90, 110], clip: [11], gray: [2, 3, 13], del: 14 },
   SMS: { color: '#b45309', labels: ['زمان', 'شماره', 'نوع', 'متن', 'نتیجه', 'توضیح', 'جزئیات فنی'], widths: [150, 120, 100, 320, 100, 300, 320], clip: [4, 7], gray: [1, 7] },
   Records: { color: '#0f766e', labels: ['شناسه', 'کد پت', 'نوع', 'تاریخ', 'نام', 'برند', 'سریال', 'محل', 'توضیح', 'تکرار', 'روش', 'مدت', 'پایان', 'وزن', 'نوبت بعدی', 'بسته‌شده؟', 'ثبت دکتر؟', 'ساخته شد', 'ویرایش', 'حذف‌شده؟ (۱=بله)', 'منبع (old=سابقهٔ قبلی)'],
     widths: [110, 90, 130, 100, 150, 110, 110, 110, 140, 90, 90, 80, 100, 70, 100, 80, 80, 150, 150, 90, 110], gray: [1], del: 20 },
