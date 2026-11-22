@@ -317,7 +317,7 @@ function doGet(e) {
   var p = (e && e.parameter) || {};
   if (p.action === 'spin') return json_(spin_(p));
   if (p.action === 'verify') return verifyPage_(p);
-  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v19-panel' });
+  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v20-panel' });
 }
 
 // ======================= چرخ هدیه =======================
@@ -472,7 +472,17 @@ function sendSms_(to, text, kind, vars) {
   var num = smsPhone_(to); if (!num) { logFail_('BAD_PHONE', 'شمارهٔ موبایل معتبر نیست (باید مثل 09123456789 باشد)'); return { ok: false, err: 'bad_phone' }; }
   var provider = String(prop_('SMS_PROVIDER') || 'ippanel').toLowerCase(), from = String(prop_('SMS_FROM') || '').replace(/\s/g, '');
   var status = '', body = '', ok = false, req;
-  if (provider === 'melipayamak') {
+  if (provider === 'smsir') {
+    // sms.ir (API v1) — آدرس و فیلدها از حافظه و SDKهای عمومی؛ با نمونهٔ رسمی پنل تأیید شود
+    var key = token.replace(/^(apikey|bearer)\s+/i, ''), tpl = prop_('SMS_PATTERN_CODE'), mob = num.slice(1);
+    if (tpl && vars) {
+      var pv = prop_('SMS_PATTERN_VAR') || 'NAME', plist = [];
+      Object.keys(vars).forEach(function (k) { plist.push({ name: (k === 'name' ? pv : k), value: String(vars[k]) }); });
+      req = { url: 'https://api.sms.ir/v1/send/verify', opt: { method: 'post', contentType: 'application/json', headers: { 'X-API-KEY': key, Accept: 'application/json' }, muteHttpExceptions: true, payload: JSON.stringify({ mobile: mob, templateId: Number(tpl), parameters: plist }) } };
+    } else {
+      req = { url: 'https://api.sms.ir/v1/send/bulk', opt: { method: 'post', contentType: 'application/json', headers: { 'X-API-KEY': key, Accept: 'application/json' }, muteHttpExceptions: true, payload: JSON.stringify({ lineNumber: Number(from.replace(/\D/g, '')), messageText: text, mobiles: [mob] }) } };
+    }
+  } else if (provider === 'melipayamak') {
     req = { url: prop_('SMS_URL') || ('https://console.melipayamak.com/api/send/simple/' + token), opt: { method: 'post', contentType: 'application/json', muteHttpExceptions: true, payload: JSON.stringify({ from: from, to: num, text: text }) } };
   } else {
     // مدیرپیامک / IPPanel (Edge API): https://ippanelcom.github.io/Edge-Document/docs/send/webservice
