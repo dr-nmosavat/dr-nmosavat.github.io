@@ -317,7 +317,7 @@ function doGet(e) {
   var p = (e && e.parameter) || {};
   if (p.action === 'spin') return json_(spin_(p));
   if (p.action === 'verify') return verifyPage_(p);
-  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v15-panel' });
+  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v16-panel' });
 }
 
 // ======================= چرخ هدیه =======================
@@ -470,11 +470,19 @@ function sendSms_(to, text, kind) {
   function logFail_(st, why) { try { writeRow_(hsheet_('SMS', SMS_COLS), SMS_COLS, { time: nowIso_(), to: String(to || '').slice(0, 20), kind: kind || '', text: clip_(text, 300), status: st, response: why }, 0); } catch (e0) {} }
   var token = prop_('SMS_TOKEN'); if (!token) { logFail_('NO_TOKEN', 'SMS_TOKEN در Script Properties ثبت نشده است'); return { ok: false, err: 'sms_off' }; }
   var num = smsPhone_(to); if (!num) { logFail_('BAD_PHONE', 'شمارهٔ موبایل معتبر نیست (باید مثل 09123456789 باشد)'); return { ok: false, err: 'bad_phone' }; }
-  var url = prop_('SMS_URL') || ('https://console.melipayamak.com/api/send/simple/' + token);
-  var status = '', body = '', ok = false;
+  var provider = String(prop_('SMS_PROVIDER') || 'ippanel').toLowerCase(), from = String(prop_('SMS_FROM') || '').replace(/\s/g, '');
+  var status = '', body = '', ok = false, req;
+  if (provider === 'melipayamak') {
+    req = { url: prop_('SMS_URL') || ('https://console.melipayamak.com/api/send/simple/' + token), opt: { method: 'post', contentType: 'application/json', muteHttpExceptions: true, payload: JSON.stringify({ from: from, to: num, text: text }) } };
+  } else {
+    // مدیرپیامک / IPPanel (Edge API): https://ippanelcom.github.io/Edge-Document/docs/send/webservice
+    var fromNum = /^\+/.test(from) ? from : (/^98/.test(from) ? '+' + from : (/^0?\d+$/.test(from) ? '+98' + from.replace(/^0/, '') : from));
+    req = { url: prop_('SMS_URL') || 'https://edge.ippanel.com/v1/api/send', opt: { method: 'post', contentType: 'application/json', headers: { Authorization: token }, muteHttpExceptions: true, payload: JSON.stringify({ sending_type: 'webservice', from_number: fromNum, message: text, params: { recipients: ['+98' + num.slice(1)] } }) } };
+  }
   try {
-    var res = UrlFetchApp.fetch(url, { method: 'post', contentType: 'application/json', muteHttpExceptions: true, payload: JSON.stringify({ from: prop_('SMS_FROM'), to: num, text: text }) });
+    var res = UrlFetchApp.fetch(req.url, req.opt);
     status = String(res.getResponseCode()); body = String(res.getContentText()).slice(0, 300); ok = res.getResponseCode() >= 200 && res.getResponseCode() < 300;
+    try { var jb = JSON.parse(res.getContentText()); if (jb && jb.meta && jb.meta.status === false) ok = false; } catch (ej) {}
   } catch (e) { status = 'EXC'; body = String(e).slice(0, 300); }
   try { writeRow_(hsheet_('SMS', SMS_COLS), SMS_COLS, { time: nowIso_(), to: num, kind: kind || '', text: clip_(text, 300), status: status, response: body }, 0); } catch (e2) {}
   return ok ? { ok: true, status: status } : { ok: false, err: 'fail', msg: (status + ' ' + body).slice(0, 160) };
