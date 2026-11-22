@@ -63,7 +63,7 @@ var H = {
   ownerTypes: ['ضدانگل داخلی', 'ضدانگل خارجی (کک و کنه)', 'وزن', 'دارو', 'سایر'],   // صاحب پت می‌تواند ثبت کند
   allTypes: ["واکسن", "ضدانگل داخلی", "ضدانگل خارجی (کک و کنه)", "ویزیت", "وزن", "دارو", "عقیم‌سازی", "آزمایش", "سایر"]
 };
-var PET_COLS = ['code', 'key', 'name', 'en', 'owner', 'guardian', 'species', 'breed', 'breedEn', 'birth', 'plan', 'consent', 'created', 'updated', 'deleted', 'auth', 'sex', 'neut', 'phone'];
+var PET_COLS = ['code', 'key', 'name', 'en', 'owner', 'guardian', 'species', 'breed', 'breedEn', 'birth', 'plan', 'consent', 'created', 'updated', 'deleted', 'auth', 'sex', 'neut', 'phone', 'smsok'];
 var SMS_COLS = ['time', 'to', 'kind', 'text', 'status', 'response'];
 var PT_COLS = ['id', 'pkey', 'created', 'updated', 'date', 'name', 'species', 'owner', 'phone', 'reason', 'note', 'follow', 'code', 'deleted', 'fee', 'paid', 'pay'];
 var ACT_COLS = ['day', 'time', 'kind', 'ref', 'name'];
@@ -129,7 +129,7 @@ function findPet_(code) {
 function petOut_(p, withKey) {
   var plan = []; try { plan = JSON.parse(p.plan || '[]'); } catch (e) {}
   var o = { code: p.code, name: p.name, en: p.en, owner: p.owner, guardian: p.guardian, sex: p.sex || '', neut: p.neut || '', species: p.species, breed: p.breed, breedEn: p.breedEn, birth: p.birth, plan: plan, consent: p.consent === '1', updated: p.updated, auth: authCode_(p.code), created: String(p.created || '').slice(0, 10) };
-  if (withKey) { o.key = p.key; o.phone = p.phone || ''; }   // تلفن فقط برای دکتر (withKey) برگردانده می‌شود، هرگز برای صاحب لینک
+  if (withKey) { o.key = p.key; o.phone = p.phone || ''; o.smsok = p.smsok === '1'; }   // تلفن فقط برای دکتر (withKey) برگردانده می‌شود، هرگز برای صاحب لینک
   return o;
 }
 function recOut_(r) {
@@ -185,6 +185,7 @@ function health_(b) {
     if (a === 'patDel') return patDel_(b);
     if (a === 'patPatient') return patPatient_(b);
     if (a === 'patSms') return patSms_(b);
+    if (a === 'petRemind') return petRemind_(b);
     if (a === 'touch') return touch_(b);
     if (a === 'todayList') return todayList_();
     if (a === 'apList') return apList_();
@@ -227,6 +228,7 @@ function savePet_(b) {
   var o = cur || { code: newCode_(all), key: rnd_(14), created: nowIso_(), deleted: '' };
   o.name = name; o.en = clip_(pin.en, 30); o.owner = clip_(pin.owner, 40); o.guardian = clip_(pin.guardian, 40); o.species = species;
   if (pin.phone !== undefined) o.phone = String(pin.phone || '').replace(/[^0-9+]/g, '').slice(0, 16);
+  if (pin.smsok !== undefined) o.smsok = pin.smsok ? '1' : '';   // رضایت سرپرست برای پیامک یادآوری
   o.sex = ['نر', 'ماده'].indexOf(pin.sex) > -1 ? pin.sex : ''; o.neut = ['عقیم‌شده', 'عقیم‌نشده'].indexOf(pin.neut) > -1 ? pin.neut : '';
   o.breed = clip_(pin.breed, 40); o.breedEn = clip_(pin.breedEn, 40); o.birth = date_(pin.birth); o.plan = JSON.stringify(plan);
   o.consent = pin.consent ? '1' : (cur ? cur.consent : ''); o.updated = nowIso_(); o.auth = authCode_(o.code);
@@ -317,7 +319,7 @@ function doGet(e) {
   var p = (e && e.parameter) || {};
   if (p.action === 'spin') return json_(spin_(p));
   if (p.action === 'verify') return verifyPage_(p);
-  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v20-panel' });
+  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v21-panel' });
 }
 
 // ======================= چرخ هدیه =======================
@@ -466,7 +468,7 @@ function smsPhone_(v) {
   if (/^\+989\d{9}$/.test(d)) d = '0' + d.slice(3); else if (/^989\d{9}$/.test(d)) d = '0' + d.slice(2); else if (/^9\d{9}$/.test(d)) d = '0' + d;
   return /^09\d{9}$/.test(d) ? d : '';
 }
-function sendSms_(to, text, kind, vars) {
+function sendSms_(to, text, kind, vars, tplCode) {
   function logFail_(st, why) { try { writeRow_(hsheet_('SMS', SMS_COLS), SMS_COLS, { time: nowIso_(), to: String(to || '').slice(0, 20), kind: kind || '', text: clip_(text, 300), status: st, response: why }, 0); } catch (e0) {} }
   var token = prop_('SMS_TOKEN'); if (!token) { logFail_('NO_TOKEN', 'SMS_TOKEN در Script Properties ثبت نشده است'); return { ok: false, err: 'sms_off' }; }
   var num = smsPhone_(to); if (!num) { logFail_('BAD_PHONE', 'شمارهٔ موبایل معتبر نیست (باید مثل 09123456789 باشد)'); return { ok: false, err: 'bad_phone' }; }
@@ -474,10 +476,10 @@ function sendSms_(to, text, kind, vars) {
   var status = '', body = '', ok = false, req;
   if (provider === 'smsir') {
     // sms.ir (API v1) — آدرس و فیلدها از حافظه و SDKهای عمومی؛ با نمونهٔ رسمی پنل تأیید شود
-    var key = token.replace(/^(apikey|bearer)\s+/i, ''), tpl = prop_('SMS_PATTERN_CODE'), mob = num.slice(1);
+    var key = token.replace(/^(apikey|bearer)\s+/i, ''), tpl = tplCode || prop_('SMS_PATTERN_CODE'), mob = num.slice(1);
     if (tpl && vars) {
       var pv = prop_('SMS_PATTERN_VAR') || 'NAME', plist = [];
-      Object.keys(vars).forEach(function (k) { plist.push({ name: (k === 'name' ? pv : k), value: String(vars[k]) }); });
+      Object.keys(vars).forEach(function (k) { plist.push({ name: (k === 'name' ? pv : String(k).toUpperCase()), value: String(vars[k]) }); });
       req = { url: 'https://api.sms.ir/v1/send/verify', opt: { method: 'post', contentType: 'application/json', headers: { 'X-API-KEY': key, Accept: 'application/json' }, muteHttpExceptions: true, payload: JSON.stringify({ mobile: mob, templateId: Number(tpl), parameters: plist }) } };
     } else {
       req = { url: 'https://api.sms.ir/v1/send/bulk', opt: { method: 'post', contentType: 'application/json', headers: { 'X-API-KEY': key, Accept: 'application/json' }, muteHttpExceptions: true, payload: JSON.stringify({ lineNumber: Number(from.replace(/\D/g, '')), messageText: text, mobiles: [mob] }) } };
@@ -488,7 +490,7 @@ function sendSms_(to, text, kind, vars) {
     // مدیرپیامک / IPPanel (Edge API): https://ippanelcom.github.io/Edge-Document/docs/send/webservice
     var fromNum = /^\+/.test(from) ? from : (/^98/.test(from) ? '+' + from : (/^0?\d+$/.test(from) ? '+98' + from.replace(/^0/, '') : from));
     var auth = token.replace(/^(apikey|bearer)\s+/i, '');   // آزمایش واقعی: هدر باید فقط خود کلید باشد (بدون پیشوند)، طبق مستندات رسمی
-    var e164 = '+98' + num.slice(1), patCode = prop_('SMS_PATTERN_CODE'), payload;
+    var e164 = '+98' + num.slice(1), patCode = tplCode || prop_('SMS_PATTERN_CODE'), payload;
     if (patCode && vars) {   // پترن تأییدشده (ارسال لحظه‌ای): docs/send/pattern
       payload = { sending_type: 'pattern', from_number: fromNum, code: patCode, recipients: [e164], params: vars };
     } else {
@@ -582,6 +584,74 @@ function apSet_(b) {
   }
   return { ok: false, err: 'notfound' };
 }
+// ---- یادآور خودکار واکسن و ضدانگل (پیامک با قالب جدا) ----
+// Script Properties: SMS_TPL_VAX و SMS_TPL_PAR = شمارهٔ قالب‌های تأییدشده؛ متغیرها NAME و DATE
+function jalali_(iso) {
+  var a = String(iso).split('-'), gy = +a[0], gm = +a[1], gd = +a[2], g = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+  var gy2 = gm > 2 ? gy + 1 : gy, days = 355666 + 365 * gy + Math.floor((gy2 + 3) / 4) - Math.floor((gy2 + 99) / 100) + Math.floor((gy2 + 399) / 400) + gd + g[gm - 1];
+  var jy = -1595 + 33 * Math.floor(days / 12053); days %= 12053; jy += 4 * Math.floor(days / 1461); days %= 1461;
+  if (days > 365) { jy += Math.floor((days - 1) / 365); days = (days - 1) % 365; }
+  var jm = days < 186 ? 1 + Math.floor(days / 31) : 7 + Math.floor((days - 186) / 30), jd = 1 + (days < 186 ? days % 31 : (days - 186) % 30);
+  return [jy, jm, jd];
+}
+function faDate_(iso) {
+  var j = jalali_(iso), p = function (n) { return (n < 10 ? '0' : '') + n; };
+  return (j[0] + '/' + p(j[1]) + '/' + p(j[2])).replace(/\d/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'[d]; });
+}
+function addDays_(iso, n) { var d = new Date(iso + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
+function remKind_(type) { return type === 'واکسن' ? 'vax' : (type === 'ضدانگل داخلی' || type === 'ضدانگل خارجی (کک و کنه)') ? 'par' : ''; }
+function sendRemindersFor_(recs, petBy, doneKinds, opts) {
+  var out = { sent: 0, failed: 0, noPhone: 0, noConsent: 0, noTpl: 0, dup: 0, errs: [] };
+  recs.forEach(function (r) {
+    var k = remKind_(r.type); if (!k) return;
+    var pet = petBy[r.code]; if (!pet || pet.deleted === '1') return;
+    if (pet.smsok !== '1') { out.noConsent++; return; }
+    if (!smsPhone_(pet.phone)) { out.noPhone++; return; }
+    var kind = 'rem:' + r.id + ':' + r.next;
+    if (!opts.force && doneKinds[kind]) { out.dup++; return; }
+    var tpl = prop_(k === 'vax' ? 'SMS_TPL_VAX' : 'SMS_TPL_PAR'); if (!tpl) { out.noTpl++; return; }
+    var res = sendSms_(pet.phone, (k === 'vax' ? 'یادآور واکسن ' : 'یادآور ضدانگل ') + pet.name + ' ' + faDate_(r.next), kind, { name: pet.name, date: faDate_(r.next) }, tpl);
+    if (res.ok) { out.sent++; doneKinds[kind] = 1; } else { out.failed++; if (res.msg && out.errs.length < 2) out.errs.push(res.msg); }
+  });
+  return out;
+}
+function loadRemData_() {
+  var petBy = {}; readAll_(hsheet_('Pets', PET_COLS), PET_COLS).forEach(function (p) { petBy[p.code] = p; });
+  var done = {}; readAll_(hsheet_('SMS', SMS_COLS), SMS_COLS).forEach(function (r) { if (/^rem:/.test(r.kind) && /^2/.test(r.status)) done[r.kind] = 1; });
+  var recs = readAll_(hsheet_('Records', REC_COLS), REC_COLS).filter(function (r) { return r.deleted !== '1' && r.closed !== '1' && /^\d{4}-\d{2}-\d{2}$/.test(r.next || ''); });
+  return { petBy: petBy, done: done, recs: recs };
+}
+// اجرای خودکار روزانه: موعدهایی که دقیقاً ۳ روز دیگر است
+function dailyReminders() {
+  var lock = LockService.getScriptLock(); lock.waitLock(20000);
+  try { var d = loadRemData_(), target = addDays_(today_(), 3); return sendRemindersFor_(d.recs.filter(function (r) { return r.next === target; }), d.petBy, d.done, {}); } finally { lock.releaseLock(); }
+}
+function setupReminderTrigger() {
+  ScriptApp.getProjectTriggers().forEach(function (t) { if (t.getHandlerFunction() === 'dailyReminders') ScriptApp.deleteTrigger(t); });
+  ScriptApp.newTrigger('dailyReminders').timeBased().everyDays(1).atHour(10).inTimezone(CFG.tz).create();
+  SpreadsheetApp.getUi().alert('یادآور خودکار فعال شد: هر روز حدود ساعت ۱۰ صبح، برای موعدهای ۳ روز بعد.');
+}
+function stopReminderTrigger() {
+  var n = 0; ScriptApp.getProjectTriggers().forEach(function (t) { if (t.getHandlerFunction() === 'dailyReminders') { ScriptApp.deleteTrigger(t); n++; } });
+  SpreadsheetApp.getUi().alert(n ? 'یادآور خودکار متوقف شد.' : 'یادآور خودکاری فعال نبود.');
+}
+function runRemindersNow() {
+  var o = dailyReminders(); SpreadsheetApp.getUi().alert('یادآورهای موعد ۳ روز دیگر:\nارسال‌شده: ' + o.sent + '\nناموفق: ' + o.failed + '\nبدون رضایت: ' + o.noConsent + '\nبدون شماره: ' + o.noPhone + '\nقالب تنظیم‌نشده: ' + o.noTpl + '\nتکراری (قبلاً رفته): ' + o.dup + (o.errs.length ? '\nخطا: ' + o.errs[0] : ''));
+}
+// دکمهٔ دستی در پروندهٔ پت: یادآور موعدهای ۶۰ روز آینده
+function petRemind_(b) {
+  var code = String(b.code || '').toUpperCase(), pet = findPet_(code); if (!pet || pet.deleted === '1') return { ok: false, err: 'notfound' };
+  if (pet.smsok !== '1') return { ok: false, err: 'no_consent' };
+  if (!smsPhone_(pet.phone)) return { ok: false, err: 'bad_phone' };
+  var cache = CacheService.getScriptCache(), key = 'remind_' + code; if (cache.get(key)) return { ok: false, err: 'rate' };
+  var d = loadRemData_(), from = today_(), to = addDays_(from, 60);
+  var recs = d.recs.filter(function (r) { return r.code === code && r.next >= from && r.next <= to && remKind_(r.type); });
+  if (!recs.length) return { ok: false, err: 'none' };
+  var o = sendRemindersFor_(recs, d.petBy, d.done, { force: true });
+  if (o.sent) cache.put(key, '1', 600);
+  if (!o.sent && o.noTpl) return { ok: false, err: 'no_tpl' };
+  return o.sent ? { ok: true, sent: o.sent, failed: o.failed } : { ok: false, err: 'fail', msg: o.errs[0] || '' };
+}
 // ---- دفتر «بیماران من» (فقط دکتر؛ هر ردیف = یک مراجعه) ----
 function patOut_(r) { return { id: r.id, pkey: r.pkey, date: r.date, name: r.name, species: r.species, owner: r.owner, phone: r.phone, reason: r.reason, note: r.note, follow: r.follow, code: r.code, fee: r.fee || '', paid: r.paid === '1', pay: r.pay || '' }; }
 function patList_() {
@@ -642,8 +712,8 @@ var STATUS_COLORS = {
 };
 var LOOK = {
   Spins: { color: '#d97706', labels: ['زمان', 'کد', 'جایزه', 'انقضا', 'دستگاه', 'استفاده شد؟', 'زمان استفاده'], widths: [150, 120, 190, 110, 130, 100, 150], clip: [5] },
-  Pets: { color: '#1f5aa6', labels: ['شمارهٔ شناسنامه (کد پت)', 'کلید لینک (محرمانه)', 'نام', 'نام انگلیسی', 'سرپرست', 'سرپرست دوم (قدیمی)', 'گونه', 'نژاد', 'نژاد (انگلیسی)', 'تاریخ تولد', 'برنامهٔ واکسن (داده)', 'رضایت (۱=بله)', 'ساخته شد', 'ویرایش', 'حذف‌شده؟ (۱=بله)', 'کد اصالت', 'جنسیت', 'وضعیت عقیم‌سازی', 'تلفن سرپرست (محرمانه، فقط آرشیو)'],
-    widths: [130, 140, 110, 110, 130, 110, 80, 110, 120, 100, 120, 90, 150, 150, 90, 100, 90, 130, 150], clip: [2, 11], gray: [2, 11], green: [1, 16], del: 15 },
+  Pets: { color: '#1f5aa6', labels: ['شمارهٔ شناسنامه (کد پت)', 'کلید لینک (محرمانه)', 'نام', 'نام انگلیسی', 'سرپرست', 'سرپرست دوم (قدیمی)', 'گونه', 'نژاد', 'نژاد (انگلیسی)', 'تاریخ تولد', 'برنامهٔ واکسن (داده)', 'رضایت (۱=بله)', 'ساخته شد', 'ویرایش', 'حذف‌شده؟ (۱=بله)', 'کد اصالت', 'جنسیت', 'وضعیت عقیم‌سازی', 'تلفن سرپرست (محرمانه، فقط آرشیو)', 'رضایت پیامک یادآوری (۱=بله)'],
+    widths: [130, 140, 110, 110, 130, 110, 80, 110, 120, 100, 120, 90, 150, 150, 90, 100, 90, 130, 150, 120], clip: [2, 11], gray: [2, 11], green: [1, 16], del: 15 },
   Patients: { color: '#0e7490', labels: ['شناسهٔ مراجعه', 'شناسهٔ بیمار', 'ثبت شد', 'ویرایش', 'تاریخ مراجعه', 'نام پت', 'گونه', 'سرپرست', 'تلفن (محرمانه)', 'دلیل / تشخیص', 'یادداشت', 'تاریخ پیگیری', 'کد شناسنامه', 'حذف‌شده؟ (۱=بله)', 'هزینه (تومان)', 'پرداخت‌شده؟ (۱=بله)', 'روش پرداخت'],
     widths: [110, 100, 150, 150, 100, 110, 80, 130, 130, 200, 260, 100, 110, 90, 110, 110, 110], clip: [11], gray: [2, 3, 4, 13], del: 14 },
   Activity: { color: '#475569', labels: ['روز', 'ساعت', 'نوع', 'شناسه', 'نام'], widths: [100, 80, 80, 120, 140], gray: [1, 2, 3] },
@@ -777,6 +847,9 @@ function onOpen() {
       .addItem('💾 گرفتن پشتیبان', 'backupNow')
       .addItem('🔔 آزمایش اطلاع‌رسانی', 'testNotify')
       .addItem('📩 آزمایش پیامک', 'testSms')
+      .addItem('⏰ فعال‌سازی یادآور خودکار (۱۰ صبح)', 'setupReminderTrigger')
+      .addItem('⏹ توقف یادآور خودکار', 'stopReminderTrigger')
+      .addItem('📨 ارسال یادآورهای ۳ روز آینده (همین حالا)', 'runRemindersNow')
       .addToUi();
   } catch (e) {}
 }
