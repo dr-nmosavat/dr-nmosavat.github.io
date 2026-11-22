@@ -65,9 +65,9 @@ var H = {
 };
 var PET_COLS = ['code', 'key', 'name', 'en', 'owner', 'guardian', 'species', 'breed', 'breedEn', 'birth', 'plan', 'consent', 'created', 'updated', 'deleted', 'auth', 'sex', 'neut', 'phone', 'smsok'];
 var SMS_COLS = ['time', 'to', 'kind', 'text', 'status', 'response', 'raw'];
-var PT_COLS = ['id', 'pkey', 'created', 'updated', 'date', 'name', 'species', 'owner', 'phone', 'reason', 'note', 'follow', 'code', 'deleted', 'fee', 'paid', 'pay', 'breed'];
+var PT_COLS = ['id', 'pkey', 'created', 'updated', 'date', 'name', 'species', 'breed', 'owner', 'phone', 'reason', 'note', 'follow', 'code', 'deleted', 'fee', 'paid', 'pay'];
 var ACT_COLS = ['day', 'time', 'kind', 'ref', 'name'];
-var AP_COLS = ['id', 'created', 'updated', 'date', 'time', 'name', 'species', 'owner', 'phone', 'reason', 'note', 'status', 'pkey', 'deleted', 'rem', 'breed'];
+var AP_COLS = ['id', 'created', 'updated', 'date', 'time', 'name', 'species', 'breed', 'owner', 'phone', 'reason', 'note', 'status', 'pkey', 'deleted', 'rem'];
 var REC_COLS = ['id', 'code', 'type', 'date', 'name', 'brand', 'serial', 'place', 'extra', 'freq', 'how', 'dur', 'end', 'weight', 'next', 'closed', 'dr', 'created', 'updated', 'deleted', 'src'];
 
 function hsheet_(name, cols) {
@@ -76,8 +76,25 @@ function hsheet_(name, cols) {
     sh = ss.insertSheet(name); sh.appendRow(cols); sh.setFrozenRows(1);
     sh.getRange(1, 1, sh.getMaxRows(), cols.length).setNumberFormat('@');   // متن ساده: تاریخ‌ها خودکار تبدیل نشوند
     if (LOOK[name]) look_(sh, LOOK[name]);
-  }
+    if (MIG[name]) PropertiesService.getScriptProperties().setProperty(MIG[name].key, '1');
+  } else if (MIG[name] && !MIGDONE[name]) migrate_(sh, name);
   return sh;
+}
+// جابه‌جایی یک‌باره: ستون «نژاد» از آخر جدول به بعد از «گونه» (با پشتیبان)
+var MIG = { Patients: { key: 'MIG_BREED_PT', from: 18, to: 8 }, Appts: { key: 'MIG_BREED_AP', from: 16, to: 8 } }, MIGDONE = {};
+function migrate_(sh, name) {
+  var m = MIG[name], props = PropertiesService.getScriptProperties();
+  if (props.getProperty(m.key)) { MIGDONE[name] = 1; return; }
+  var lock = LockService.getDocumentLock(); lock.waitLock(20000);
+  try {
+    if (props.getProperty(m.key)) { MIGDONE[name] = 1; return; }
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    try { sh.copyTo(ss).setName(name + ' پشتیبان ' + Utilities.formatDate(new Date(), CFG.tz, 'yyyy-MM-dd HHmm')); } catch (e) {}
+    if (sh.getMaxColumns() < m.from) sh.insertColumnsAfter(sh.getMaxColumns(), m.from - sh.getMaxColumns());
+    sh.moveColumns(sh.getRange(1, m.from, sh.getMaxRows(), 1), m.to);
+    sh.getRange(1, m.to).setValue('نژاد');
+    props.setProperty(m.key, '1'); MIGDONE[name] = 1;
+  } finally { lock.releaseLock(); }
 }
 function str_(v) {
   if (v instanceof Date) return Utilities.formatDate(v, CFG.tz, 'yyyy-MM-dd');
@@ -594,8 +611,7 @@ function apSave_(b) {
   r.owner = clip_(v.owner, 40); r.phone = String(v.phone || '').replace(/[^0-9+]/g, '').slice(0, 16);
   r.reason = clip_(v.reason, 150); r.note = clip_(v.note, 600); r.pkey = /^PT-[A-Z0-9]{5,10}$/.test(String(v.pkey || '')) ? v.pkey : (r.pkey || '');
   r.rem = v.rem ? '1' : ''; r.breed = clip_(v.breed, 40);
-  if (!sh.getRange(1, AP_COLS.length).getValue()) sh.getRange(1, AP_COLS.length).setValue('نژاد');
-  if (!sh.getRange(1, AP_COLS.length - 1).getValue()) sh.getRange(1, AP_COLS.length - 1).setValue('یادآور پیامکی (۱=بله)');
+  if (!sh.getRange(1, AP_COLS.length).getValue()) sh.getRange(1, AP_COLS.length).setValue('یادآور پیامکی (۱=بله)');
   r.updated = nowIso_(); writeRow_(sh, AP_COLS, r, r._row || 0);
   return { ok: true, item: apOut_(r) };
 }
@@ -748,7 +764,6 @@ function patSave_(b) {
   if (v.fee !== undefined) r.fee = String(v.fee).replace(/[^0-9]/g, '').slice(0, 12);   // زیرساخت هزینه (فعلاً بدون رابط)
   if (v.paid !== undefined) r.paid = v.paid ? '1' : '';
   if (v.pay !== undefined) r.pay = clip_(v.pay, 20);
-  if (!sh.getRange(1, PT_COLS.length).getValue()) sh.getRange(1, PT_COLS.length).setValue('نژاد');
   r.updated = nowIso_(); writeRow_(sh, PT_COLS, r, r._row || 0);
   return { ok: true, item: patOut_(r) };
 }
@@ -790,11 +805,11 @@ var LOOK = {
   Spins: { color: '#d97706', labels: ['زمان', 'کد', 'جایزه', 'انقضا', 'دستگاه', 'استفاده شد؟', 'زمان استفاده'], widths: [150, 120, 190, 110, 130, 100, 150], clip: [5] },
   Pets: { color: '#1f5aa6', labels: ['شمارهٔ شناسنامه (کد پت)', 'کلید لینک (محرمانه)', 'نام', 'نام انگلیسی', 'سرپرست', 'سرپرست دوم (قدیمی)', 'گونه', 'نژاد', 'نژاد (انگلیسی)', 'تاریخ تولد', 'برنامهٔ واکسن (داده)', 'رضایت (۱=بله)', 'ساخته شد', 'ویرایش', 'حذف‌شده؟ (۱=بله)', 'کد اصالت', 'جنسیت', 'وضعیت عقیم‌سازی', 'تلفن سرپرست (محرمانه، فقط آرشیو)', 'رضایت پیامک یادآوری (۱=بله)'],
     widths: [130, 140, 110, 110, 130, 110, 80, 110, 120, 100, 120, 90, 150, 150, 90, 100, 90, 130, 150, 120], clip: [2, 11], gray: [2, 11], green: [1, 16], del: 15 },
-  Patients: { color: '#0e7490', labels: ['شناسهٔ مراجعه', 'شناسهٔ بیمار', 'ثبت شد', 'ویرایش', 'تاریخ مراجعه', 'نام پت', 'گونه', 'سرپرست', 'تلفن (محرمانه)', 'دلیل / تشخیص', 'یادداشت', 'تاریخ پیگیری', 'کد شناسنامه', 'حذف‌شده؟ (۱=بله)', 'هزینه (تومان)', 'پرداخت‌شده؟ (۱=بله)', 'روش پرداخت', 'نژاد'],
-    widths: [110, 100, 150, 150, 100, 110, 80, 130, 130, 200, 260, 100, 110, 90, 110, 110, 110, 110], clip: [11], gray: [2, 3, 4, 13], del: 14 },
+  Patients: { color: '#0e7490', labels: ['شناسهٔ مراجعه', 'شناسهٔ بیمار', 'ثبت شد', 'ویرایش', 'تاریخ مراجعه', 'نام پت', 'گونه', 'نژاد', 'سرپرست', 'تلفن (محرمانه)', 'دلیل / تشخیص', 'یادداشت', 'تاریخ پیگیری', 'کد شناسنامه', 'حذف‌شده؟ (۱=بله)', 'هزینه (تومان)', 'پرداخت‌شده؟ (۱=بله)', 'روش پرداخت'],
+    widths: [110, 100, 150, 150, 100, 110, 80, 110, 130, 130, 200, 260, 100, 110, 90, 110, 110, 110], clip: [12], gray: [2, 3, 4, 14], del: 15 },
   Activity: { color: '#475569', labels: ['روز', 'ساعت', 'نوع', 'شناسه', 'نام'], widths: [100, 80, 80, 120, 140], gray: [1, 2, 3] },
-  Appts: { color: '#0e7490', labels: ['شناسهٔ نوبت', 'ثبت شد', 'ویرایش', 'تاریخ نوبت', 'ساعت', 'نام پت', 'گونه', 'سرپرست', 'تلفن (محرمانه)', 'دلیل', 'یادداشت', 'وضعیت', 'شناسهٔ بیمار', 'حذف‌شده؟ (۱=بله)', 'یادآور پیامکی (۱=بله)', 'نژاد'],
-    widths: [110, 150, 150, 100, 70, 110, 80, 130, 130, 180, 240, 100, 100, 90, 90, 110], clip: [11], gray: [2, 3, 13], del: 14 },
+  Appts: { color: '#0e7490', labels: ['شناسهٔ نوبت', 'ثبت شد', 'ویرایش', 'تاریخ نوبت', 'ساعت', 'نام پت', 'گونه', 'نژاد', 'سرپرست', 'تلفن (محرمانه)', 'دلیل', 'یادداشت', 'وضعیت', 'شناسهٔ بیمار', 'حذف‌شده؟ (۱=بله)', 'یادآور پیامکی (۱=بله)'],
+    widths: [110, 150, 150, 100, 70, 110, 80, 110, 130, 130, 180, 240, 100, 100, 90, 90], clip: [12], gray: [2, 3, 14], del: 15 },
   SMS: { color: '#b45309', labels: ['زمان', 'شماره', 'نوع', 'متن', 'نتیجه', 'توضیح', 'جزئیات فنی'], widths: [150, 120, 100, 320, 100, 300, 320], clip: [4, 7], gray: [1, 7] },
   Records: { color: '#0f766e', labels: ['شناسه', 'کد پت', 'نوع', 'تاریخ', 'نام', 'برند', 'سریال', 'محل', 'توضیح', 'تکرار', 'روش', 'مدت', 'پایان', 'وزن', 'نوبت بعدی', 'بسته‌شده؟', 'ثبت دکتر؟', 'ساخته شد', 'ویرایش', 'حذف‌شده؟ (۱=بله)', 'منبع (old=سابقهٔ قبلی)'],
     widths: [110, 90, 130, 100, 150, 110, 110, 110, 140, 90, 90, 80, 100, 70, 100, 80, 80, 150, 150, 90, 110], gray: [1], del: 20 },
