@@ -733,15 +733,16 @@ function smsAtMap_(prefix) {
 // شماره بدون صفر/۹۸ اول، برای مقایسه (0912… و 912… و +98912… یکی حساب شوند)
 function phN_(v) { var d = String(v || '').replace(/\D/g, ''); if (/^98\d{10}$/.test(d)) d = d.slice(2); return d.replace(/^0+/, ''); }
 function lookup_(b) {
-  var qd = phN_(String(b.q || '').replace(/[۰-۹]/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'.indexOf(d); }));
-  if (qd.length < 3) return { ok: true, items: [] };
+  var raw = String(b.q || '').replace(/[۰-۹]/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'.indexOf(d); }), byPhone = /^[\s+\d-]+$/.test(raw), qd = phN_(raw), qn = norm_(raw);
+  if (byPhone ? qd.length < 3 : qn.length < 2) return { ok: true, items: [] };
+  function hit(o) { return byPhone ? phN_(o.phone).indexOf(qd) > -1 : norm_([o.name, o.en, o.owner, o.guardian].join(' ')).indexOf(qn) > -1; }
   var out = [], seen = {};
-  function add(o) { var k = (o.phone || '') + '|' + norm_(o.name); if (seen[k]) return; seen[k] = 1; out.push(o); }
-  var pts = readAll_(hsheet_('Patients', PT_COLS), PT_COLS).filter(function (r) { return r.deleted !== '1' && phN_(r.phone).indexOf(qd) > -1; });
+  function add(o) { var k = phN_(o.phone) + '|' + norm_(o.name); if (seen[k]) return; seen[k] = 1; out.push(o); }
+  var pts = readAll_(hsheet_('Patients', PT_COLS), PT_COLS).filter(function (r) { return r.deleted !== '1' && hit(r); });
   pts.sort(function (x, y) { return x.date < y.date ? 1 : -1; });
   pts.forEach(function (r) { add({ kind: 'patient', pkey: r.pkey, name: r.name, species: r.species, breed: r.breed || '', owner: r.owner, phone: r.phone, last: r.date }); });
-  readAll_(hsheet_('Pets', PET_COLS), PET_COLS).forEach(function (p) { if (p.deleted !== '1' && phN_(p.phone).indexOf(qd) > -1) add({ kind: 'pet', code: p.code, name: p.name, species: p.species, breed: p.breed || '', owner: p.owner || p.guardian, phone: p.phone }); });
-  readAll_(hsheet_('Appts', AP_COLS), AP_COLS).forEach(function (r) { if (r.deleted !== '1' && phN_(r.phone).indexOf(qd) > -1) add({ kind: 'appt', pkey: r.pkey, name: r.name, species: r.species, breed: r.breed || '', owner: r.owner, phone: r.phone, last: r.date }); });
+  readAll_(hsheet_('Pets', PET_COLS), PET_COLS).forEach(function (p) { if (p.deleted !== '1' && hit(p)) add({ kind: 'pet', code: p.code, name: p.name, species: p.species, breed: p.breed || '', owner: p.owner || p.guardian, phone: p.phone }); });
+  readAll_(hsheet_('Appts', AP_COLS), AP_COLS).forEach(function (r) { if (r.deleted !== '1' && hit(r)) add({ kind: 'appt', pkey: r.pkey, name: r.name, species: r.species, breed: r.breed || '', owner: r.owner, phone: r.phone, last: r.date }); });
   return { ok: true, items: out.slice(0, 12) };
 }
 function patList_() {
