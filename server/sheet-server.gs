@@ -399,9 +399,14 @@ function doPost(e) {
 }
 function doGet(e) {
   var p = (e && e.parameter) || {};
+  // روش جایگزین برای مرورگرهای قدیمی (آیپد iOS 12): همان درخواست‌ها با GET و پاسخ به شکل callback(...)
+  if (p.cb && /^[A-Za-z_$][\w$]{0,40}$/.test(p.cb) && p.d) {
+    var out; try { out = health_(JSON.parse(p.d)); } catch (err) { out = { ok: false, err: 'server', msg: String(err).slice(0, 120) }; }
+    return ContentService.createTextOutput(p.cb + '(' + JSON.stringify(out) + ');').setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
   if (p.action === 'spin') return json_(spin_(p));
   if (p.action === 'verify') return verifyPage_(p);
-  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v27-panel' });
+  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v28-panel' });
 }
 
 // ======================= چرخ هدیه =======================

@@ -1302,9 +1302,26 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   var DR_SALT = "GnOd3U5koVp1Ozi8RTcLbA==", DR_HASH = "b4Ba9BSekt9YN0YQ3iruqAzem9RYjTbLV4PClSZjdFs=";
   function srvOn() { return !!INFO.sheetApi && !!window.fetch; }
   function api(body) {
+    // آیپد/آیفون قدیمی (iOS ≤ ۱۴): اول روش «اسکریپت» (JSONP) که مثل باز کردن صفحه است؛ اگر نشد، روش معمول
+    var enc = JSON.stringify(body);
+    if (IOSMODE && enc.length < 6000) return jsonpApi(body, enc).then(function (j) { return j.ok === false && j.err === "net" ? fetchApi(body) : apiPost(j, body); });
+    return fetchApi(body);
+  }
+  function apiPost(j, body) { if (j && j.ok === false && j.err === "auth" && body.t !== undefined && DRPAGE && localStorage.getItem("dm_hb_dr") === "1") drDrop("ورود شما از طرف سرور تأیید نشد؛ لطفاً دوباره وارد شوید."); return j; }
+  var jpN = 0;
+  function jsonpApi(body, enc) {
+    return new Promise(function (res) {
+      var cb = "__hbjp" + (++jpN) + "_" + Date.now(), sc = document.createElement("script"), done = false;
+      var tm = setTimeout(function () { window.__apiErr = "jsonp timeout"; fin({ ok: false, err: "net" }); }, 20000);
+      function fin(j) { if (done) return; done = true; clearTimeout(tm); window[cb] = function () {}; if (sc.parentNode) sc.parentNode.removeChild(sc); res(j || { ok: false, err: "net" }); }
+      window[cb] = fin; sc.onerror = function () { window.__apiErr = "jsonp load error"; fin({ ok: false, err: "net" }); };
+      sc.src = INFO.sheetApi + "?cb=" + cb + "&d=" + encodeURIComponent(enc); (document.head || document.body).appendChild(sc);
+    });
+  }
+  function fetchApi(body) {
     var ctl = window.AbortController ? new AbortController() : null, tm = ctl ? setTimeout(function () { ctl.abort(); }, 40000) : 0;
     return fetch(INFO.sheetApi, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(body), signal: ctl ? ctl.signal : undefined })
-      .then(function (r) { return r.json(); }).then(function (j) { clearTimeout(tm); if (j && j.ok === false && j.err === "auth" && body.t !== undefined && DRPAGE && localStorage.getItem("dm_hb_dr") === "1") drDrop("ورود شما از طرف سرور تأیید نشد؛ لطفاً دوباره وارد شوید."); return j; }).catch(function (e) { clearTimeout(tm); window.__apiErr = String((e && e.message) || e); return { ok: false, err: "net" }; });
+      .then(function (r) { return r.json(); }).then(function (j) { clearTimeout(tm); return apiPost(j, body); }).catch(function (e) { clearTimeout(tm); window.__apiErr = String((e && e.message) || e); return { ok: false, err: "net" }; });
   }
   function tokGet() { try { var o = JSON.parse(localStorage.getItem("dm_hb_tok") || "null"); return o && o.exp > Date.now() ? o.t : ""; } catch (e) { return ""; } }
   function tokSet(t) { try { if (t) localStorage.setItem("dm_hb_tok", JSON.stringify({ t: t, exp: (Number(String(t).split(".")[0]) || Date.now() + 3 * 86400000) - 60000 })); else localStorage.removeItem("dm_hb_tok"); } catch (e) {} }
