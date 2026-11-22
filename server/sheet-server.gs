@@ -117,18 +117,54 @@ function str_(v) {
   if (v instanceof Date) return Utilities.formatDate(v, CFG.tz, 'yyyy-MM-dd');
   return v === null || v === undefined ? '' : String(v);
 }
+// ---- تاریخ شمسی در شیت ----
+// در شیت شمسی نوشته می‌شود (مثل 1405/09/01 یا 1405/09/01 14:30:00)؛ هنگام خواندن برای محاسبه‌ها به میلادی برمی‌گردد.
+var DATE_KEYS = { birth: 1, created: 1, updated: 1, date: 1, follow: 1, next: 1, end: 1, time: 1, day: 1, approved: 1 };
+function g2jStr_(v) {
+  var m = /^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}:\d{2}(?::\d{2})?))?$/.exec(String(v || '')); if (!m || +m[1] < 1900) return v;
+  var j = jalali_(m[1] + '-' + m[2] + '-' + m[3]), p = function (n) { return (n < 10 ? '0' : '') + n; };
+  return j[0] + '/' + p(j[1]) + '/' + p(j[2]) + (m[4] ? ' ' + m[4] : '');
+}
+function j2g_(jy, jm, jd) {
+  jy += 1595; var days = -355668 + 365 * jy + Math.floor(jy / 33) * 8 + Math.floor(((jy % 33) + 3) / 4) + jd + (jm < 7 ? (jm - 1) * 31 : (jm - 7) * 30 + 186);
+  var gy = 400 * Math.floor(days / 146097); days %= 146097;
+  if (days > 36524) { gy += 100 * Math.floor(--days / 36524); days %= 36524; if (days >= 365) days++; }
+  gy += 4 * Math.floor(days / 1461); days %= 1461;
+  if (days > 365) { gy += Math.floor((days - 1) / 365); days = (days - 1) % 365; }
+  var gd = days + 1, sal = [0, 31, ((gy % 4 === 0 && gy % 100 !== 0) || gy % 400 === 0) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31], gm;
+  for (gm = 1; gm < 13 && gd > sal[gm]; gm++) gd -= sal[gm];
+  return [gy, gm, gd];
+}
+function j2gStr_(v) {
+  var s = String(v || '').replace(/[۰-۹]/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'.indexOf(d); });
+  var m = /^(1[34]\d\d)\/(\d{1,2})\/(\d{1,2})(?: (\d{2}:\d{2}(?::\d{2})?))?$/.exec(s); if (!m) return v;
+  var g = j2g_(+m[1], +m[2], +m[3]), p = function (n) { return (n < 10 ? '0' : '') + n; };
+  return g[0] + '-' + p(g[1]) + '-' + p(g[2]) + (m[4] ? 'T' + m[4] : '');
+}
+// تبدیل یک‌بارهٔ تاریخ‌های میلادی موجود در شیت به شمسی (از منوی «مرتب‌کردن ظاهر»)
+function convDates_(name, cols) {
+  var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(name); if (!sh) return;
+  var n = sh.getLastRow(); if (n < 2) return;
+  var idx = []; cols.forEach(function (c, i) { if (DATE_KEYS[c]) idx.push(i); }); if (!idx.length) return;
+  idx.forEach(function (i) {
+    var rg = sh.getRange(2, i + 1, n - 1, 1), v = rg.getValues();
+    var out = v.map(function (r) { var x = r[0]; if (x instanceof Date) x = Utilities.formatDate(x, CFG.tz, (x.getHours() || x.getMinutes() || x.getSeconds()) ? "yyyy-MM-dd'T'HH:mm:ss" : 'yyyy-MM-dd'); return [g2jStr_(String(x === null || x === undefined ? '' : x))]; });
+    rg.setNumberFormat('@'); rg.setValues(out);
+  });
+}
 function readAll_(sh, cols) {
   var v = sh.getDataRange().getValues(), out = [], i, j;
   for (i = 1; i < v.length; i++) {
     var o = { _row: i + 1 }; for (j = 0; j < cols.length; j++) o[cols[j]] = str_(v[i][j]);
-    if (o.phone && /^9\d{9}$/.test(o.phone)) o.phone = '0' + o.phone;   // شیت صفرِ اول را حذف کرده بود
+    if (o.phone && /^9\d{9}$/.test(o.phone)) o.phone = '0' + o.phone;
+    for (j = 0; j < cols.length; j++) if (DATE_KEYS[cols[j]] && o[cols[j]]) o[cols[j]] = j2gStr_(o[cols[j]]);   // شیت صفرِ اول را حذف کرده بود
     if (cols === AD_COLS || cols === PR_COLS) o.status = normStatus_(o.status);   // وضعیت ممکن است با آیکون و فارسی نوشته شده باشد
     out.push(o);
   }
   return out;
 }
 function writeRow_(sh, cols, o, row) {
-  var arr = cols.map(function (c) { return o[c] === undefined || o[c] === null ? '' : String(o[c]); });
+  var arr = cols.map(function (c) { var x = o[c] === undefined || o[c] === null ? '' : String(o[c]); return DATE_KEYS[c] ? g2jStr_(x) : x; });
   var si = cols === AD_COLS || cols === PR_COLS ? cols.indexOf('status') : -1;
   if (si > -1) arr[si] = statusLabel_(cols === AD_COLS ? AD_LABEL : PR_LABEL, o.status);
   if (!row) row = sh.getLastRow() + 1;
@@ -882,6 +918,7 @@ function formatSheets() {
   var ss = SpreadsheetApp.getActiveSpreadsheet(), done = [];
   try { hsheet_('Patients', PT_COLS); hsheet_('SMS', SMS_COLS); hsheet_('Activity', ACT_COLS); hsheet_('Appts', AP_COLS); } catch (ee) { lastLookError_ = 'ensure: ' + String(ee); }   // ساخت تب‌های جدید حتی قبل از اولین استفاده
   try { migrate_(ss); } catch (em) { lastLookError_ = 'migrate: ' + String(em); }
+  [['Pets', PET_COLS], ['SMS', SMS_COLS], ['Patients', PT_COLS], ['Activity', ACT_COLS], ['Appts', AP_COLS], ['Records', REC_COLS], ['Adoptions', AD_COLS], ['PetReqs', PR_COLS]].forEach(function (x) { try { convDates_(x[0], x[1]); } catch (ec) { lastLookError_ = 'dates: ' + String(ec); } });
   Object.keys(LOOK).forEach(function (name) {
     var sh = ss.getSheetByName(name);
     if (sh) { look_(sh, LOOK[name]); done.push(name); }
