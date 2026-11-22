@@ -2057,3 +2057,7 @@ html.hb-dr .hb-sendrow + .hb-sendrow { margin-top: -6px; }
 .hb-smsst { font-size: 13px; color: #4a5a70; margin: 4px 0 8px; }
 .ap-noshow { opacity: .75; }
 .hb-secpage .hb-ptv .hb-ptn, .hb-secpage .hb-ptv .hb-adb, .hb-secpage .hb-ptfu { display: none !important; }
+.hb-smsbadge { text-align: center; font-size: 14px; font-weight: 600; border-radius: 12px; padding: 8px 12px; margin: 10px 0 6px; }
+.hb-smsbadge.on { background: #e7f6ec; color: #1d6b3a; border: 1px solid #b7e1c4; }
+.hb-smsbadge.off { background: #f4f5f7; color: #5b6576; border: 1px solid #dde1e7; }
+.hb-apc > .hb-smsst { display: block; margin: 0 0 4px; }

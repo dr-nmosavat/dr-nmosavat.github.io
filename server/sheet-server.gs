@@ -328,7 +328,7 @@ function doGet(e) {
   var p = (e && e.parameter) || {};
   if (p.action === 'spin') return json_(spin_(p));
   if (p.action === 'verify') return verifyPage_(p);
-  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v25-panel' });
+  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v26-panel' });
 }
 
 // ======================= چرخ هدیه =======================
@@ -533,7 +533,7 @@ function patSms_(b) {
   var r = rows[0], cache = CacheService.getScriptCache(), key = 'sms_' + r.pkey;
   if (cache.get(key)) return { ok: false, err: 'rate' };
   var tpl = prop_('SMS_TEXT_NEW') || 'سرپرست گرامی، پروندهٔ {name} در کلینیک دامپزشکی دکتر نیلوفر مساوات ثبت شد. drniloofarmosavat.ir';
-  var out = sendSms_(r.phone, tpl.replace(/\{name\}/g, r.name), 'patient', { name: r.name });
+  var out = sendSms_(r.phone, tpl.replace(/\{name\}/g, r.name), 'patient:' + r.pkey, { name: r.name });
   if (out.ok) cache.put(key, '1', 600);   // جلوگیری از ارسال تکراری تا ۱۰ دقیقه
   return out;
 }
@@ -577,7 +577,8 @@ function apList_() {
   var from = Utilities.formatDate(new Date(Date.now() - 14 * 86400000), CFG.tz, 'yyyy-MM-dd');
   var rows = readAll_(hsheet_('Appts', AP_COLS), AP_COLS).filter(function (r) { return r.deleted !== '1' && r.date >= from; });
   rows.sort(function (x, y) { return (x.date + x.time) < (y.date + y.time) ? -1 : 1; });
-  return { ok: true, today: today_(), items: rows.slice(0, 400).map(apOut_) };
+  var sm = smsAtMap_('apr'), items = rows.slice(0, 400).map(apOut_); items.forEach(function (x) { x.smsAt = sm[x.id] || ''; });
+  return { ok: true, today: today_(), items: items };
 }
 function apSave_(b) {
   var sh = hsheet_('Appts', AP_COLS), rows = readAll_(sh, AP_COLS), r = null, i, v = b.v || {};
@@ -702,10 +703,17 @@ function petRemind_(b) {
 }
 // ---- دفتر «بیماران من» (فقط دکتر؛ هر ردیف = یک مراجعه) ----
 function patOut_(r) { return { id: r.id, pkey: r.pkey, date: r.date, name: r.name, species: r.species, owner: r.owner, phone: r.phone, reason: r.reason, note: r.note, follow: r.follow, code: r.code, fee: r.fee || '', paid: r.paid === '1', pay: r.pay || '' }; }
+// آخرین پیامک موفق برای هر پرونده/نوبت (از شیت SMS)، تا روی همهٔ دستگاه‌ها دیده شود
+function smsAtMap_(prefix) {
+  var m = {}, re = new RegExp('^' + prefix + ':([^:]+)');
+  readAll_(hsheet_('SMS', SMS_COLS), SMS_COLS).forEach(function (r) { var x = re.exec(r.kind); if (x && /^(✅|2)/.test(r.status)) { var d = String(r.time).slice(0, 10); if (!m[x[1]] || d > m[x[1]]) m[x[1]] = d; } });
+  return m;
+}
 function patList_() {
   var rows = readAll_(hsheet_('Patients', PT_COLS), PT_COLS).filter(function (r) { return r.deleted !== '1'; });
   rows.sort(function (x, y) { return x.date < y.date ? 1 : x.date > y.date ? -1 : (x.created < y.created ? 1 : -1); });
-  return { ok: true, items: rows.slice(0, 1500).map(patOut_) };
+  var sm = smsAtMap_('patient'), items = rows.slice(0, 1500).map(patOut_); items.forEach(function (x) { x.smsAt = sm[x.pkey] || ''; });
+  return { ok: true, items: items };
 }
 function patSave_(b) {
   var sh = hsheet_('Patients', PT_COLS), rows = readAll_(sh, PT_COLS), r = null, i, v = b.v || {};
