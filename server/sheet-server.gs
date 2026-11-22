@@ -64,7 +64,7 @@ var H = {
   allTypes: ["واکسن", "ضدانگل داخلی", "ضدانگل خارجی (کک و کنه)", "ویزیت", "وزن", "دارو", "عقیم‌سازی", "آزمایش", "سایر"]
 };
 var PET_COLS = ['code', 'key', 'name', 'en', 'owner', 'guardian', 'species', 'breed', 'breedEn', 'birth', 'plan', 'consent', 'created', 'updated', 'deleted', 'auth', 'sex', 'neut', 'phone', 'smsok'];
-var SMS_COLS = ['time', 'to', 'kind', 'text', 'status', 'response'];
+var SMS_COLS = ['time', 'to', 'kind', 'text', 'status', 'response', 'raw'];
 var PT_COLS = ['id', 'pkey', 'created', 'updated', 'date', 'name', 'species', 'owner', 'phone', 'reason', 'note', 'follow', 'code', 'deleted', 'fee', 'paid', 'pay'];
 var ACT_COLS = ['day', 'time', 'kind', 'ref', 'name'];
 var AP_COLS = ['id', 'created', 'updated', 'date', 'time', 'name', 'species', 'owner', 'phone', 'reason', 'note', 'status', 'pkey', 'deleted'];
@@ -319,7 +319,7 @@ function doGet(e) {
   var p = (e && e.parameter) || {};
   if (p.action === 'spin') return json_(spin_(p));
   if (p.action === 'verify') return verifyPage_(p);
-  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v21-panel' });
+  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v22-panel' });
 }
 
 // ======================= چرخ هدیه =======================
@@ -469,7 +469,7 @@ function smsPhone_(v) {
   return /^09\d{9}$/.test(d) ? d : '';
 }
 function sendSms_(to, text, kind, vars, tplCode) {
-  function logFail_(st, why) { try { writeRow_(hsheet_('SMS', SMS_COLS), SMS_COLS, { time: nowIso_(), to: String(to || '').slice(0, 20), kind: kind || '', text: clip_(text, 300), status: st, response: why }, 0); } catch (e0) {} }
+  function logFail_(st, why) { try { writeRow_(hsheet_('SMS', SMS_COLS), SMS_COLS, { time: nowIso_(), to: String(to || '').slice(0, 20), kind: kind || '', text: clip_(text, 300), status: '❌ ناموفق', response: why, raw: st }, 0); } catch (e0) {} }
   var token = prop_('SMS_TOKEN'); if (!token) { logFail_('NO_TOKEN', 'SMS_TOKEN در Script Properties ثبت نشده است'); return { ok: false, err: 'sms_off' }; }
   var num = smsPhone_(to); if (!num) { logFail_('BAD_PHONE', 'شمارهٔ موبایل معتبر نیست (باید مثل 09123456789 باشد)'); return { ok: false, err: 'bad_phone' }; }
   var provider = String(prop_('SMS_PROVIDER') || 'ippanel').toLowerCase(), from = String(prop_('SMS_FROM') || '').replace(/\s/g, '');
@@ -498,17 +498,24 @@ function sendSms_(to, text, kind, vars, tplCode) {
     }
     req = { url: prop_('SMS_URL') || 'https://edge.ippanel.com/v1/api/send', opt: { method: 'post', contentType: 'application/json', headers: { Authorization: auth }, muteHttpExceptions: true, payload: JSON.stringify(payload) } };
   }
-  var t0 = Date.now();
+  var t0 = Date.now(), human = '', provMsg = '', msgId = '';
   try {
     var res = UrlFetchApp.fetch(req.url, req.opt), raw = String(res.getContentText());
     status = String(res.getResponseCode()); ok = res.getResponseCode() >= 200 && res.getResponseCode() < 300;
     body = /<html|<!doctype/i.test(raw) ? 'صفحهٔ خطای HTML از سرور مقصد (' + raw.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 110) + ')' : raw.slice(0, 260);
-    var hd = res.getAllHeaders(), ray = hd['cf-ray'] || hd['CF-RAY'] || hd['Cf-Ray']; if (ray) body += ' | cf-ray: ' + ray;
-    try { var jb = JSON.parse(raw); if (jb && jb.meta && jb.meta.status === false) ok = false; } catch (ej) {}
+    try {
+      var jb = JSON.parse(raw);
+      provMsg = String(jb.message || (jb.meta && jb.meta.message) || '');
+      if (jb && jb.meta && jb.meta.status === false) ok = false;
+      if (jb && jb.status !== undefined && jb.status !== 1 && jb.status !== true && jb.data !== undefined && jb.meta === undefined) ok = false;   // sms.ir: status=1 یعنی موفق
+      var dd = jb.data || {}; msgId = String((dd.messageIds && dd.messageIds[0]) || dd.messageId || (dd.message_outbox_ids && dd.message_outbox_ids[0]) || '');
+    } catch (ej) {}
   } catch (e) { status = 'EXC'; body = String(e).slice(0, 260); }
-  body += ' | ' + (Date.now() - t0) + ' ms';
-  try { writeRow_(hsheet_('SMS', SMS_COLS), SMS_COLS, { time: nowIso_(), to: num, kind: kind || '', text: clip_(text, 300), status: status, response: body }, 0); } catch (e2) {}
-  return ok ? { ok: true, status: status } : { ok: false, err: 'fail', msg: (status + ' ' + body).slice(0, 160) };
+  var ms = Date.now() - t0;
+  human = ok ? 'پیامک پذیرفته شد' + (msgId ? ' · شناسهٔ پیام ' + msgId : '') : (provMsg || (status === '502' ? 'سرور مقصد در دسترس نیست (۵۰۲)' : status === '401' || status === '403' ? 'کلید پذیرفته نشد' : 'ارسال انجام نشد')) + ' (کد ' + status + ')';
+  body = human;
+  try { writeRow_(hsheet_('SMS', SMS_COLS), SMS_COLS, { time: nowIso_(), to: num, kind: kind || '', text: clip_(text, 300), status: ok ? '✅ موفق' : '❌ ناموفق', response: human, raw: 'HTTP ' + status + ' · ' + ms + ' ms · ' + String(typeof raw !== 'undefined' ? raw : body).replace(/\s+/g, ' ').slice(0, 300) }, 0); } catch (e2) {}
+  return ok ? { ok: true, status: status } : { ok: false, err: 'fail', msg: human.slice(0, 160) };
 }
 function patSms_(b) {
   var rows = readAll_(hsheet_('Patients', PT_COLS), PT_COLS).filter(function (r) { return r.pkey === String(b.pkey || '') && r.deleted !== '1'; });
@@ -617,7 +624,7 @@ function sendRemindersFor_(recs, petBy, doneKinds, opts) {
 }
 function loadRemData_() {
   var petBy = {}; readAll_(hsheet_('Pets', PET_COLS), PET_COLS).forEach(function (p) { petBy[p.code] = p; });
-  var done = {}; readAll_(hsheet_('SMS', SMS_COLS), SMS_COLS).forEach(function (r) { if (/^rem:/.test(r.kind) && /^2/.test(r.status)) done[r.kind] = 1; });
+  var done = {}; readAll_(hsheet_('SMS', SMS_COLS), SMS_COLS).forEach(function (r) { if (/^rem:/.test(r.kind) && /^(✅|2)/.test(r.status)) done[r.kind] = 1; });
   var recs = readAll_(hsheet_('Records', REC_COLS), REC_COLS).filter(function (r) { return r.deleted !== '1' && r.closed !== '1' && /^\d{4}-\d{2}-\d{2}$/.test(r.next || ''); });
   return { petBy: petBy, done: done, recs: recs };
 }
@@ -719,7 +726,7 @@ var LOOK = {
   Activity: { color: '#475569', labels: ['روز', 'ساعت', 'نوع', 'شناسه', 'نام'], widths: [100, 80, 80, 120, 140], gray: [1, 2, 3] },
   Appts: { color: '#0e7490', labels: ['شناسهٔ نوبت', 'ثبت شد', 'ویرایش', 'تاریخ نوبت', 'ساعت', 'نام پت', 'گونه', 'سرپرست', 'تلفن (محرمانه)', 'دلیل', 'یادداشت', 'وضعیت', 'شناسهٔ بیمار', 'حذف‌شده؟ (۱=بله)'],
     widths: [110, 150, 150, 100, 70, 110, 80, 130, 130, 180, 240, 100, 100, 90], clip: [11], gray: [2, 3, 13], del: 14 },
-  SMS: { color: '#b45309', labels: ['زمان', 'شماره', 'نوع', 'متن', 'وضعیت (کد HTTP)', 'پاسخ سرویس‌دهنده'], widths: [150, 120, 90, 320, 110, 320], clip: [4, 6], gray: [1] },
+  SMS: { color: '#b45309', labels: ['زمان', 'شماره', 'نوع', 'متن', 'نتیجه', 'توضیح', 'جزئیات فنی'], widths: [150, 120, 100, 320, 100, 300, 320], clip: [4, 7], gray: [1, 7] },
   Records: { color: '#0f766e', labels: ['شناسه', 'کد پت', 'نوع', 'تاریخ', 'نام', 'برند', 'سریال', 'محل', 'توضیح', 'تکرار', 'روش', 'مدت', 'پایان', 'وزن', 'نوبت بعدی', 'بسته‌شده؟', 'ثبت دکتر؟', 'ساخته شد', 'ویرایش', 'حذف‌شده؟ (۱=بله)', 'منبع (old=سابقهٔ قبلی)'],
     widths: [110, 90, 130, 100, 150, 110, 110, 110, 140, 90, 90, 80, 100, 70, 100, 80, 80, 150, 150, 90, 110], gray: [1], del: 20 },
   Adoptions: { color: '#b36b00', labels: ['کد', 'زمان ثبت', 'وضعیت', 'گونه', 'نام', 'سن', 'جنس', 'عقیم', 'واکسن', 'رفتار', 'دلیل واگذاری', 'شهر', 'تلفن (محرمانه)', 'عکس (داده)', 'یادداشت', 'تاریخ تأیید', 'ویرایش'],
