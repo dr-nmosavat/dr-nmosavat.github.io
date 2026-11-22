@@ -77,24 +77,41 @@ function hsheet_(name, cols) {
     sh.getRange(1, 1, sh.getMaxRows(), cols.length).setNumberFormat('@');   // متن ساده: تاریخ‌ها خودکار تبدیل نشوند
     if (LOOK[name]) look_(sh, LOOK[name]);
     if (MIG[name]) PropertiesService.getScriptProperties().setProperty(MIG[name].key, '1');
-  } else if (MIG[name] && !MIGDONE[name]) migrate_(sh, name);
+  } else if (MIG[name] && !MIGDONE[name]) migCols_(sh, name);
   return sh;
 }
-// جابه‌جایی یک‌باره: ستون «نژاد» از آخر جدول به بعد از «گونه» (با پشتیبان)
-var MIG = { Patients: { key: 'MIG_BREED_PT', from: 18, to: 8 }, Appts: { key: 'MIG_BREED_AP', from: 16, to: 8 } }, MIGDONE = {};
-function migrate_(sh, name) {
+// جابه‌جایی یک‌باره: ستون «نژاد» از آخر جدول به بعد از «گونه».
+// روش امن: داده‌ها را می‌خواند و با ترتیب جدید بازنویسی می‌کند؛ فقط اگر داده‌ها واقعاً هنوز با ترتیب قدیم باشند (تشخیص از روی ستون تلفن).
+var MIG = {
+  Patients: { key: 'MIG2_PT', old: ['id', 'pkey', 'created', 'updated', 'date', 'name', 'species', 'owner', 'phone', 'reason', 'note', 'follow', 'code', 'deleted', 'fee', 'paid', 'pay', 'breed'] },
+  Appts: { key: 'MIG2_AP', old: ['id', 'created', 'updated', 'date', 'time', 'name', 'species', 'owner', 'phone', 'reason', 'note', 'status', 'pkey', 'deleted', 'rem', 'breed'] }
+}, MIGDONE = {};
+function migCols_(sh, name) {
   var m = MIG[name], props = PropertiesService.getScriptProperties();
   if (props.getProperty(m.key)) { MIGDONE[name] = 1; return; }
   var lock = LockService.getDocumentLock(); lock.waitLock(20000);
   try {
     if (props.getProperty(m.key)) { MIGDONE[name] = 1; return; }
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    try { sh.copyTo(ss).setName(name + ' پشتیبان ' + Utilities.formatDate(new Date(), CFG.tz, 'yyyy-MM-dd HHmm')); } catch (e) {}
-    if (sh.getMaxColumns() < m.from) sh.insertColumnsAfter(sh.getMaxColumns(), m.from - sh.getMaxColumns());
-    sh.moveColumns(sh.getRange(1, m.from, sh.getMaxRows(), 1), m.to);
-    sh.getRange(1, m.to).setValue('نژاد');
+    var cols = name === 'Patients' ? PT_COLS : AP_COLS, old = m.old, n = sh.getLastRow(), isPh = function (x) { return /^0?9\d{9}$/.test(String(x).replace(/\D/g, '')); };
+    if (n > 1) {
+      if (sh.getMaxColumns() < old.length) sh.insertColumnsAfter(sh.getMaxColumns(), old.length - sh.getMaxColumns());
+      var v = sh.getRange(2, 1, n - 1, old.length).getDisplayValues();
+      var oldPh = old.indexOf('phone'), newPh = cols.indexOf('phone'), a = 0, b = 0;
+      v.forEach(function (row) { if (isPh(row[oldPh])) a++; if (isPh(row[newPh])) b++; });
+      if (a > 0) {   // ردیف‌هایی با ترتیب قدیم پیدا شد → بازنویسی (هر ردیف جداگانه تشخیص داده می‌شود)
+        var ss = SpreadsheetApp.getActiveSpreadsheet(), bn = name + ' پشتیبان';
+        if (!ss.getSheetByName(bn)) { try { sh.copyTo(ss).setName(bn); } catch (e1) {} }
+        var out = v.map(function (row) {
+          var po = isPh(row[oldPh]), pn = isPh(row[newPh]), isOld = po && !pn ? true : pn && !po ? false : a >= b;
+          return cols.map(function (c, ci) { var k = isOld ? old.indexOf(c) : ci, x = k < 0 ? '' : String(row[k]); if (c === 'phone' && /^9\d{9}$/.test(x)) x = '0' + x; return x; });
+        });
+        var rg = sh.getRange(2, 1, n - 1, old.length); rg.setNumberFormat('@'); rg.setValues(out);
+      }
+    }
+    if (LOOK[name]) sh.getRange(1, 1, 1, LOOK[name].labels.length).setValues([LOOK[name].labels]);
     props.setProperty(m.key, '1'); MIGDONE[name] = 1;
-  } finally { lock.releaseLock(); }
+  } catch (e) { props.setProperty('MIG_ERR', name + ': ' + e); MIGDONE[name] = 1; }
+  finally { lock.releaseLock(); }
 }
 function str_(v) {
   if (v instanceof Date) return Utilities.formatDate(v, CFG.tz, 'yyyy-MM-dd');
