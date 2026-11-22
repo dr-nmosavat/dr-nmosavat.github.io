@@ -1403,9 +1403,11 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   if (IOSMODE && window.MutationObserver) {
     // فرم و پنجره‌ها را درست زیر دکمه‌های ثبت سریع می‌گذاریم تا بعد از لمس همان‌جا دیده شوند
     var iosAnchor = q(".hb-dacts") || q(".hb-oacts");
-    var iosMods = document.querySelectorAll(".hb-sheet, .hb-qrm, .hb-guide");
+    var iosMods = document.querySelectorAll(".hb-sheet, .hb-qrm, .hb-guide");   // شامل پنجرهٔ ورود (data-hb-drm)
     [].forEach.call(iosMods, function (m) {
-      if (iosAnchor && iosAnchor.parentNode && !m.classList.contains("hb-guide")) iosAnchor.parentNode.insertBefore(m, iosAnchor.nextSibling);
+      var gate0 = q("[data-hb-drgate]");
+      if (m.hasAttribute("data-hb-drm") && gate0 && gate0.parentNode) gate0.parentNode.insertBefore(m, gate0.nextSibling);   // پنجرهٔ ورود: زیر دکمهٔ ورود (نه داخل بخش پنهانِ قبل از ورود)
+      else if (iosAnchor && iosAnchor.parentNode && !m.classList.contains("hb-guide")) iosAnchor.parentNode.insertBefore(m, iosAnchor.nextSibling);
       new MutationObserver(function () {
         if (m.hidden) return;
         setTimeout(function () { try { m.scrollIntoView(true); } catch (e) { try { window.scrollTo(0, Math.max(0, m.getBoundingClientRect().top + (window.pageYOffset || 0) - 12)); } catch (e2) {} } }, 80);
