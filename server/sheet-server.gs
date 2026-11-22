@@ -65,7 +65,9 @@ var H = {
 };
 var PET_COLS = ['code', 'key', 'name', 'en', 'owner', 'guardian', 'species', 'breed', 'breedEn', 'birth', 'plan', 'consent', 'created', 'updated', 'deleted', 'auth', 'sex', 'neut', 'phone'];
 var SMS_COLS = ['time', 'to', 'kind', 'text', 'status', 'response'];
-var PT_COLS = ['id', 'pkey', 'created', 'updated', 'date', 'name', 'species', 'owner', 'phone', 'reason', 'note', 'follow', 'code', 'deleted'];
+var PT_COLS = ['id', 'pkey', 'created', 'updated', 'date', 'name', 'species', 'owner', 'phone', 'reason', 'note', 'follow', 'code', 'deleted', 'fee', 'paid', 'pay'];
+var ACT_COLS = ['day', 'time', 'kind', 'ref', 'name'];
+var AP_COLS = ['id', 'created', 'updated', 'date', 'time', 'name', 'species', 'owner', 'phone', 'reason', 'note', 'status', 'pkey', 'deleted'];
 var REC_COLS = ['id', 'code', 'type', 'date', 'name', 'brand', 'serial', 'place', 'extra', 'freq', 'how', 'dur', 'end', 'weight', 'next', 'closed', 'dr', 'created', 'updated', 'deleted', 'src'];
 
 function hsheet_(name, cols) {
@@ -183,6 +185,11 @@ function health_(b) {
     if (a === 'patDel') return patDel_(b);
     if (a === 'patPatient') return patPatient_(b);
     if (a === 'patSms') return patSms_(b);
+    if (a === 'touch') return touch_(b);
+    if (a === 'todayList') return todayList_();
+    if (a === 'apList') return apList_();
+    if (a === 'apSave') return apSave_(b);
+    if (a === 'apSet') return apSet_(b);
   } finally { lock.releaseLock(); }
   return { ok: false, err: 'bad' };
 }
@@ -310,7 +317,7 @@ function doGet(e) {
   var p = (e && e.parameter) || {};
   if (p.action === 'spin') return json_(spin_(p));
   if (p.action === 'verify') return verifyPage_(p);
-  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v13-sms' });
+  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v14-panel' });
 }
 
 // ======================= چرخ هدیه =======================
@@ -482,8 +489,71 @@ function patSms_(b) {
   if (out.ok) cache.put(key, '1', 600);   // جلوگیری از ارسال تکراری تا ۱۰ دقیقه
   return out;
 }
+// ---- امروز، فعالیت پنل و نوبت‌دهی ----
+function today_() { return Utilities.formatDate(new Date(), CFG.tz, 'yyyy-MM-dd'); }
+// زمان‌های ثبت‌شده با nowIso_ از قبل به وقت تهران‌اند (بدون منطقهٔ زمانی)؛ پس مستقیم از متن بریده می‌شوند
+function dayOf_(iso) { return String(iso || '').slice(0, 10); }
+function hmOf_(iso) { return String(iso || '').slice(11, 16); }
+function touch_(b) {
+  var kind = b.kind === 'patient' ? 'patient' : b.kind === 'pet' ? 'pet' : ''; var ref = clip_(b.ref, 30); if (!kind || !ref) return { ok: false, err: 'bad' };
+  var day = today_(), key = 'act_' + day + '_' + kind + '_' + ref, cache = CacheService.getScriptCache();
+  if (cache.get(key)) return { ok: true, dup: true };
+  writeRow_(hsheet_('Activity', ACT_COLS), ACT_COLS, { day: day, time: Utilities.formatDate(new Date(), CFG.tz, 'HH:mm'), kind: kind, ref: ref, name: clip_(b.name, 40) }, 0);
+  cache.put(key, '1', 21600); return { ok: true };
+}
+function todayList_() {
+  var day = today_(), map = {}, order = [];
+  function add(kind, ref, o, tag, time) {
+    var k = kind + '|' + ref;
+    if (!map[k]) { map[k] = { kind: kind, ref: ref, name: '', owner: '', phone: '', species: '', tags: [], time: '' }; order.push(k); }
+    var m = map[k]; ['name', 'owner', 'phone', 'species'].forEach(function (f) { if (!m[f] && o && o[f]) m[f] = o[f]; });
+    if (tag && m.tags.indexOf(tag) < 0) m.tags.push(tag); if (time && time > m.time) m.time = time;
+  }
+  var pets = readAll_(hsheet_('Pets', PET_COLS), PET_COLS).filter(function (p) { return p.deleted !== '1'; }), petBy = {};
+  pets.forEach(function (p) { petBy[p.code] = p; if (dayOf_(p.created) === day) add('pet', p.code, p, 'new', hmOf_(p.created)); });
+  var pts = readAll_(hsheet_('Patients', PT_COLS), PT_COLS).filter(function (r) { return r.deleted !== '1'; }), ptBy = {};
+  pts.sort(function (x, y) { return x.date < y.date ? 1 : -1; });
+  pts.forEach(function (r) { if (!ptBy[r.pkey]) ptBy[r.pkey] = r; });
+  pts.forEach(function (r) { if (r.date === day) add('patient', r.pkey, r, 'visit', hmOf_(r.created)); else if (dayOf_(r.created) === day) add('patient', r.pkey, r, 'new', hmOf_(r.created)); });
+  readAll_(hsheet_('Activity', ACT_COLS), ACT_COLS).forEach(function (a) {
+    if (a.day !== day) return; var src = a.kind === 'pet' ? petBy[a.ref] : ptBy[a.ref]; if (!src) return;
+    add(a.kind, a.ref, src, 'opened', a.time);
+  });
+  var out = order.map(function (k) { return map[k]; });
+  out.forEach(function (m) { var src = m.kind === 'pet' ? petBy[m.ref] : ptBy[m.ref]; if (src) { m.name = m.name || src.name; m.owner = m.owner || src.owner; m.phone = m.phone || src.phone; m.species = m.species || src.species; } });
+  out.sort(function (x, y) { return x.time < y.time ? 1 : -1; });
+  return { ok: true, day: day, items: out.slice(0, 200) };
+}
+function apOut_(r) { return { id: r.id, date: r.date, time: r.time, name: r.name, species: r.species, owner: r.owner, phone: r.phone, reason: r.reason, note: r.note, status: r.status || 'booked', pkey: r.pkey }; }
+function apList_() {
+  var from = Utilities.formatDate(new Date(Date.now() - 14 * 86400000), CFG.tz, 'yyyy-MM-dd');
+  var rows = readAll_(hsheet_('Appts', AP_COLS), AP_COLS).filter(function (r) { return r.deleted !== '1' && r.date >= from; });
+  rows.sort(function (x, y) { return (x.date + x.time) < (y.date + y.time) ? -1 : 1; });
+  return { ok: true, today: today_(), items: rows.slice(0, 400).map(apOut_) };
+}
+function apSave_(b) {
+  var sh = hsheet_('Appts', AP_COLS), rows = readAll_(sh, AP_COLS), r = null, i, v = b.v || {};
+  var name = clip_(v.name, 40), d = date_(v.date); if (!name || !d) return { ok: false, err: 'bad' };
+  if (b.id) for (i = 0; i < rows.length; i++) if (rows[i].id === String(b.id)) { r = rows[i]; break; }
+  if (b.id && !r) return { ok: false, err: 'notfound' };
+  if (!r) r = { id: 'A-' + rnd_(7).toUpperCase(), created: nowIso_(), deleted: '', status: 'booked' };
+  r.date = d; r.time = /^\d{2}:\d{2}$/.test(String(v.time || '')) ? v.time : '';
+  r.name = name; r.species = ['سگ', 'گربه', 'پرنده', 'دیگر'].indexOf(v.species) > -1 ? v.species : 'دیگر';
+  r.owner = clip_(v.owner, 40); r.phone = String(v.phone || '').replace(/[^0-9+]/g, '').slice(0, 16);
+  r.reason = clip_(v.reason, 150); r.note = clip_(v.note, 600); r.pkey = /^PT-[A-Z0-9]{5,10}$/.test(String(v.pkey || '')) ? v.pkey : (r.pkey || '');
+  r.updated = nowIso_(); writeRow_(sh, AP_COLS, r, r._row || 0);
+  return { ok: true, item: apOut_(r) };
+}
+function apSet_(b) {
+  var sh = hsheet_('Appts', AP_COLS), rows = readAll_(sh, AP_COLS), i;
+  for (i = 0; i < rows.length; i++) if (rows[i].id === String(b.id || '')) {
+    if (b.del) rows[i].deleted = '1'; else if (['booked', 'done', 'cancelled'].indexOf(b.status) > -1) rows[i].status = b.status; else return { ok: false, err: 'bad' };
+    rows[i].updated = nowIso_(); writeRow_(sh, AP_COLS, rows[i], rows[i]._row); return { ok: true };
+  }
+  return { ok: false, err: 'notfound' };
+}
 // ---- دفتر «بیماران من» (فقط دکتر؛ هر ردیف = یک مراجعه) ----
-function patOut_(r) { return { id: r.id, pkey: r.pkey, date: r.date, name: r.name, species: r.species, owner: r.owner, phone: r.phone, reason: r.reason, note: r.note, follow: r.follow, code: r.code }; }
+function patOut_(r) { return { id: r.id, pkey: r.pkey, date: r.date, name: r.name, species: r.species, owner: r.owner, phone: r.phone, reason: r.reason, note: r.note, follow: r.follow, code: r.code, fee: r.fee || '', paid: r.paid === '1', pay: r.pay || '' }; }
 function patList_() {
   var rows = readAll_(hsheet_('Patients', PT_COLS), PT_COLS).filter(function (r) { return r.deleted !== '1'; });
   rows.sort(function (x, y) { return x.date < y.date ? 1 : x.date > y.date ? -1 : (x.created < y.created ? 1 : -1); });
@@ -500,6 +570,9 @@ function patSave_(b) {
   r.owner = clip_(v.owner, 40); r.phone = String(v.phone || '').replace(/[^0-9+]/g, '').slice(0, 16);
   r.date = date_(v.date) || Utilities.formatDate(new Date(), CFG.tz, 'yyyy-MM-dd');
   r.reason = clip_(v.reason, 200); r.note = clip_(v.note, 1500); r.follow = date_(v.follow); r.code = clip_(v.code, 20);
+  if (v.fee !== undefined) r.fee = String(v.fee).replace(/[^0-9]/g, '').slice(0, 12);   // زیرساخت هزینه (فعلاً بدون رابط)
+  if (v.paid !== undefined) r.paid = v.paid ? '1' : '';
+  if (v.pay !== undefined) r.pay = clip_(v.pay, 20);
   r.updated = nowIso_(); writeRow_(sh, PT_COLS, r, r._row || 0);
   return { ok: true, item: patOut_(r) };
 }
@@ -541,8 +614,11 @@ var LOOK = {
   Spins: { color: '#d97706', labels: ['زمان', 'کد', 'جایزه', 'انقضا', 'دستگاه', 'استفاده شد؟', 'زمان استفاده'], widths: [150, 120, 190, 110, 130, 100, 150], clip: [5] },
   Pets: { color: '#1f5aa6', labels: ['شمارهٔ شناسنامه (کد پت)', 'کلید لینک (محرمانه)', 'نام', 'نام انگلیسی', 'سرپرست', 'سرپرست دوم (قدیمی)', 'گونه', 'نژاد', 'نژاد (انگلیسی)', 'تاریخ تولد', 'برنامهٔ واکسن (داده)', 'رضایت (۱=بله)', 'ساخته شد', 'ویرایش', 'حذف‌شده؟ (۱=بله)', 'کد اصالت', 'جنسیت', 'وضعیت عقیم‌سازی', 'تلفن سرپرست (محرمانه، فقط آرشیو)'],
     widths: [130, 140, 110, 110, 130, 110, 80, 110, 120, 100, 120, 90, 150, 150, 90, 100, 90, 130, 150], clip: [2, 11], gray: [2, 11], green: [1, 16], del: 15 },
-  Patients: { color: '#0e7490', labels: ['شناسهٔ مراجعه', 'شناسهٔ بیمار', 'ثبت شد', 'ویرایش', 'تاریخ مراجعه', 'نام پت', 'گونه', 'سرپرست', 'تلفن (محرمانه)', 'دلیل / تشخیص', 'یادداشت', 'تاریخ پیگیری', 'کد شناسنامه', 'حذف‌شده؟ (۱=بله)'],
-    widths: [110, 100, 150, 150, 100, 110, 80, 130, 130, 200, 260, 100, 110, 90], clip: [11], gray: [2, 3, 4, 13], del: 14 },
+  Patients: { color: '#0e7490', labels: ['شناسهٔ مراجعه', 'شناسهٔ بیمار', 'ثبت شد', 'ویرایش', 'تاریخ مراجعه', 'نام پت', 'گونه', 'سرپرست', 'تلفن (محرمانه)', 'دلیل / تشخیص', 'یادداشت', 'تاریخ پیگیری', 'کد شناسنامه', 'حذف‌شده؟ (۱=بله)', 'هزینه (تومان)', 'پرداخت‌شده؟ (۱=بله)', 'روش پرداخت'],
+    widths: [110, 100, 150, 150, 100, 110, 80, 130, 130, 200, 260, 100, 110, 90, 110, 110, 110], clip: [11], gray: [2, 3, 4, 13], del: 14 },
+  Activity: { color: '#475569', labels: ['روز', 'ساعت', 'نوع', 'شناسه', 'نام'], widths: [100, 80, 80, 120, 140], gray: [1, 2, 3] },
+  Appts: { color: '#0e7490', labels: ['شناسهٔ نوبت', 'ثبت شد', 'ویرایش', 'تاریخ نوبت', 'ساعت', 'نام پت', 'گونه', 'سرپرست', 'تلفن (محرمانه)', 'دلیل', 'یادداشت', 'وضعیت', 'شناسهٔ بیمار', 'حذف‌شده؟ (۱=بله)'],
+    widths: [110, 150, 150, 100, 70, 110, 80, 130, 130, 180, 240, 100, 100, 90], clip: [11], gray: [2, 3, 13], del: 14 },
   SMS: { color: '#b45309', labels: ['زمان', 'شماره', 'نوع', 'متن', 'وضعیت (کد HTTP)', 'پاسخ سرویس‌دهنده'], widths: [150, 120, 90, 320, 110, 320], clip: [4, 6], gray: [1] },
   Records: { color: '#0f766e', labels: ['شناسه', 'کد پت', 'نوع', 'تاریخ', 'نام', 'برند', 'سریال', 'محل', 'توضیح', 'تکرار', 'روش', 'مدت', 'پایان', 'وزن', 'نوبت بعدی', 'بسته‌شده؟', 'ثبت دکتر؟', 'ساخته شد', 'ویرایش', 'حذف‌شده؟ (۱=بله)', 'منبع (old=سابقهٔ قبلی)'],
     widths: [110, 90, 130, 100, 150, 110, 110, 110, 140, 90, 90, 80, 100, 70, 100, 80, 80, 150, 150, 90, 110], gray: [1], del: 20 },

@@ -2011,3 +2011,39 @@ html.hb-ios.gift-open { overflow: auto !important; }
 
 .hb-toast.ok { background: #14663f; color: #fff; font-weight: 700; } .hb-toast.warn { background: #8a5a0d; color: #fff; }
 .hb-smscb { display: block; margin: 8px 0; font-size: 13.5px; } .hb-smscb small { color: var(--muted); }
+
+/* ===== پنل کلینیک: منوی دو‌سطحی، امروز، نوبت‌دهی ===== */
+.hb-drnav { display: none; } html.hb-dr .hb-drnav { display: block; margin-bottom: 12px; }
+.hb-nav1 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 8px; }
+.hb-nav1 button { min-height: 54px; border: 2px solid var(--line); background: #fff; border-radius: 14px; font: inherit; font-size: 15px; font-weight: 800; color: #1f5aa6; cursor: pointer; }
+.hb-nav1 button.on { background: #1f5aa6; color: #fff; border-color: #1f5aa6; }
+.hb-nav1 button.has-new:not(.on) { border-color: #e8a13a; background: #fff7ea; color: #8a5a0d; }
+.hb-nav2 { display: flex; flex-wrap: wrap; gap: 6px; }
+.hb-nav2 button { display: none; min-height: 42px; padding: 0 14px; border: 1.5px solid var(--line); background: #fff; border-radius: 999px; font: inherit; font-size: 13.5px; font-weight: 700; color: #1f5aa6; cursor: pointer; }
+.hb-nav2 button.on { background: #e1ecf9; border-color: #1f5aa6; }
+.hb-nav2 button.has-new:not(.on) { border-color: #e8a13a; background: #fff7ea; color: #8a5a0d; }
+.hb-nav2 .hb-nav2-add { background: #1b7a4b; color: #fff; border-color: #1b7a4b; }
+[data-grp="clients"] .hb-nav2 [data-g="clients"], [data-grp="book"] .hb-nav2 [data-g="book"], [data-grp="more"] .hb-nav2 [data-g="more"] { display: inline-flex; align-items: center; justify-content: center; }
+.hb-nav2 button.on::after { content: ""; } [data-dcollapsed="1"] .hb-nav2 button.on::after { content: ""; }
+html.hb-dr [data-dview="pet"] .hb-drnav { display: none !important; }
+/* هر صفحه فقط جعبهٔ خودش */
+.hb-todaybox, .hb-apbox { display: none; }
+html.hb-dr [data-dview="today"] .hb-todaybox, html.hb-dr [data-dview="appt"] .hb-apbox { display: block; }
+html.hb-dr [data-dview]:not([data-dview="pt"]) .hb-ptbox, html.hb-dr [data-dview]:not([data-dview="today"]) .hb-todaybox, html.hb-dr [data-dview]:not([data-dview="appt"]) .hb-apbox, html.hb-dr [data-dview]:not([data-dview="req"]) .hb-reqbox, html.hb-dr [data-dview]:not([data-dview="adopt"]) [data-hb-adbox] { display: none !important; }
+html.hb-dr [data-dview="today"] [data-hb-searchbox], html.hb-dr [data-dview="today"] [data-hb-verifybox], html.hb-dr [data-dview="today"] [data-hb-petform], html.hb-dr [data-dview="today"] [data-hb-main], html.hb-dr [data-dview="appt"] [data-hb-searchbox], html.hb-dr [data-dview="appt"] [data-hb-verifybox], html.hb-dr [data-dview="appt"] [data-hb-petform], html.hb-dr [data-dview="appt"] [data-hb-main] { display: none !important; }
+html.hb-dr [data-dcollapsed="1"] .hb-todaybox, html.hb-dr [data-dcollapsed="1"] .hb-apbox { display: none !important; }
+/* ساعت و تاریخ */
+.hb-drbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.hb-clock { flex: 1 1 auto; text-align: center; font-size: 14px; color: #1f3b5c; line-height: 1.6; } .hb-clock b { color: #1f5aa6; }
+@media (max-width: 560px) { .hb-clock { order: 3; flex: 1 1 100%; } }
+/* امروز */
+.hb-tdhead { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; } .hb-tdhead b { flex: 1; font-size: 15px; color: #1f3b5c; } .hb-tdhead span { color: var(--muted); font-size: 13px; }
+.hb-tdc { margin-bottom: 8px; } .hb-tdapb { margin-bottom: 12px; background: #e7f5ec; border-color: #aed4bd; } .hb-tdapb > b { color: #14663f; }
+.hb-apc.ap-done { opacity: .75; } .hb-apc.ap-cancelled { opacity: .6; } .hb-apc .hb-adh em { background: #e3ebf5; color: #1f3b5c; }
+.hb-apform input[type="time"] { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; font: inherit; min-height: 44px; }
+/* پنل: ظاهر آرام و بدون تزئین سایت */
+body.hb-drpage { background-image: none; background-color: #f1f4f9; }
+body.hb-drpage .hb-staffhdr .brandwrap { justify-content: center; }
+
+.hb-clock { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; } .hb-clock .hb-ck-t { font-weight: 800; color: #1f5aa6; background: #e1ecf9; padding: 1px 10px; border-radius: 999px; }
+body.hb-drpage .page-head { text-align: center; } body.hb-drpage .page-head h1 { font-size: 24px; margin: 6px 0 2px; } body.hb-drpage .page-head .sub { margin: 0 auto 8px; }
