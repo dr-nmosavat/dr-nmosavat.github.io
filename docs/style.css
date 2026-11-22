@@ -1998,3 +1998,13 @@ html.hb-ios .hb-sheet, html.hb-ios .hb-qrm, html.hb-ios .hb-guide { position: st
 html.hb-ios .hb-sheet[hidden], html.hb-ios .hb-qrm[hidden], html.hb-ios .hb-guide[hidden] { display: none !important; }
 html.hb-ios .hb-sheet-card, html.hb-ios .hb-qrc, html.hb-ios .hb-guide-in { max-height: none !important; margin: 0 auto; border-radius: 20px !important; border: 2px solid #1f5aa6; }
 html.hb-ios.gift-open { overflow: auto !important; }
+
+/* فرم ثبت: عنوان و رنگ مخصوص هر نوع */
+.hb-sheet-card { border-top: 6px solid #1f5aa6; }
+.hb-sheet-card.ty-vax { border-top-color: #1b7a4b; } .hb-sheet-card.ty-vax h2 { color: #1b7a4b; }
+.hb-sheet-card.ty-par { border-top-color: #7c3aed; } .hb-sheet-card.ty-par h2 { color: #6d28d9; }
+.hb-sheet-card.ty-vis { border-top-color: #1f5aa6; } .hb-sheet-card.ty-vis h2 { color: #1f5aa6; }
+.hb-sheet-card.ty-oth { border-top-color: #b36b00; } .hb-sheet-card.ty-oth h2 { color: #8a5a0d; }
+.hb-sheet-card.ty-edit { border-top-color: #64748b; } .hb-sheet-card.ty-edit h2 { color: #475569; }
+.hb-chtype { text-align: center; margin: -6px 0 0; } .hb-chtype .hb-lnk { font-size: 12.5px; color: #1f5aa6; text-decoration: underline; background: none; border: 0; cursor: pointer; }
+.hb-add .hb-t-dr, .hb-add .hb-t-ow { display: none; } html.hb-dr .hb-add .hb-t-dr { display: inline; } html:not(.hb-dr) .hb-add .hb-t-ow { display: inline; }

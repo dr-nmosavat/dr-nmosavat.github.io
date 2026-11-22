@@ -1440,9 +1440,20 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   })();
   // ---- برگهٔ ثبت: فیلدها بر پایهٔ نوع ----
   var editRecId = null, keepNext = false, lastSrc = "", linkPetId = null, showOthers = false;
+  var sheetQuick = false, OTHER_TYPES = ["وزن", "دارو", "آزمایش", "عقیم‌سازی", "سایر"];
+  function sheetHead() {
+    var card = q(".hb-sheet-card"), h = q("[data-hb-sheet-title]"); if (!card || !h) return;
+    var cp = curPet(), nm = cp ? cp.name : "", ttl;
+    if (editRecId) ttl = "✏️ ویرایش ثبت"; else if (sheetQuick) ttl = (cfg(curType).ic || "") + " ثبت " + tl(curType); else ttl = isDr() ? "＋ ثبت‌های دیگر" : "ثبت در دفترچه";
+    h.textContent = ttl + (nm && !editRecId ? " · " + nm : "");
+    card.className = card.className.replace(/\s*ty-\w+/g, "") + " ty-" + (editRecId ? "edit" : sheetQuick ? (cfg(curType).k || "oth") : "oth");
+  }
   function renderTypes() {
     var avail = ORDER.filter(function (t) { return !locked(t); });
-    q("[data-hb-types]").innerHTML = '<div class="fld"><label for="hb-tsel">نوع خدمت</label><select id="hb-tsel" data-hb-tsel' + (editRecId ? " disabled" : "") + ">" + avail.map(function (t) { return '<option value="' + esc(t) + '"' + (t === curType ? " selected" : "") + ">" + tl(t) + "</option>"; }).join("") + "</select></div>";
+    if (isDr() && !sheetQuick && !editRecId) { var oth = avail.filter(function (t) { return OTHER_TYPES.indexOf(t) > -1; }); if (oth.length) avail = oth; if (avail.indexOf(curType) < 0) curType = avail[0]; }
+    var sel = '<div class="fld"' + (sheetQuick && !editRecId ? " data-hb-tselw hidden" : "") + '><label for="hb-tsel">نوع خدمت</label><select id="hb-tsel" data-hb-tsel' + (editRecId ? " disabled" : "") + ">" + avail.map(function (t) { return '<option value="' + esc(t) + '"' + (t === curType ? " selected" : "") + ">" + tl(t) + "</option>"; }).join("") + "</select></div>";
+    q("[data-hb-types]").innerHTML = (sheetQuick && !editRecId ? '<div class="hb-chtype"><button type="button" class="hb-lnk" data-hb-chtype>تغییر نوع</button></div>' : "") + sel;
+    sheetHead();
   }
   function showTab(w) {
     q("[data-hb-newwrap]").hidden = w !== "new"; q("[data-hb-hist]").hidden = w !== "hist";
@@ -1563,7 +1574,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     q("[data-hb-petform]").hidden = false; q("[data-hb-main]").hidden = true;
   }
   JD.pb = initJd(q('[data-jd="pb"]'), { optional: true, minY: -30, maxY: 0 });
-  root.addEventListener("change", function (e) { var s = e.target; if (s && s.hasAttribute && s.hasAttribute("data-hb-tsel")) { curType = s.value; xTouched = false; renderFields(); return; } if (s && s.hasAttribute && s.hasAttribute("data-hb-sel")) { var o = q("#" + s.id + "-o"); if (o) { o.hidden = s.value !== "__o"; if (!o.hidden) o.focus(); } } });
+  root.addEventListener("change", function (e) { var s = e.target; if (s && s.hasAttribute && s.hasAttribute("data-hb-tsel")) { curType = s.value; xTouched = false; renderFields(); sheetHead(); return; } if (s && s.hasAttribute && s.hasAttribute("data-hb-sel")) { var o = q("#" + s.id + "-o"); if (o) { o.hidden = s.value !== "__o"; if (!o.hidden) o.focus(); } } });
   q("#hb-pbr").addEventListener("change", function () { var o = q("#hb-pbro"); o.hidden = this.value !== "__o"; if (!o.hidden) o.focus(); var e = q("#hb-pbe"); if (e.getAttribute("data-auto") === "1") e.value = breedEn(getBreed()); });
   (function () {
     var sq = q("[data-hb-q]"), tm = 0; if (!sq) return;
@@ -1681,7 +1692,8 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     var t = e.target, b;
     if (t === q("[data-hb-sheet]")) return closeSheet();
     if (t.closest("[data-hb-close]")) return closeSheet();
-    if (t.closest("[data-hb-open]")) return openSheet();
+    if (t.closest("[data-hb-chtype]")) { var tw = q("[data-hb-tselw]"); if (tw) tw.hidden = false; var cb = t.closest("[data-hb-chtype]"); cb.hidden = true; return; }
+    if (t.closest("[data-hb-open]")) { sheetQuick = false; return openSheet(); }
     if ((b = t.closest("[data-hb-goto]")) && !t.closest("button")) { var gt = b.getAttribute("data-hb-goto"); setPg(gt === "واکسن" ? 1 : /ضدانگل/.test(gt) ? 2 : 3); q("[data-hb-ptabs]").scrollIntoView({ behavior: "smooth", block: "start" }); return; }
     if ((b = t.closest("[data-hb-opt]"))) { [].forEach.call(b.parentNode.children, function (x) { x.classList.toggle("on", x === b); }); var n = q("#hb-n"); if (n) n.value = b.getAttribute("data-hb-opt"); return; }
     if ((b = t.closest("[data-hb-tab]"))) { curTab = Number(b.getAttribute("data-hb-tab")); return render(); }
@@ -1742,7 +1754,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     }
     if (t.closest("[data-hb-mkplan]")) { var cp2 = curPet(); cp2.plan = buildPlan(cp2); save(); return render(); }
     if (t.closest("[data-hb-delplan]")) { if (confirm("برنامهٔ پیشنهادی حذف شود؟")) { curPet().plan = []; save(); render(); } return; }
-    if ((b = t.closest("[data-hb-open-type]"))) { if (locked(b.getAttribute("data-hb-open-type"))) return; curType = b.getAttribute("data-hb-open-type"); openSheet(); return; }
+    if ((b = t.closest("[data-hb-open-type]"))) { if (locked(b.getAttribute("data-hb-open-type"))) return; curType = b.getAttribute("data-hb-open-type"); sheetQuick = true; openSheet(); return; }
     if (t.closest("[data-hb-sort]")) { asc = !asc; return render(); }
     if ((b = t.closest("[data-hb-pgo]"))) return setPg(Number(b.getAttribute("data-hb-pgo")));
     if (t.closest("[data-hb-present]")) { editList = false; document.documentElement.classList.add("hb-present"); render(); window.scrollTo(0, 0); return; }
