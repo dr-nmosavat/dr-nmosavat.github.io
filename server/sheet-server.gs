@@ -105,18 +105,23 @@ function rnd_(n) { var s = '', u; while (s.length < n) { u = Utilities.getUuid()
 function nowIso_() { return Utilities.formatDate(new Date(), CFG.tz, "yyyy-MM-dd'T'HH:mm:ss"); }
 
 // ---- توکن دکتر ----
-function mkToken_(days) {
+function mkToken_(days, role) {
   var exp = Date.now() + (days || H.tokenDays) * 86400000;
-  return exp + '.' + sig16_('dr|' + exp);
+  return role === 'sec' ? exp + '.' + sig16_('sec|' + exp) + 's' : exp + '.' + sig16_('dr|' + exp);
 }
 function sig16_(txt) {
   var raw = Utilities.computeHmacSha256Signature(txt, prop_('SECRET') || 'change-me');
   return raw.map(function (b) { return ('0' + (b & 0xff).toString(16)).slice(-2); }).join('').slice(0, 24);
 }
-function okToken_(t) {
-  var m = /^(\d{10,16})\.([0-9a-f]{24})$/.exec(String(t || '')); if (!m) return false;
-  return Number(m[1]) > Date.now() && sig16_('dr|' + m[1]) === m[2];
+function okToken_(t) { return roleOf_(t) === 'dr'; }
+// نقش از روی توکن: 'dr' (دکتر) | 'sec' (منشی) | ''
+function roleOf_(t) {
+  var m = /^(\d{10,16})\.([0-9a-f]{24})(s?)$/.exec(String(t || '')); if (!m || Number(m[1]) <= Date.now()) return '';
+  if (m[3] === 's') return sig16_('sec|' + m[1]) === m[2] ? 'sec' : '';
+  return sig16_('dr|' + m[1]) === m[2] ? 'dr' : '';
 }
+// کارهایی که منشی اجازه دارد (فقط نوبت، بیماران و امروز؛ نه شناسنامه و واگذاری)
+var SEC_OK = { patList: 1, patSave: 1, patPatient: 1, patSms: 1, touch: 1, todayList: 1, apList: 1, apSave: 1, apSet: 1 };
 function ownerOk_(code, key) {
   var pet = findPet_(code); return pet && !pet.deleted && key && pet.key === String(key) ? pet : null;
 }
@@ -163,7 +168,7 @@ function health_(b) {
   if (a === 'petReqSubmit') return petReqSubmit_(b);
   if (a === 'verifyPublic') return verifyPublic_(b);
   // ---- دکتر ----
-  if (!okToken_(b.t)) return { ok: false, err: 'auth' };
+  var role0 = roleOf_(b.t); if (!role0 || (role0 === 'sec' && !SEC_OK[a])) return { ok: false, err: 'auth' };
   var lock = LockService.getScriptLock(); lock.waitLock(15000);
   try {
     if (a === 'search') return search_(b);
@@ -198,10 +203,11 @@ function health_(b) {
 function drLogin_(b) {
   var cache = CacheService.getScriptCache(), fails = Number(cache.get('drfails') || 0);
   if (fails >= H.maxFails) return { ok: false, err: 'locked' };
-  var pass = prop_('DR_PASS');
-  if (!pass || String(b.pass || '') !== pass) { cache.put('drfails', String(fails + 1), 600); return { ok: false, err: 'auth' }; }
+  var pass = prop_('DR_PASS'), sp = prop_('SEC_PASS'), given = String(b.pass || ''), role = '';
+  if (pass && given === pass) role = 'dr'; else if (sp && given === sp) role = 'sec';
+  if (!role) { cache.put('drfails', String(fails + 1), 600); return { ok: false, err: 'auth' }; }
   cache.remove('drfails');
-  return { ok: true, t: mkToken_(b.rem ? 30 : 0) };   // «مرا به خاطر بسپار» = ۳۰ روز
+  return { ok: true, role: role, t: mkToken_(b.rem ? 30 : 0, role) };   // «مرا به خاطر بسپار» = ۳۰ روز
 }
 
 function search_(b) {
@@ -319,7 +325,7 @@ function doGet(e) {
   var p = (e && e.parameter) || {};
   if (p.action === 'spin') return json_(spin_(p));
   if (p.action === 'verify') return verifyPage_(p);
-  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v22-panel' });
+  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v24-panel' });
 }
 
 // ======================= چرخ هدیه =======================
