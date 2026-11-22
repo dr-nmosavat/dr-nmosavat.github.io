@@ -317,7 +317,7 @@ function doGet(e) {
   var p = (e && e.parameter) || {};
   if (p.action === 'spin') return json_(spin_(p));
   if (p.action === 'verify') return verifyPage_(p);
-  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v14-panel' });
+  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v15-panel' });
 }
 
 // ======================= چرخ هدیه =======================
@@ -467,8 +467,9 @@ function smsPhone_(v) {
   return /^09\d{9}$/.test(d) ? d : '';
 }
 function sendSms_(to, text, kind) {
-  var token = prop_('SMS_TOKEN'); if (!token) return { ok: false, err: 'sms_off' };
-  var num = smsPhone_(to); if (!num) return { ok: false, err: 'bad_phone' };
+  function logFail_(st, why) { try { writeRow_(hsheet_('SMS', SMS_COLS), SMS_COLS, { time: nowIso_(), to: String(to || '').slice(0, 20), kind: kind || '', text: clip_(text, 300), status: st, response: why }, 0); } catch (e0) {} }
+  var token = prop_('SMS_TOKEN'); if (!token) { logFail_('NO_TOKEN', 'SMS_TOKEN در Script Properties ثبت نشده است'); return { ok: false, err: 'sms_off' }; }
+  var num = smsPhone_(to); if (!num) { logFail_('BAD_PHONE', 'شمارهٔ موبایل معتبر نیست (باید مثل 09123456789 باشد)'); return { ok: false, err: 'bad_phone' }; }
   var url = prop_('SMS_URL') || ('https://console.melipayamak.com/api/send/simple/' + token);
   var status = '', body = '', ok = false;
   try {
@@ -664,7 +665,6 @@ function look_(sh, spec) {
 // از منوی «🐾 سایت دکتر» (بالای شیت) یا از ویرایشگر اسکریپت اجرا کنید؛ ظاهر همهٔ جدول‌ها را به‌روز می‌کند
 function testSms() {
   var ui = SpreadsheetApp.getUi();
-  if (!prop_('SMS_TOKEN')) return ui.alert('هنوز SMS_TOKEN در Script Properties ثبت نشده است.');
   var r = ui.prompt('آزمایش پیامک', 'شمارهٔ موبایل خودتان را بنویسید (مثل 09123456789):', ui.ButtonSet.OK_CANCEL);
   if (r.getSelectedButton() !== ui.Button.OK) return;
   var out = sendSms_(r.getResponseText(), 'آزمایش پیامک سایت کلینیک دکتر مساوات', 'test');
@@ -672,6 +672,7 @@ function testSms() {
 }
 function formatSheets() {
   var ss = SpreadsheetApp.getActiveSpreadsheet(), done = [];
+  try { hsheet_('Patients', PT_COLS); hsheet_('SMS', SMS_COLS); hsheet_('Activity', ACT_COLS); hsheet_('Appts', AP_COLS); } catch (ee) { lastLookError_ = 'ensure: ' + String(ee); }   // ساخت تب‌های جدید حتی قبل از اولین استفاده
   try { migrate_(ss); } catch (em) { lastLookError_ = 'migrate: ' + String(em); }
   Object.keys(LOOK).forEach(function (name) {
     var sh = ss.getSheetByName(name);
