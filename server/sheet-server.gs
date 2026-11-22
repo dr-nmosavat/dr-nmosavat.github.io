@@ -317,7 +317,7 @@ function doGet(e) {
   var p = (e && e.parameter) || {};
   if (p.action === 'spin') return json_(spin_(p));
   if (p.action === 'verify') return verifyPage_(p);
-  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v16-panel' });
+  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v17-panel' });
 }
 
 // ======================= چرخ هدیه =======================
@@ -466,7 +466,7 @@ function smsPhone_(v) {
   if (/^\+989\d{9}$/.test(d)) d = '0' + d.slice(3); else if (/^989\d{9}$/.test(d)) d = '0' + d.slice(2); else if (/^9\d{9}$/.test(d)) d = '0' + d;
   return /^09\d{9}$/.test(d) ? d : '';
 }
-function sendSms_(to, text, kind) {
+function sendSms_(to, text, kind, vars) {
   function logFail_(st, why) { try { writeRow_(hsheet_('SMS', SMS_COLS), SMS_COLS, { time: nowIso_(), to: String(to || '').slice(0, 20), kind: kind || '', text: clip_(text, 300), status: st, response: why }, 0); } catch (e0) {} }
   var token = prop_('SMS_TOKEN'); if (!token) { logFail_('NO_TOKEN', 'SMS_TOKEN در Script Properties ثبت نشده است'); return { ok: false, err: 'sms_off' }; }
   var num = smsPhone_(to); if (!num) { logFail_('BAD_PHONE', 'شمارهٔ موبایل معتبر نیست (باید مثل 09123456789 باشد)'); return { ok: false, err: 'bad_phone' }; }
@@ -477,7 +477,14 @@ function sendSms_(to, text, kind) {
   } else {
     // مدیرپیامک / IPPanel (Edge API): https://ippanelcom.github.io/Edge-Document/docs/send/webservice
     var fromNum = /^\+/.test(from) ? from : (/^98/.test(from) ? '+' + from : (/^0?\d+$/.test(from) ? '+98' + from.replace(/^0/, '') : from));
-    req = { url: prop_('SMS_URL') || 'https://edge.ippanel.com/v1/api/send', opt: { method: 'post', contentType: 'application/json', headers: { Authorization: token }, muteHttpExceptions: true, payload: JSON.stringify({ sending_type: 'webservice', from_number: fromNum, message: text, params: { recipients: ['+98' + num.slice(1)] } }) } };
+    var auth = /^(apikey|bearer)\s/i.test(token) ? token : 'apikey ' + token;   // طبق پشتیبانی: Authorization: apikey <KEY>
+    var e164 = '+98' + num.slice(1), patCode = prop_('SMS_PATTERN_CODE'), payload;
+    if (patCode && vars) {   // پترن تأییدشده (ارسال لحظه‌ای): docs/send/pattern
+      payload = { sending_type: 'pattern', from_number: fromNum, code: patCode, recipients: [e164], params: vars };
+    } else {
+      payload = { sending_type: 'webservice', from_number: fromNum, message: text, params: { recipients: [e164] } };
+    }
+    req = { url: prop_('SMS_URL') || 'https://edge.ippanel.com/v1/api/send', opt: { method: 'post', contentType: 'application/json', headers: { Authorization: auth }, muteHttpExceptions: true, payload: JSON.stringify(payload) } };
   }
   try {
     var res = UrlFetchApp.fetch(req.url, req.opt);
@@ -494,7 +501,7 @@ function patSms_(b) {
   var r = rows[0], cache = CacheService.getScriptCache(), key = 'sms_' + r.pkey;
   if (cache.get(key)) return { ok: false, err: 'rate' };
   var tpl = prop_('SMS_TEXT_NEW') || 'سرپرست گرامی، پروندهٔ {name} در کلینیک دامپزشکی دکتر نیلوفر مساوات ثبت شد. drniloofarmosavat.ir';
-  var out = sendSms_(r.phone, tpl.replace(/\{name\}/g, r.name), 'patient');
+  var out = sendSms_(r.phone, tpl.replace(/\{name\}/g, r.name), 'patient', { name: r.name });
   if (out.ok) cache.put(key, '1', 600);   // جلوگیری از ارسال تکراری تا ۱۰ دقیقه
   return out;
 }
@@ -675,7 +682,7 @@ function testSms() {
   var ui = SpreadsheetApp.getUi();
   var r = ui.prompt('آزمایش پیامک', 'شمارهٔ موبایل خودتان را بنویسید (مثل 09123456789):', ui.ButtonSet.OK_CANCEL);
   if (r.getSelectedButton() !== ui.Button.OK) return;
-  var out = sendSms_(r.getResponseText(), 'آزمایش پیامک سایت کلینیک دکتر مساوات', 'test');
+  var out = sendSms_(r.getResponseText(), 'آزمایش پیامک سایت کلینیک دکتر مساوات', 'test', { name: 'آزمایش' });
   ui.alert(out.ok ? 'درخواست ارسال شد (کد ' + out.status + '). اگر پیامک نرسید، شیت «SMS» را ببینید: ستون «پاسخ سرویس‌دهنده» دلیل را می‌نویسد.' : 'ارسال ناموفق: ' + (out.err || '') + ' ' + (out.msg || ''));
 }
 function formatSheets() {
