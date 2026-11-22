@@ -2142,10 +2142,11 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   });
   // ---- جستجوی شماره تماس در سوابق (پرکردن خودکار فرم) ----
   var lkRes = {}, lkT = 0;
+  function phN(v) { var d = faDigits(v).replace(/\D/g, ""); if (/^98\d{10}$/.test(d)) d = d.slice(2); return d.replace(/^0+/, ""); }
   function lkLocal(qd) {
     var out = [], seen = {}; function add(o) { var k = o.phone + "|" + o.name; if (!seen[k]) { seen[k] = 1; out.push(o); } }
-    ptGroups().forEach(function (g) { var r = g[0]; if (String(r.phone || "").indexOf(qd) > -1) add({ kind: "patient", pkey: r.pkey, name: r.name, species: r.species, breed: r.breed || "", owner: r.owner, phone: r.phone }); });
-    apItems.forEach(function (r) { if (String(r.phone || "").indexOf(qd) > -1) add({ kind: "appt", pkey: r.pkey, name: r.name, species: r.species, breed: r.breed || "", owner: r.owner, phone: r.phone }); });
+    ptGroups().forEach(function (g) { var r = g[0]; if (phN(r.phone).indexOf(phN(qd)) > -1) add({ kind: "patient", pkey: r.pkey, name: r.name, species: r.species, breed: r.breed || "", owner: r.owner, phone: r.phone }); });
+    apItems.forEach(function (r) { if (phN(r.phone).indexOf(phN(qd)) > -1) add({ kind: "appt", pkey: r.pkey, name: r.name, species: r.species, breed: r.breed || "", owner: r.owner, phone: r.phone }); });
     return out.slice(0, 12);
   }
   function lkRun(ctx, qd) {

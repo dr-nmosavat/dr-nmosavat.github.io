@@ -87,6 +87,7 @@ function readAll_(sh, cols) {
   var v = sh.getDataRange().getValues(), out = [], i, j;
   for (i = 1; i < v.length; i++) {
     var o = { _row: i + 1 }; for (j = 0; j < cols.length; j++) o[cols[j]] = str_(v[i][j]);
+    if (o.phone && /^9\d{9}$/.test(o.phone)) o.phone = '0' + o.phone;   // شیت صفرِ اول را حذف کرده بود
     if (cols === AD_COLS || cols === PR_COLS) o.status = normStatus_(o.status);   // وضعیت ممکن است با آیکون و فارسی نوشته شده باشد
     out.push(o);
   }
@@ -96,7 +97,8 @@ function writeRow_(sh, cols, o, row) {
   var arr = cols.map(function (c) { return o[c] === undefined || o[c] === null ? '' : String(o[c]); });
   var si = cols === AD_COLS || cols === PR_COLS ? cols.indexOf('status') : -1;
   if (si > -1) arr[si] = statusLabel_(cols === AD_COLS ? AD_LABEL : PR_LABEL, o.status);
-  if (row) sh.getRange(row, 1, 1, cols.length).setValues([arr]); else sh.appendRow(arr);
+  if (!row) row = sh.getLastRow() + 1;
+  var rg = sh.getRange(row, 1, 1, cols.length); rg.setNumberFormat('@'); rg.setValues([arr]);   // متن ساده: صفر اول شماره حذف نشود
 }
 function clip_(v, n) { return String(v === undefined || v === null ? '' : v).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '').slice(0, n || 100); }
 function date_(v) { v = String(v || ''); return /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : ''; }
@@ -712,16 +714,18 @@ function smsAtMap_(prefix) {
   return m;
 }
 // جستجوی شماره تماس (یا نام) در بیماران، شناسنامه‌ها و نوبت‌ها — برای پرکردن خودکار فرم
+// شماره بدون صفر/۹۸ اول، برای مقایسه (0912… و 912… و +98912… یکی حساب شوند)
+function phN_(v) { var d = String(v || '').replace(/\D/g, ''); if (/^98\d{10}$/.test(d)) d = d.slice(2); return d.replace(/^0+/, ''); }
 function lookup_(b) {
-  var qd = String(b.q || '').replace(/[۰-۹]/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'.indexOf(d); }).replace(/\D/g, '');
-  if (qd.length < 4) return { ok: true, items: [] };
+  var qd = phN_(String(b.q || '').replace(/[۰-۹]/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'.indexOf(d); }));
+  if (qd.length < 3) return { ok: true, items: [] };
   var out = [], seen = {};
   function add(o) { var k = (o.phone || '') + '|' + norm_(o.name); if (seen[k]) return; seen[k] = 1; out.push(o); }
-  var pts = readAll_(hsheet_('Patients', PT_COLS), PT_COLS).filter(function (r) { return r.deleted !== '1' && String(r.phone).indexOf(qd) > -1; });
+  var pts = readAll_(hsheet_('Patients', PT_COLS), PT_COLS).filter(function (r) { return r.deleted !== '1' && phN_(r.phone).indexOf(qd) > -1; });
   pts.sort(function (x, y) { return x.date < y.date ? 1 : -1; });
   pts.forEach(function (r) { add({ kind: 'patient', pkey: r.pkey, name: r.name, species: r.species, breed: r.breed || '', owner: r.owner, phone: r.phone, last: r.date }); });
-  readAll_(hsheet_('Pets', PET_COLS), PET_COLS).forEach(function (p) { if (p.deleted !== '1' && String(p.phone).replace(/\D/g, '').indexOf(qd) > -1) add({ kind: 'pet', code: p.code, name: p.name, species: p.species, breed: p.breed || '', owner: p.owner || p.guardian, phone: p.phone }); });
-  readAll_(hsheet_('Appts', AP_COLS), AP_COLS).forEach(function (r) { if (r.deleted !== '1' && String(r.phone).indexOf(qd) > -1) add({ kind: 'appt', pkey: r.pkey, name: r.name, species: r.species, breed: r.breed || '', owner: r.owner, phone: r.phone, last: r.date }); });
+  readAll_(hsheet_('Pets', PET_COLS), PET_COLS).forEach(function (p) { if (p.deleted !== '1' && phN_(p.phone).indexOf(qd) > -1) add({ kind: 'pet', code: p.code, name: p.name, species: p.species, breed: p.breed || '', owner: p.owner || p.guardian, phone: p.phone }); });
+  readAll_(hsheet_('Appts', AP_COLS), AP_COLS).forEach(function (r) { if (r.deleted !== '1' && phN_(r.phone).indexOf(qd) > -1) add({ kind: 'appt', pkey: r.pkey, name: r.name, species: r.species, breed: r.breed || '', owner: r.owner, phone: r.phone, last: r.date }); });
   return { ok: true, items: out.slice(0, 12) };
 }
 function patList_() {
