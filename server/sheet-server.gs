@@ -317,7 +317,7 @@ function doGet(e) {
   var p = (e && e.parameter) || {};
   if (p.action === 'spin') return json_(spin_(p));
   if (p.action === 'verify') return verifyPage_(p);
-  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v17-panel' });
+  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v18-panel' });
 }
 
 // ======================= چرخ هدیه =======================
@@ -486,11 +486,15 @@ function sendSms_(to, text, kind, vars) {
     }
     req = { url: prop_('SMS_URL') || 'https://edge.ippanel.com/v1/api/send', opt: { method: 'post', contentType: 'application/json', headers: { Authorization: auth }, muteHttpExceptions: true, payload: JSON.stringify(payload) } };
   }
+  var t0 = Date.now();
   try {
-    var res = UrlFetchApp.fetch(req.url, req.opt);
-    status = String(res.getResponseCode()); body = String(res.getContentText()).slice(0, 300); ok = res.getResponseCode() >= 200 && res.getResponseCode() < 300;
-    try { var jb = JSON.parse(res.getContentText()); if (jb && jb.meta && jb.meta.status === false) ok = false; } catch (ej) {}
-  } catch (e) { status = 'EXC'; body = String(e).slice(0, 300); }
+    var res = UrlFetchApp.fetch(req.url, req.opt), raw = String(res.getContentText());
+    status = String(res.getResponseCode()); ok = res.getResponseCode() >= 200 && res.getResponseCode() < 300;
+    body = /<html|<!doctype/i.test(raw) ? 'صفحهٔ خطای HTML از سرور مقصد (' + raw.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 110) + ')' : raw.slice(0, 260);
+    var hd = res.getAllHeaders(), ray = hd['cf-ray'] || hd['CF-RAY'] || hd['Cf-Ray']; if (ray) body += ' | cf-ray: ' + ray;
+    try { var jb = JSON.parse(raw); if (jb && jb.meta && jb.meta.status === false) ok = false; } catch (ej) {}
+  } catch (e) { status = 'EXC'; body = String(e).slice(0, 260); }
+  body += ' | ' + (Date.now() - t0) + ' ms';
   try { writeRow_(hsheet_('SMS', SMS_COLS), SMS_COLS, { time: nowIso_(), to: num, kind: kind || '', text: clip_(text, 300), status: status, response: body }, 0); } catch (e2) {}
   return ok ? { ok: true, status: status } : { ok: false, err: 'fail', msg: (status + ' ' + body).slice(0, 160) };
 }
