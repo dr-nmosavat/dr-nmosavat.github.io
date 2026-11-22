@@ -2055,3 +2055,5 @@ html.hb-dr .hb-sendrow + .hb-sendrow { margin-top: -6px; }
 .hb-apchip { display: inline-block; background: #fff3d6; color: #8a5a00; border: 1px solid #f0d28a; border-radius: 999px; padding: 4px 14px; font-weight: 700; font-size: 14px; margin: 0 0 10px; }
 .hb-ptmore { margin: 6px 0 10px; } .hb-ptmore summary { cursor: pointer; font-size: 14px; color: #4a5a70; padding: 6px 0; }
 .hb-smsst { font-size: 13px; color: #4a5a70; margin: 4px 0 8px; }
+.ap-noshow { opacity: .75; }
+.hb-secpage .hb-ptv .hb-ptn, .hb-secpage .hb-ptv .hb-adb, .hb-secpage .hb-ptfu { display: none !important; }

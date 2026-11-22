@@ -2022,21 +2022,37 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     api({ a: "patList", t: tokGet() }).then(function (j) { if (!j.ok) { ptBox().innerHTML = '<p class="hb-qmsg">' + esc(errMsg(j.err)) + "</p>"; return; } ptItems = j.items || []; ptLoaded = true; if (ptPending) { ptCur = ptPending; ptPending = ""; if (ptGroup(ptCur).length) { ptMode = "file"; ptEditV = null; } } if (ptMode === "new") return; ptShow(); });
   }
   function ptEnter() { ptMode = "list"; ptEditV = null; if (ptLoaded) ptShow(); else ptLoad(); }
+  var FU_REASONS = ["ویزیت مجدد"].concat(PT_REASONS);
+  function reasonSel(attr, list, ph) { return '<select data-' + attr + '="r">' + list.map(function (r) { return '<option value="' + esc(r) + '">' + esc(r) + "</option>"; }).join("") + '<option value="__other">سایر (خودم می‌نویسم)…</option></select><input data-' + attr + '="rx" type="text" maxlength="150" placeholder="' + ph + '" hidden>'; }
   function ptVisitFields(v) {
+    if (SECP) return '<div class="fld"><label>تاریخ مراجعه</label><div class="jd" data-pjd="d"></div></div><div class="fld"><label>دلیل مراجعه <small>(کوتاه)</small></label><input data-pt="reasonx" type="text" maxlength="150" placeholder="مثلاً: واکسن، ویزیت، آزمایش"></div>';
     return '<div class="fld"><label>تاریخ مراجعه</label><div class="jd" data-pjd="d"></div></div>'
       + '<div class="fld"><label>دلیل مراجعه</label><select data-pt="reason">' + PT_REASONS.map(function (r) { return '<option value="' + esc(r) + '">' + esc(r) + "</option>"; }).join("") + '<option value="__other">سایر (خودم می‌نویسم)…</option></select><input data-pt="reasonx" type="text" maxlength="150" placeholder="دلیل مراجعه را بنویسید" hidden></div>'
       + '<div class="fld"><label>یادداشت کوتاه <small>(مشکل چیست؟ تا دکتر بداند)</small></label><textarea data-pt="note" rows="2" maxlength="1500"></textarea></div>'
-      + '<details class="hb-ptmore" data-hb-ptmore><summary>⏰ تاریخ پیگیری (اختیاری)</summary><div class="fld"><div class="jd" data-pjd="f"></div></div></details>';
+      + '<details class="hb-ptmore" data-hb-ptmore><summary>📅 مراجعهٔ بعدی (پیامک یادآور خودکار)</summary><div class="fld"><label>چه روزی بیاید؟ <small>(اختیاری)</small></label><div class="jd" data-pjd="f"></div></div>'
+      + '<div class="fld"><label>به چه دلیل؟</label><select data-pt="fureason">' + FU_REASONS.map(function (r) { return '<option value="' + esc(r) + '">' + esc(r) + "</option>"; }).join("") + '<option value="__other">سایر (خودم می‌نویسم)…</option></select><input data-pt="fureasonx" type="text" maxlength="150" placeholder="دلیل مراجعهٔ بعدی" hidden></div></details>';
   }
+  function ptSetReason(r) { var sel = ptF("reason"), rx = ptF("reasonx"); if (!sel) { if (rx) rx.value = r || ""; return; } if (r && PT_REASONS.indexOf(r) < 0) { sel.value = "__other"; rx.value = r; rx.hidden = false; } else sel.value = r || PT_REASONS[0]; }
   function ptInitVisit(v) {
-    var box = ptBox(); PTJ.d = initJd(box.querySelector('[data-pjd="d"]'), { minY: -10, maxY: 0 }); PTJ.f = initJd(box.querySelector('[data-pjd="f"]'), { optional: true, minY: -1, maxY: 2 });
-    PTJ.d.set(v && v.date || isoNow()); PTJ.f.set(v && v.follow || ""); var mo = box.querySelector("[data-hb-ptmore]"); if (mo && v && v.follow) mo.open = true;
-    var sel = ptF("reason"), rx = ptF("reasonx"), r = v && v.reason || "";
-    if (r && PT_REASONS.indexOf(r) < 0) { sel.value = "__other"; rx.value = r; rx.hidden = false; } else sel.value = r || PT_REASONS[0];
+    var box = ptBox(); PTJ.d = initJd(box.querySelector('[data-pjd="d"]'), { minY: -10, maxY: 0 }); PTJ.d.set(v && v.date || isoNow());
+    ptSetReason(v && v.reason || "");
+    if (SECP) return;
+    PTJ.f = initJd(box.querySelector('[data-pjd="f"]'), { optional: true, minY: -1, maxY: 2 }); PTJ.f.set(v && v.follow || ""); var mo = box.querySelector("[data-hb-ptmore]"); if (mo && v && v.follow) mo.open = true;
     ptF("note").value = v && v.note || "";
+    var sel = ptF("reason"), rx = ptF("reasonx"), fs = ptF("fureason"), fx = ptF("fureasonx");
     sel.addEventListener("change", function () { rx.hidden = sel.value !== "__other"; if (!rx.hidden) rx.focus(); });
+    fs.addEventListener("change", function () { fx.hidden = fs.value !== "__other"; if (!fx.hidden) fx.focus(); });
   }
-  function ptVisitVals() { var sel = ptF("reason"); return { date: PTJ.d.get(), reason: sel.value === "__other" ? ptF("reasonx").value.trim() : sel.value, note: ptF("note").value.trim(), follow: PTJ.f.get() }; }
+  function ptVisitVals() {
+    if (SECP) return { date: PTJ.d.get(), reason: ptF("reasonx").value.trim(), note: "", follow: "", fu: "" };
+    var sel = ptF("reason"), fs = ptF("fureason");
+    return { date: PTJ.d.get(), reason: sel.value === "__other" ? ptF("reasonx").value.trim() : sel.value, note: ptF("note").value.trim(), follow: PTJ.f.get(), fu: fs.value === "__other" ? ptF("fureasonx").value.trim() : fs.value };
+  }
+  // مراجعهٔ بعدی دکتر = یک نوبت با پیامک یادآور
+  function ptFollowAppt(g, pkey, vv) {
+    if (!vv.follow) return;
+    api({ a: "apSave", t: tokGet(), id: "", v: { date: vv.follow, time: "", name: g.name, species: g.species, owner: g.owner, phone: g.phone, reason: vv.fu || "ویزیت مجدد", note: "مراجعهٔ بعدی (تعیین‌شده توسط دکتر)", pkey: pkey, rem: g.phone ? 1 : 0 } }).then(function (j) { if (j.ok) { apItems.push(j.item); toast("📅 مراجعهٔ بعدی ثبت شد · " + wdOf(vv.follow) + " " + jLabel(vv.follow) + (g.phone ? " · پیامک یادآور می‌رود" : " · (بدون شماره، پیامکی نمی‌رود)"), 6000); } else toast("⚠️ مراجعهٔ بعدی ثبت نشد: " + errMsg(j.err), 7000); });
+  }
   function ptSpecies(sel) { return '<div class="seg" data-seg="hb-ptsp">' + ["سگ", "گربه", "پرنده", "دیگر"].map(function (x) { return '<button type="button"' + (x === (sel || "سگ") ? ' class="on"' : "") + ' data-v="' + x + '">' + x + "</button>"; }).join("") + "</div>"; }
   function ptIdFields(r) {
     return '<div class="fld"><label>نام پت</label><input data-pt="name" type="text" maxlength="40" value="' + esc(r && r.name || "") + '"></div><div class="fld"><label>گونه</label>' + ptSpecies(r && r.species) + "</div>"
@@ -2046,7 +2062,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     var box = ptBox(); if (!box) return;
     if (ptMode === "new") {
       box.innerHTML = '<div class="hb-ptform"><h3 class="hb-pth">ثبت بیمار جدید</h3>' + ptIdFields(ptPre) + '<h4 class="hb-pth2">اولین مراجعه</h4>' + ptVisitFields() + '<label class="hb-cons hb-smscb"><input type="checkbox" data-hb-ptsms-cb> 📩 ارسال پیامک تأیید ثبت به سرپرست <small>(با اطلاع ایشان؛ شمارهٔ موبایل معتبر لازم است)</small></label><p class="hb-err" data-hb-pterr hidden></p><div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-ptsavenew>ثبت بیمار و مراجعه</button><button type="button" class="btn small ghost" data-hb-ptback>انصراف</button></div></div>';
-      ptInitVisit(null); if (ptPre && ptPre.note) ptF("note").value = ptPre.note; return;
+      ptInitVisit(null); if (ptPre && ptPre.reason) ptSetReason(ptPre.reason); if (ptPre && ptPre.note && ptF("note")) ptF("note").value = ptPre.note; return;
     }
     if (ptMode === "file") {
       var g = ptGroup(ptCur); if (!g.length) { ptMode = "list"; return ptShow(); }
@@ -2102,7 +2118,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       var er = q("[data-hb-pterr]"), btn = q("[data-hb-ptsavenew]"), id = ptIdVals(), vv = ptVisitVals(); if (!id.name) { er.textContent = "نام پت را بنویسید."; er.hidden = false; ptF("name").focus(); return; }
       if (!vv.reason) { er.textContent = "دلیل مراجعه را بنویسید."; er.hidden = false; return; }
       er.hidden = true; btn.disabled = true; var smsBox = q("[data-hb-ptsms-cb]"), wantSms = !!(smsBox && smsBox.checked); var v = { name: id.name, species: id.species, owner: id.owner, phone: id.phone, date: vv.date, reason: vv.reason, note: vv.note, follow: vv.follow, pkey: "" };
-      api({ a: "patSave", t: tokGet(), id: "", v: v }).then(function (j) { btn.disabled = false; if (!j.ok) { er.textContent = errMsg(j.err); er.hidden = false; return; } ptItems.unshift(j.item); ptCur = j.item.pkey; ptMode = "file"; ptEditV = null; toast("✅ بیمار ثبت شد · " + j.item.name + " · اولین مراجعه ثبت شد"); if (ptFromAp) { var fa = ptFromAp; ptFromAp = ""; api({ a: "apSet", t: tokGet(), id: fa, status: "done" }); apItems.forEach(function (x) { if (x.id === fa) x.status = "done"; }); } ptPre = null; ptShow(); if (wantSms) ptSendSms(j.item.pkey); });
+      api({ a: "patSave", t: tokGet(), id: "", v: v }).then(function (j) { btn.disabled = false; if (!j.ok) { er.textContent = errMsg(j.err); er.hidden = false; return; } ptFollowAppt(j.item, j.item.pkey, vv); ptItems.unshift(j.item); ptCur = j.item.pkey; ptMode = "file"; ptEditV = null; toast("✅ بیمار ثبت شد · " + j.item.name + " · اولین مراجعه ثبت شد"); if (ptFromAp) { var fa = ptFromAp; ptFromAp = ""; api({ a: "apSet", t: tokGet(), id: fa, status: "done" }); apItems.forEach(function (x) { if (x.id === fa) x.status = "done"; }); } ptPre = null; ptShow(); if (wantSms) ptSendSms(j.item.pkey); });
       return;
     }
     if (t.closest("[data-hb-ptsavev]")) {
@@ -2111,7 +2127,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       er2.hidden = true; btn2.disabled = true; var v2 = { name: g.name, species: g.species, owner: g.owner, phone: g.phone, date: vv2.date, reason: vv2.reason, note: vv2.note, follow: vv2.follow, pkey: ptCur };
       api({ a: "patSave", t: tokGet(), id: ptEditV ? ptEditV.id : "", v: v2 }).then(function (j) {
         btn2.disabled = false; if (!j.ok) { er2.textContent = errMsg(j.err); er2.hidden = false; return; }
-        if (ptEditV) ptItems = ptItems.map(function (x) { return x.id === j.item.id ? j.item : x; }); else ptItems.unshift(j.item);
+        if (!ptEditV || ptEditV.follow !== vv2.follow) ptFollowAppt(g, ptCur, vv2); if (ptEditV) ptItems = ptItems.map(function (x) { return x.id === j.item.id ? j.item : x; }); else ptItems.unshift(j.item);
         ptItems.sort(function (x, y) { return x.date < y.date ? 1 : x.date > y.date ? -1 : 0; }); ptEditV = null; toast("✅ مراجعه ثبت شد"); ptShow();
       });
       return;
@@ -2168,20 +2184,21 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       if (apMode === "list") apShow();
     });
   }
-  var AP_ST = { booked: "⏳ در انتظار", done: "✅ انجام شد", cancelled: "❌ لغو شد" };
+  var AP_ST = { booked: "⏳ در انتظار", done: "✅ آمد", noshow: "🚫 نیامد", cancelled: "❌ لغو شد" };
+  var AP_REASONS = ["ویزیت مجدد"].concat(PT_REASONS);
   function apReasonSel(v) {
-    var r = v || ""; return '<select data-ap="reason">' + PT_REASONS.map(function (x) { return '<option value="' + esc(x) + '"' + (x === r ? " selected" : "") + ">" + esc(x) + "</option>"; }).join("") + '<option value="__other"' + (r && PT_REASONS.indexOf(r) < 0 ? " selected" : "") + '>سایر (خودم می‌نویسم)…</option></select><input data-ap="reasonx" type="text" maxlength="120" placeholder="دلیل را بنویسید" value="' + esc(r && PT_REASONS.indexOf(r) < 0 ? r : "") + '"' + (r && PT_REASONS.indexOf(r) < 0 ? "" : " hidden") + ">";
+    var r = v || ""; return '<select data-ap="reason">' + AP_REASONS.map(function (x) { return '<option value="' + esc(x) + '"' + (x === r ? " selected" : "") + ">" + esc(x) + "</option>"; }).join("") + '<option value="__other"' + (r && AP_REASONS.indexOf(r) < 0 ? " selected" : "") + '>سایر (خودم می‌نویسم)…</option></select><input data-ap="reasonx" type="text" maxlength="120" placeholder="دلیل را بنویسید" value="' + esc(r && AP_REASONS.indexOf(r) < 0 ? r : "") + '"' + (r && AP_REASONS.indexOf(r) < 0 ? "" : " hidden") + ">";
   }
-  function apRs(v) { return v.reason || (v.pkey ? "مراجعهٔ بعدی" : "اولین مراجعه"); }
   function apF(n) { return apBox().querySelector('[data-ap="' + n + '"]'); }
   function apShow() {
     var box = apBox(); if (!box) return;
     if (apMode === "form") {
       var v = apPref || {}, e = apEditId ? apItems.filter(function (x) { return x.id === apEditId; })[0] : null; if (e) v = e;
-      box.innerHTML = '<div class="hb-ptform hb-apform"><h3 class="hb-pth">' + (e ? "ویرایش نوبت" : "ثبت نوبت جدید") + '</h3><div class="hb-aptop"><div class="fld"><label>📅 تاریخ نوبت</label><div class="jd" data-pjd="apd"></div></div><div class="fld"><label>🕐 ساعت</label><input data-ap="time" type="time" step="300" value="' + esc(v.time || "") + '"></div></div><div class="hb-apchip">' + esc(apRs(v)) + '</div><input data-ap="reason" type="hidden" value="' + esc(apRs(v)) + '">'
+      box.innerHTML = '<div class="hb-ptform hb-apform"><h3 class="hb-pth">' + (e ? "ویرایش نوبت" : "ثبت نوبت جدید") + '</h3><div class="hb-aptop"><div class="fld"><label>📅 تاریخ نوبت</label><div class="jd" data-pjd="apd"></div></div><div class="fld"><label>🕐 ساعت</label><input data-ap="time" type="time" step="300" value="' + esc(v.time || "") + '"></div></div><div class="hb-apchip">' + (v.pkey ? "مراجعهٔ بعدی" : "اولین مراجعه") + '</div>'
         + '<div class="fld"><label>نام پت</label><input data-ap="name" type="text" maxlength="40" value="' + esc(v.name || "") + '"></div><div class="fld"><label>گونه</label>' + ptSpecies(v.species) + '</div>'
         + '<div class="fld"><label>نام سرپرست</label><input data-ap="owner" type="text" maxlength="40" value="' + esc(v.owner || "") + '"></div><div class="fld"><label>شمارهٔ تماس</label><input data-ap="phone" type="tel" inputmode="tel" dir="ltr" maxlength="16" value="' + esc(v.phone || "") + '"></div>'
-        + '<div class="fld"><label>یادداشت <small>(اختیاری)</small></label><input data-ap="note" type="text" maxlength="300" value="' + esc(v.note || "") + '"></div><p class="hb-err" data-hb-aperr hidden></p><div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-apsave>ذخیره</button><button type="button" class="btn small ghost" data-hb-apcancel>انصراف</button></div></div>';
+        + '<div class="fld"><label>دلیل نوبت</label>' + (SECP ? '<input data-ap="reason" type="text" maxlength="150" placeholder="مثلاً: برای ویزیت بیاید" value="' + esc(v.reason || "") + '">' : apReasonSel(v.reason)) + '</div><div class="fld"><label>یادداشت <small>(اختیاری)</small></label><input data-ap="note" type="text" maxlength="300" value="' + esc(v.note || "") + '"></div><label class="hb-cons hb-smscb"><input type="checkbox" data-ap="rem"' + (e ? (e.rem ? " checked" : "") : " checked") + '> 📩 پیامک یادآور برای سرپرست (روز قبل از نوبت)</label><p class="hb-err" data-hb-aperr hidden></p><div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-apsave>ذخیره</button><button type="button" class="btn small ghost" data-hb-apcancel>انصراف</button></div></div>';
+      var rs0 = apF("reason"), rx0 = apF("reasonx"); if (rs0 && rs0.tagName === "SELECT") rs0.addEventListener("change", function () { rx0.hidden = rs0.value !== "__other"; if (!rx0.hidden) rx0.focus(); });
       APJ.d = initJd(box.querySelector('[data-pjd="apd"]'), { minY: -1, maxY: 1 }); APJ.d.set(v.date || (apFilter === "tomorrow" ? isoPlus(apToday || isoNow(), 1) : (apToday || isoNow())));
       return;
     }
@@ -2192,7 +2209,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     box.innerHTML = '<div class="hb-pttool"><button type="button" class="btn small primary" data-hb-apnew>＋ نوبت جدید</button><button type="button" class="btn small ghost" data-hb-apref aria-label="تازه‌سازی">🔄</button></div><div class="seg hb-adf" data-hb-apseg>' + FL.map(function (f) { return '<button type="button"' + (apFilter === f[0] ? ' class="on"' : "") + ' data-hb-apf="' + f[0] + '">' + f[1] + "</button>"; }).join("") + '</div><div class="hb-adlist">'
       + (l.length ? l.map(function (r) {
         return '<article class="hb-adc hb-apc ap-' + esc(r.status) + '"><div class="hb-adh"><b>' + (r.time ? toolFa(r.time) : "بدون ساعت") + " · " + esc(r.name) + "</b><span>" + esc(r.species) + (r.owner ? " · " + esc(r.owner) : "") + "</span><em>" + AP_ST[r.status] + "</em></div><p>" + (apFilter === "upcoming" || apFilter === "past" ? esc(wdOf(r.date)) + " " + esc(jLabel(r.date)) + " · " : "") + esc(r.reason || "") + (r.note ? " · " + esc(r.note) : "") + (r.phone ? ' · <a class="hb-call" dir="ltr" href="tel:' + esc(r.phone) + '">📞 ' + esc(r.phone) + "</a>" : "") + '</p><div class="hb-adb">'
-          + (r.status === "booked" ? '<button type="button" class="btn small primary" data-hb-apin="' + esc(r.id) + '">📥 ثبت ورود</button><button type="button" class="btn small primary" data-hb-apst="done" data-id="' + esc(r.id) + '">✅ انجام شد</button><button type="button" class="btn small hb-danger" data-hb-apst="cancelled" data-id="' + esc(r.id) + '">لغو</button>' : '<button type="button" class="btn small" data-hb-apst="booked" data-id="' + esc(r.id) + '">↩︎ بازگردانی</button>')
+          + (r.status === "booked" ? '<button type="button" class="btn small primary" data-hb-apin="' + esc(r.id) + '">📥 ثبت ورود</button><button type="button" class="btn small ghost" data-hb-aprem="' + esc(r.id) + '">📩 یادآور</button><button type="button" class="btn small ghost" data-hb-apst="noshow" data-id="' + esc(r.id) + '">🚫 نیامد</button><button type="button" class="btn small hb-danger" data-hb-apst="cancelled" data-id="' + esc(r.id) + '">لغو</button>' : '<button type="button" class="btn small" data-hb-apst="booked" data-id="' + esc(r.id) + '">↩︎ بازگردانی</button>')
           + '<button type="button" class="btn small ghost" data-hb-apedit="' + esc(r.id) + '">✏️ ویرایش</button><button type="button" class="btn small ghost hb-danger" data-hb-apdel="' + esc(r.id) + '">🗑</button></div></article>';
       }).join("") : '<p class="hb-qmsg">نوبتی در این بازه نیست.</p>') + "</div>";
   }
@@ -2221,7 +2238,12 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if ((b = t.closest("[data-hb-apin]"))) {
       var ar = apItems.filter(function (x) { return x.id === b.getAttribute("data-hb-apin"); })[0]; if (!ar) return;
       if (ar.pkey) { api({ a: "apSet", t: tokGet(), id: ar.id, status: "done" }); ar.status = "done"; return ptJump(ar.pkey); }
-      ptPre = { name: ar.name, species: ar.species, owner: ar.owner, phone: ar.phone, note: ar.note }; ptFromAp = ar.id; dview("pt"); ptMode = "new"; ptShow(); toast("اطلاعات نوبت وارد شد؛ مراجعه را کامل و ثبت کنید"); return;
+      ptPre = { name: ar.name, species: ar.species, owner: ar.owner, phone: ar.phone, note: ar.note, reason: ar.reason }; ptFromAp = ar.id; dview("pt"); ptMode = "new"; ptShow(); toast("اطلاعات نوبت وارد شد؛ مراجعه را کامل و ثبت کنید"); return;
+    }
+    if ((b = t.closest("[data-hb-aprem]"))) {
+      var rid = b.getAttribute("data-hb-aprem"); if (!confirm("پیامک یادآور همین حالا برای این نوبت ارسال شود؟")) return;
+      api({ a: "apRemind", t: tokGet(), id: rid }).then(function (j) { var RE = { no_phone: "شمارهٔ موبایل معتبر ثبت نشده.", no_tpl: "قالب پیامک نوبت (SMS_TPL_APPT) هنوز تنظیم نشده.", rate: "همین الان ارسال شده؛ چند دقیقه بعد.", not_booked: "این نوبت دیگر در انتظار نیست.", notfound: "نوبت پیدا نشد." }; toast(j.ok ? "📩 پیامک یادآور ارسال شد" : "⚠️ " + (RE[j.err] || ("ارسال ناموفق. " + (j.msg || errMsg(j.err)))), j.ok ? 5000 : 8000); });
+      return;
     }
     if ((b = t.closest("[data-hb-apedit]"))) { apEditId = b.getAttribute("data-hb-apedit"); apPref = null; apMode = "form"; return apShow(); }
     if ((b = t.closest("[data-hb-apdel]"))) { if (!confirm("این نوبت حذف شود؟")) return; var did = b.getAttribute("data-hb-apdel"); api({ a: "apSet", t: tokGet(), id: did, del: 1 }).then(function (j) { if (!j.ok) return toast("⚠️ " + errMsg(j.err)); apItems = apItems.filter(function (x) { return x.id !== did; }); toast("✅ نوبت حذف شد"); apShow(); }); return; }
@@ -2229,7 +2251,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (t.closest("[data-hb-apsave]")) {
       var er = q("[data-hb-aperr]"), btn = q("[data-hb-apsave]"), sel = apF("reason"), name = apF("name").value.trim();
       if (!name) { er.textContent = "نام پت را بنویسید."; er.hidden = false; apF("name").focus(); return; }
-      var v = { date: APJ.d.get(), time: apF("time").value, name: name, species: segVal("hb-ptsp"), owner: apF("owner").value.trim(), phone: faDigits(apF("phone").value.trim()), reason: sel.value === "__other" ? apF("reasonx").value.trim() : sel.value, note: apF("note").value.trim(), pkey: (apPref && apPref.pkey) || (apEditId && (apItems.filter(function (x) { return x.id === apEditId; })[0] || {}).pkey) || "" };
+      var v = { date: APJ.d.get(), time: apF("time").value, name: name, species: segVal("hb-ptsp"), owner: apF("owner").value.trim(), phone: faDigits(apF("phone").value.trim()), reason: sel.tagName === "SELECT" && sel.value === "__other" ? apF("reasonx").value.trim() : sel.value.trim(), rem: apF("rem").checked ? 1 : 0, note: apF("note").value.trim(), pkey: (apPref && apPref.pkey) || (apEditId && (apItems.filter(function (x) { return x.id === apEditId; })[0] || {}).pkey) || "" };
       if (!v.date) { er.textContent = "تاریخ نوبت را انتخاب کنید."; er.hidden = false; return; }
       er.hidden = true; btn.disabled = true;
       api({ a: "apSave", t: tokGet(), id: apEditId, v: v }).then(function (j) {

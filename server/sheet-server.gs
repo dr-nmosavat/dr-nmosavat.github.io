@@ -67,7 +67,7 @@ var PET_COLS = ['code', 'key', 'name', 'en', 'owner', 'guardian', 'species', 'br
 var SMS_COLS = ['time', 'to', 'kind', 'text', 'status', 'response', 'raw'];
 var PT_COLS = ['id', 'pkey', 'created', 'updated', 'date', 'name', 'species', 'owner', 'phone', 'reason', 'note', 'follow', 'code', 'deleted', 'fee', 'paid', 'pay'];
 var ACT_COLS = ['day', 'time', 'kind', 'ref', 'name'];
-var AP_COLS = ['id', 'created', 'updated', 'date', 'time', 'name', 'species', 'owner', 'phone', 'reason', 'note', 'status', 'pkey', 'deleted'];
+var AP_COLS = ['id', 'created', 'updated', 'date', 'time', 'name', 'species', 'owner', 'phone', 'reason', 'note', 'status', 'pkey', 'deleted', 'rem'];
 var REC_COLS = ['id', 'code', 'type', 'date', 'name', 'brand', 'serial', 'place', 'extra', 'freq', 'how', 'dur', 'end', 'weight', 'next', 'closed', 'dr', 'created', 'updated', 'deleted', 'src'];
 
 function hsheet_(name, cols) {
@@ -121,7 +121,7 @@ function roleOf_(t) {
   return sig16_('dr|' + m[1]) === m[2] ? 'dr' : '';
 }
 // کارهایی که منشی اجازه دارد (فقط نوبت، بیماران و امروز؛ نه شناسنامه و واگذاری)
-var SEC_OK = { patList: 1, patSave: 1, patPatient: 1, patSms: 1, touch: 1, todayList: 1, apList: 1, apSave: 1, apSet: 1 };
+var SEC_OK = { apRemind: 1, patList: 1, patSave: 1, patPatient: 1, patSms: 1, touch: 1, todayList: 1, apList: 1, apSave: 1, apSet: 1 };
 function ownerOk_(code, key) {
   var pet = findPet_(code); return pet && !pet.deleted && key && pet.key === String(key) ? pet : null;
 }
@@ -169,8 +169,10 @@ function health_(b) {
   if (a === 'verifyPublic') return verifyPublic_(b);
   // ---- دکتر ----
   var role0 = roleOf_(b.t); if (!role0 || (role0 === 'sec' && !SEC_OK[a])) return { ok: false, err: 'auth' };
+  if (role0 === 'sec' && a === 'patSave' && b.v) { b.v.note = ''; b.v.follow = ''; }   // منشی یادداشت درمان و پیگیری ثبت نمی‌کند
   var lock = LockService.getScriptLock(); lock.waitLock(15000);
   try {
+    if (role0 === 'sec' && a === 'patList') { var pl = patList_(); pl.items.forEach(function (x) { x.note = ''; }); return pl; }
     if (a === 'search') return search_(b);
     if (a === 'get') { var q = findPet_(b.code); if (!q || q.deleted) return { ok: false, err: 'notfound' }; return { ok: true, pet: petOut_(q, true), recs: recsOf_(q.code).map(recOut_) }; }
     if (a === 'savePet') return savePet_(b);
@@ -196,6 +198,7 @@ function health_(b) {
     if (a === 'apList') return apList_();
     if (a === 'apSave') return apSave_(b);
     if (a === 'apSet') return apSet_(b);
+    if (a === 'apRemind') return apRemind_(b);
   } finally { lock.releaseLock(); }
   return { ok: false, err: 'bad' };
 }
@@ -325,7 +328,7 @@ function doGet(e) {
   var p = (e && e.parameter) || {};
   if (p.action === 'spin') return json_(spin_(p));
   if (p.action === 'verify') return verifyPage_(p);
-  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v24-panel' });
+  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v25-panel' });
 }
 
 // ======================= چرخ هدیه =======================
@@ -569,7 +572,7 @@ function todayList_() {
   out.sort(function (x, y) { return x.time < y.time ? 1 : -1; });
   return { ok: true, day: day, items: out.slice(0, 200) };
 }
-function apOut_(r) { return { id: r.id, date: r.date, time: r.time, name: r.name, species: r.species, owner: r.owner, phone: r.phone, reason: r.reason, note: r.note, status: r.status || 'booked', pkey: r.pkey }; }
+function apOut_(r) { return { id: r.id, date: r.date, time: r.time, name: r.name, species: r.species, owner: r.owner, phone: r.phone, reason: r.reason, note: r.note, status: r.status || 'booked', pkey: r.pkey, rem: r.rem === '1' ? 1 : 0 }; }
 function apList_() {
   var from = Utilities.formatDate(new Date(Date.now() - 14 * 86400000), CFG.tz, 'yyyy-MM-dd');
   var rows = readAll_(hsheet_('Appts', AP_COLS), AP_COLS).filter(function (r) { return r.deleted !== '1' && r.date >= from; });
@@ -586,13 +589,15 @@ function apSave_(b) {
   r.name = name; r.species = ['سگ', 'گربه', 'پرنده', 'دیگر'].indexOf(v.species) > -1 ? v.species : 'دیگر';
   r.owner = clip_(v.owner, 40); r.phone = String(v.phone || '').replace(/[^0-9+]/g, '').slice(0, 16);
   r.reason = clip_(v.reason, 150); r.note = clip_(v.note, 600); r.pkey = /^PT-[A-Z0-9]{5,10}$/.test(String(v.pkey || '')) ? v.pkey : (r.pkey || '');
+  r.rem = v.rem ? '1' : '';
+  if (!sh.getRange(1, AP_COLS.length).getValue()) sh.getRange(1, AP_COLS.length).setValue('یادآور پیامکی');
   r.updated = nowIso_(); writeRow_(sh, AP_COLS, r, r._row || 0);
   return { ok: true, item: apOut_(r) };
 }
 function apSet_(b) {
   var sh = hsheet_('Appts', AP_COLS), rows = readAll_(sh, AP_COLS), i;
   for (i = 0; i < rows.length; i++) if (rows[i].id === String(b.id || '')) {
-    if (b.del) rows[i].deleted = '1'; else if (['booked', 'done', 'cancelled'].indexOf(b.status) > -1) rows[i].status = b.status; else return { ok: false, err: 'bad' };
+    if (b.del) rows[i].deleted = '1'; else if (['booked', 'done', 'noshow', 'cancelled'].indexOf(b.status) > -1) rows[i].status = b.status; else return { ok: false, err: 'bad' };
     rows[i].updated = nowIso_(); writeRow_(sh, AP_COLS, rows[i], rows[i]._row); return { ok: true };
   }
   return { ok: false, err: 'notfound' };
@@ -634,10 +639,40 @@ function loadRemData_() {
   var recs = readAll_(hsheet_('Records', REC_COLS), REC_COLS).filter(function (r) { return r.deleted !== '1' && r.closed !== '1' && /^\d{4}-\d{2}-\d{2}$/.test(r.next || ''); });
   return { petBy: petBy, done: done, recs: recs };
 }
-// اجرای خودکار روزانه: موعدهایی که دقیقاً ۳ روز دیگر است
+// ---- یادآور نوبت: روز قبل از نوبت (Script Property: SMS_TPL_APPT؛ متغیرها NAME، DATE، TIME) ----
+function apDone_() { var done = {}; readAll_(hsheet_('SMS', SMS_COLS), SMS_COLS).forEach(function (r) { if (/^apr:/.test(r.kind) && /^(✅|2)/.test(r.status)) done[r.kind] = 1; }); return done; }
+function apRemindRows_(rows, done, force) {
+  var out = { sent: 0, failed: 0, noPhone: 0, noTpl: 0, dup: 0, errs: [] }, tpl = prop_('SMS_TPL_APPT');
+  rows.forEach(function (r) {
+    if (!smsPhone_(r.phone)) { out.noPhone++; return; }
+    var kind = 'apr:' + r.id + ':' + r.date; if (!force && done[kind]) { out.dup++; return; }
+    if (!tpl) { out.noTpl++; return; }
+    var res = sendSms_(r.phone, 'یادآور نوبت ' + r.name + ' ' + faDate_(r.date) + ' ' + (r.time || ''), kind, { name: r.name, date: faDate_(r.date), time: r.time || 'طی روز' }, tpl);
+    if (res.ok) { out.sent++; done[kind] = 1; } else { out.failed++; if (res.msg && out.errs.length < 2) out.errs.push(res.msg); }
+  });
+  return out;
+}
+function apRemind_(b) {
+  var rows = readAll_(hsheet_('Appts', AP_COLS), AP_COLS).filter(function (r) { return r.id === String(b.id || '') && r.deleted !== '1'; });
+  if (!rows.length) return { ok: false, err: 'notfound' };
+  var r = rows[0]; if ((r.status || 'booked') !== 'booked') return { ok: false, err: 'not_booked' };
+  if (!smsPhone_(r.phone)) return { ok: false, err: 'no_phone' };
+  if (!prop_('SMS_TPL_APPT')) return { ok: false, err: 'no_tpl' };
+  var cache = CacheService.getScriptCache(), key = 'apr_' + r.id; if (cache.get(key)) return { ok: false, err: 'rate' };
+  var o = apRemindRows_([r], {}, true);
+  if (o.sent) { cache.put(key, '1', 600); return { ok: true }; }
+  return { ok: false, err: 'fail', msg: o.errs[0] || '' };
+}
+// اجرای خودکار روزانه: موعد واکسن/ضدانگل ۳ روز دیگر + نوبت‌های فردا
 function dailyReminders() {
   var lock = LockService.getScriptLock(); lock.waitLock(20000);
-  try { var d = loadRemData_(), target = addDays_(today_(), 3); return sendRemindersFor_(d.recs.filter(function (r) { return r.next === target; }), d.petBy, d.done, {}); } finally { lock.releaseLock(); }
+  try {
+    var d = loadRemData_(), target = addDays_(today_(), 3), out = sendRemindersFor_(d.recs.filter(function (r) { return r.next === target; }), d.petBy, d.done, {});
+    var tmr = addDays_(today_(), 1);
+    var aps = readAll_(hsheet_('Appts', AP_COLS), AP_COLS).filter(function (r) { return r.deleted !== '1' && (r.status || 'booked') === 'booked' && r.rem === '1' && r.date === tmr; });
+    out.ap = apRemindRows_(aps, apDone_(), false);
+    return out;
+  } finally { lock.releaseLock(); }
 }
 function setupReminderTrigger() {
   ScriptApp.getProjectTriggers().forEach(function (t) { if (t.getHandlerFunction() === 'dailyReminders') ScriptApp.deleteTrigger(t); });
@@ -649,7 +684,7 @@ function stopReminderTrigger() {
   SpreadsheetApp.getUi().alert(n ? 'یادآور خودکار متوقف شد.' : 'یادآور خودکاری فعال نبود.');
 }
 function runRemindersNow() {
-  var o = dailyReminders(); SpreadsheetApp.getUi().alert('یادآورهای موعد ۳ روز دیگر:\nارسال‌شده: ' + o.sent + '\nناموفق: ' + o.failed + '\nبدون رضایت: ' + o.noConsent + '\nبدون شماره: ' + o.noPhone + '\nقالب تنظیم‌نشده: ' + o.noTpl + '\nتکراری (قبلاً رفته): ' + o.dup + (o.errs.length ? '\nخطا: ' + o.errs[0] : ''));
+  var o = dailyReminders(); SpreadsheetApp.getUi().alert('یادآورهای موعد ۳ روز دیگر:\nارسال‌شده: ' + o.sent + '\nناموفق: ' + o.failed + '\nبدون رضایت: ' + o.noConsent + '\nبدون شماره: ' + o.noPhone + '\nقالب تنظیم‌نشده: ' + o.noTpl + '\nتکراری (قبلاً رفته): ' + o.dup + (o.ap ? '\n\nنوبت‌های فردا:\nارسال‌شده: ' + o.ap.sent + '\nناموفق: ' + o.ap.failed + '\nبدون شماره: ' + o.ap.noPhone + '\nقالب تنظیم‌نشده: ' + o.ap.noTpl + '\nتکراری: ' + o.ap.dup : '') + (o.errs.length ? '\nخطا: ' + o.errs[0] : ''));
 }
 // دکمهٔ دستی در پروندهٔ پت: یادآور موعدهای ۶۰ روز آینده
 function petRemind_(b) {
@@ -730,8 +765,8 @@ var LOOK = {
   Patients: { color: '#0e7490', labels: ['شناسهٔ مراجعه', 'شناسهٔ بیمار', 'ثبت شد', 'ویرایش', 'تاریخ مراجعه', 'نام پت', 'گونه', 'سرپرست', 'تلفن (محرمانه)', 'دلیل / تشخیص', 'یادداشت', 'تاریخ پیگیری', 'کد شناسنامه', 'حذف‌شده؟ (۱=بله)', 'هزینه (تومان)', 'پرداخت‌شده؟ (۱=بله)', 'روش پرداخت'],
     widths: [110, 100, 150, 150, 100, 110, 80, 130, 130, 200, 260, 100, 110, 90, 110, 110, 110], clip: [11], gray: [2, 3, 4, 13], del: 14 },
   Activity: { color: '#475569', labels: ['روز', 'ساعت', 'نوع', 'شناسه', 'نام'], widths: [100, 80, 80, 120, 140], gray: [1, 2, 3] },
-  Appts: { color: '#0e7490', labels: ['شناسهٔ نوبت', 'ثبت شد', 'ویرایش', 'تاریخ نوبت', 'ساعت', 'نام پت', 'گونه', 'سرپرست', 'تلفن (محرمانه)', 'دلیل', 'یادداشت', 'وضعیت', 'شناسهٔ بیمار', 'حذف‌شده؟ (۱=بله)'],
-    widths: [110, 150, 150, 100, 70, 110, 80, 130, 130, 180, 240, 100, 100, 90], clip: [11], gray: [2, 3, 13], del: 14 },
+  Appts: { color: '#0e7490', labels: ['شناسهٔ نوبت', 'ثبت شد', 'ویرایش', 'تاریخ نوبت', 'ساعت', 'نام پت', 'گونه', 'سرپرست', 'تلفن (محرمانه)', 'دلیل', 'یادداشت', 'وضعیت', 'شناسهٔ بیمار', 'حذف‌شده؟ (۱=بله)', 'یادآور پیامکی (۱=بله)'],
+    widths: [110, 150, 150, 100, 70, 110, 80, 130, 130, 180, 240, 100, 100, 90, 90], clip: [11], gray: [2, 3, 13], del: 14 },
   SMS: { color: '#b45309', labels: ['زمان', 'شماره', 'نوع', 'متن', 'نتیجه', 'توضیح', 'جزئیات فنی'], widths: [150, 120, 100, 320, 100, 300, 320], clip: [4, 7], gray: [1, 7] },
   Records: { color: '#0f766e', labels: ['شناسه', 'کد پت', 'نوع', 'تاریخ', 'نام', 'برند', 'سریال', 'محل', 'توضیح', 'تکرار', 'روش', 'مدت', 'پایان', 'وزن', 'نوبت بعدی', 'بسته‌شده؟', 'ثبت دکتر؟', 'ساخته شد', 'ویرایش', 'حذف‌شده؟ (۱=بله)', 'منبع (old=سابقهٔ قبلی)'],
     widths: [110, 90, 130, 100, 150, 110, 110, 110, 140, 90, 90, 80, 100, 70, 100, 80, 80, 150, 150, 90, 110], gray: [1], del: 20 },
