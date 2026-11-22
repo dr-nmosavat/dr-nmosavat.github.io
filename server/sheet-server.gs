@@ -317,7 +317,7 @@ function doGet(e) {
   var p = (e && e.parameter) || {};
   if (p.action === 'spin') return json_(spin_(p));
   if (p.action === 'verify') return verifyPage_(p);
-  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v18-panel' });
+  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v19-panel' });
 }
 
 // ======================= چرخ هدیه =======================
@@ -477,7 +477,7 @@ function sendSms_(to, text, kind, vars) {
   } else {
     // مدیرپیامک / IPPanel (Edge API): https://ippanelcom.github.io/Edge-Document/docs/send/webservice
     var fromNum = /^\+/.test(from) ? from : (/^98/.test(from) ? '+' + from : (/^0?\d+$/.test(from) ? '+98' + from.replace(/^0/, '') : from));
-    var auth = /^(apikey|bearer)\s/i.test(token) ? token : 'apikey ' + token;   // طبق پشتیبانی: Authorization: apikey <KEY>
+    var auth = token.replace(/^(apikey|bearer)\s+/i, '');   // آزمایش واقعی: هدر باید فقط خود کلید باشد (بدون پیشوند)، طبق مستندات رسمی
     var e164 = '+98' + num.slice(1), patCode = prop_('SMS_PATTERN_CODE'), payload;
     if (patCode && vars) {   // پترن تأییدشده (ارسال لحظه‌ای): docs/send/pattern
       payload = { sending_type: 'pattern', from_number: fromNum, code: patCode, recipients: [e164], params: vars };
