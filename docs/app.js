@@ -1301,9 +1301,9 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   var DR_SALT = "GnOd3U5koVp1Ozi8RTcLbA==", DR_HASH = "b4Ba9BSekt9YN0YQ3iruqAzem9RYjTbLV4PClSZjdFs=";
   function srvOn() { return !!INFO.sheetApi && !!window.fetch; }
   function api(body) {
-    var ctl = window.AbortController ? new AbortController() : null, tm = ctl ? setTimeout(function () { ctl.abort(); }, 20000) : 0;
+    var ctl = window.AbortController ? new AbortController() : null, tm = ctl ? setTimeout(function () { ctl.abort(); }, 40000) : 0;
     return fetch(INFO.sheetApi, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(body), signal: ctl ? ctl.signal : undefined })
-      .then(function (r) { return r.json(); }).then(function (j) { clearTimeout(tm); if (j && j.ok === false && j.err === "auth" && body.t !== undefined && DRPAGE && localStorage.getItem("dm_hb_dr") === "1") drDrop("ورود شما از طرف سرور تأیید نشد؛ لطفاً دوباره وارد شوید."); return j; }).catch(function () { clearTimeout(tm); return { ok: false, err: "net" }; });
+      .then(function (r) { return r.json(); }).then(function (j) { clearTimeout(tm); if (j && j.ok === false && j.err === "auth" && body.t !== undefined && DRPAGE && localStorage.getItem("dm_hb_dr") === "1") drDrop("ورود شما از طرف سرور تأیید نشد؛ لطفاً دوباره وارد شوید."); return j; }).catch(function (e) { clearTimeout(tm); window.__apiErr = String((e && e.message) || e); return { ok: false, err: "net" }; });
   }
   function tokGet() { try { var o = JSON.parse(localStorage.getItem("dm_hb_tok") || "null"); return o && o.exp > Date.now() ? o.t : ""; } catch (e) { return ""; } }
   function tokSet(t) { try { if (t) localStorage.setItem("dm_hb_tok", JSON.stringify({ t: t, exp: (Number(String(t).split(".")[0]) || Date.now() + 3 * 86400000) - 60000 })); else localStorage.removeItem("dm_hb_tok"); } catch (e) {} }
@@ -1316,7 +1316,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function drDrop(msg) { try { localStorage.removeItem("dm_hb_dr"); } catch (e) {} purgeDrCache(); tokSet(""); setTimeout(function () { applyRole(); render(); toast(msg); }, 0); }
   function isDr() { if (!DRPAGE) return false; try { var f = localStorage.getItem("dm_hb_dr") === "1"; if (f && srvOn() && !tokGet()) { drDrop("مدت اعتبار ورود تمام شد؛ لطفاً دوباره وارد شوید."); return false; } return f; } catch (e) { return false; } }
   function srvOf(p) { return p && p.srv && p.srv.code ? p.srv : null; }
-  function errMsg(e) { return e === "net" ? "اتصال با سرور برقرار نشد. اینترنت را بررسی کنید." : e === "auth" ? "دسترسی مجاز نیست (دوباره وارد شوید یا لینک را بررسی کنید)." : e === "forbidden" ? "این مورد را فقط دکتر ثبت یا تغییر می‌دهد." : e === "locked" ? "ورود موقتاً قفل شد؛ چند دقیقه بعد دوباره تلاش کنید." : "خطای سرور؛ دوباره تلاش کنید."; }
+  function errMsg(e) { return e === "net" ? "اتصال با سرور برقرار نشد. اینترنت را بررسی کنید." + (/[?&]debug=1/.test(location.search) ? " [" + (window.__apiErr || "?") + "]" : "") : e === "auth" ? "دسترسی مجاز نیست (دوباره وارد شوید یا لینک را بررسی کنید)." : e === "forbidden" ? "این مورد را فقط دکتر ثبت یا تغییر می‌دهد." : e === "locked" ? "ورود موقتاً قفل شد؛ چند دقیقه بعد دوباره تلاش کنید." : "خطای سرور؛ دوباره تلاش کنید."; }
   function setSeg(n, v) { [].forEach.call(q('[data-seg="' + n + '"]').children, function (b) { b.classList.toggle("on", b.getAttribute("data-v") === v); }); }
   function segVal(n) { var b = q('[data-seg="' + n + '"] .on'); return b ? b.getAttribute("data-v") : ""; }
   function toSrvPet(p) { return { code: p.srv && p.srv.code, name: p.name, en: p.en, owner: p.owner, guardian: p.guardian, sex: p.sex || "", neut: p.neut || "", phone: p.phone, smsok: p.smsok ? 1 : 0, species: p.species, breed: p.breed, breedEn: p.breedEn, birth: p.birth, plan: p.plan || [], consent: p.consent ? 1 : 0 }; }
