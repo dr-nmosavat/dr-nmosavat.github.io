@@ -2087,3 +2087,5 @@ html.hb-dr .hb-sendrow + .hb-sendrow { margin-top: -6px; }
 .hb-nav2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); grid-gap: 8px; gap: 8px; }
 .hb-nav2 button { min-width: 0; width: auto; margin: 0; }
 @media (max-width: 560px) { .hb-nav2 { grid-template-columns: 1fr 1fr; } .hb-nav2 button { width: auto; } .hb-nav2 [data-hb-ptnewtop] { grid-column: 1 / -1; width: auto; } }
+.hb-aprow { display: flex; flex-wrap: wrap; margin: 0 -6px; } .hb-aprow > .fld { flex: 1 1 220px; margin: 0 6px 8px; }
+.hb-aprow select { width: 100%; min-height: 48px; font-size: 15px; }

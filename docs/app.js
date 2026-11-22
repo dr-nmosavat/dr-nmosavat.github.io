@@ -2236,20 +2236,21 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function apReasonSel(v) {
     var r = v || ""; return '<select data-ap="reason">' + AP_REASONS.map(function (x) { return '<option value="' + esc(x) + '"' + (x === r ? " selected" : "") + ">" + esc(x) + "</option>"; }).join("") + '<option value="__other"' + (r && AP_REASONS.indexOf(r) < 0 ? " selected" : "") + '>سایر (خودم می‌نویسم)…</option></select><input data-ap="reasonx" type="text" maxlength="120" placeholder="دلیل را بنویسید" value="' + esc(r && AP_REASONS.indexOf(r) < 0 ? r : "") + '"' + (r && AP_REASONS.indexOf(r) < 0 ? "" : " hidden") + ">";
   }
-  var apSel = { date: "", time: "" }, apLink = "", AP_H0 = 10, AP_H1 = 22, AP_STEP = 15;
-  function apDayList() { var td = apToday || isoNow(), a = []; for (var k = 0; k < 14; k++) a.push(isoPlus(td, k)); return a; }
+  var apSel = { date: "", time: "" }, apLink = "", AP_H0 = 10, AP_H1 = 22, AP_STEP = 30;
+  function apDayList() { var td = apToday || isoNow(), a = []; for (var k = 0; k < 15; k++) a.push(isoPlus(td, k)); return a; }
   function apDaysRender() {
-    var el = apBox().querySelector("[data-hb-apdays]"); if (!el) return; var days = apDayList(), inList = days.indexOf(apSel.date) > -1, oth = apBox().querySelector("[data-hb-apother]");
-    if (!inList && apSel.date) oth.hidden = false;
-    el.innerHTML = days.map(function (d, k) { var lb = k === 0 ? "امروز" : k === 1 ? "فردا" : wdOf(d); return '<button type="button" class="hb-dayb' + (d === apSel.date && oth.hidden ? " on" : "") + '" data-hb-apday="' + d + '"><b>' + lb + "</b><small>" + jLabel(d).replace(/\s*[۰-۹]{4}$/, "") + "</small></button>"; }).join("") + '<button type="button" class="hb-dayb' + (!oth.hidden ? " on" : "") + '" data-hb-apday="other"><b>📅</b><small>تاریخ دیگر</small></button>';
+    var el = apBox().querySelector("[data-hb-apdays]"); if (!el) return; var days = apDayList(), oth = apBox().querySelector("[data-hb-apother]");
+    if (apSel.date && days.indexOf(apSel.date) < 0) oth.hidden = false;
+    el.innerHTML = days.map(function (d, k) { return '<option value="' + d + '"' + (d === apSel.date && oth.hidden ? " selected" : "") + ">" + (k === 0 ? "امروز - " : k === 1 ? "فردا - " : "") + wdOf(d) + " " + jLabel(d).replace(/\s*[۰-۹]{4}$/, "") + "</option>"; }).join("") + '<option value="other"' + (!oth.hidden ? " selected" : "") + ">📅 تاریخ‌های دیگر…</option>";
   }
   function apSlotsRender() {
-    var el = apBox().querySelector("[data-hb-apslots]"); if (!el) return; var taken = {}, now = new Date(), td = apToday || isoNow(), nowHm = ("0" + now.getHours()).slice(-2) + ":" + ("0" + now.getMinutes()).slice(-2), h = "";
-    apItems.forEach(function (r) { if (r.date === apSel.date && r.status === "booked" && r.id !== apEditId && r.time) taken[r.time] = r.name; });
-    for (var m = AP_H0 * 60; m < AP_H1 * 60; m += AP_STEP) {
-      var hm = ("0" + Math.floor(m / 60)).slice(-2) + ":" + ("0" + (m % 60)).slice(-2), full = !!taken[hm], past = apSel.date === td && hm < nowHm;
-      h += '<button type="button" class="hb-slot' + (hm === apSel.time ? " on" : "") + (full ? " full" : "") + (past ? " past" : "") + '" data-hb-aptime="' + hm + '"' + (full || past ? " disabled" : "") + (full ? ' title="' + esc(taken[hm]) + '"' : "") + ">" + toolFa(hm) + (full ? "<small>پر</small>" : "") + "</button>";
-    }
+    var el = apBox().querySelector("[data-hb-apslots]"); if (!el) return; var now = new Date(), td = apToday || isoNow(), nowHm = ("0" + now.getHours()).slice(-2) + ":" + ("0" + now.getMinutes()).slice(-2), taken = [], h = '<option value="">انتخاب ساعت…</option>', hm2 = function (m) { return ("0" + Math.floor(m / 60)).slice(-2) + ":" + ("0" + (m % 60)).slice(-2); };
+    apItems.forEach(function (r) { if (r.date === apSel.date && r.status === "booked" && r.id !== apEditId && r.time) taken.push(r); });
+    var slots = []; for (var m = AP_H0 * 60; m < AP_H1 * 60; m += AP_STEP) slots.push(hm2(m)); if (apSel.time && slots.indexOf(apSel.time) < 0) { slots.push(apSel.time); slots.sort(); }
+    slots.forEach(function (hm) {
+      var a = +hm.slice(0, 2) * 60 + +hm.slice(3), who = taken.filter(function (r) { var b = +r.time.slice(0, 2) * 60 + +r.time.slice(3); return b >= a && b < a + AP_STEP; }).map(function (r) { return r.name; }), past = apSel.date === td && hm < nowHm && hm !== apSel.time;
+      h += '<option value="' + hm + '"' + (hm === apSel.time ? " selected" : "") + (who.length || past ? " disabled" : "") + ">" + toolFa(hm) + (who.length ? " — پر (" + esc(who.join("، ")) + ")" : past ? " — گذشته" : "") + "</option>";
+    });
     el.innerHTML = h;
   }
   function apF(n) { return apBox().querySelector('[data-ap="' + n + '"]'); }
@@ -2265,11 +2266,13 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
         + '<div class="fld"><label>گونه</label>' + ptSpecies(v.species) + '</div>'
         + '<div class="fld"><label>نژاد <small>(اختیاری)</small></label><input data-ap="breed" type="text" maxlength="40" value="' + esc(v.breed || "") + '"></div><div class="fld"><label>نام سرپرست</label><input data-ap="owner" type="text" maxlength="40" value="' + esc(v.owner || "") + '"></div>'
         + '<div class="fld"><label>دلیل نوبت</label>' + (SECP ? '<input data-ap="reason" type="text" maxlength="150" placeholder="مثلاً: برای ویزیت بیاید" value="' + esc(v.reason || "") + '">' : apReasonSel(v.reason)) + '</div><div class="fld"><label>یادداشت <small>(اختیاری)</small></label><input data-ap="note" type="text" maxlength="300" value="' + esc(v.note || "") + '"></div>'
-        + '<div class="hb-aptop"><label class="hb-aplbl">📅 روز نوبت</label><div class="hb-days" data-hb-apdays></div><div class="fld" data-hb-apother hidden><div class="jd" data-pjd="apd"></div></div><label class="hb-aplbl">🕐 ساعت</label><div class="hb-slots" data-hb-apslots></div></div>'
+        + '<div class="hb-aptop"><div class="hb-aprow"><div class="fld"><label class="hb-aplbl">📅 روز نوبت</label><select data-hb-apdays></select></div><div class="fld"><label class="hb-aplbl">🕐 ساعت</label><select data-hb-apslots></select></div></div><div class="fld" data-hb-apother hidden><label>تاریخ دیگر</label><div class="jd" data-pjd="apd"></div></div></div>'
         + '<label class="hb-cons hb-smscb"><input type="checkbox" data-ap="rem"' + (e && e.rem ? " checked" : "") + '> 📩 پیامک یادآور برای سرپرست (روز قبل از نوبت)</label><p class="hb-err" data-hb-aperr hidden></p><div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-apsave>ذخیره</button><button type="button" class="btn small ghost" data-hb-apcancel>انصراف</button></div></div>';
       var rs0 = apF("reason"), rx0 = apF("reasonx"); if (rs0 && rs0.tagName === "SELECT") rs0.addEventListener("change", function () { rx0.hidden = rs0.value !== "__other"; if (!rx0.hidden) rx0.focus(); });
       APJ.d = initJd(box.querySelector('[data-pjd="apd"]'), { minY: 0, maxY: 1 }); APJ.d.set(apSel.date);
-      box.querySelector("[data-hb-apother]").addEventListener("change", function () { var d = APJ.d.get(); if (d) { apSel.date = d; apSlotsRender(); } });
+      box.querySelector("[data-hb-apother]").addEventListener("change", function () { var d = APJ.d.get(); if (d) { apSel.date = d; apSel.time = ""; apSlotsRender(); } });
+      box.querySelector("[data-hb-apdays]").addEventListener("change", function () { var dv = this.value, oth = box.querySelector("[data-hb-apother]"); if (dv === "other") { oth.hidden = false; apSel.date = APJ.d.get() || apSel.date; } else { oth.hidden = true; apSel.date = dv; } apSel.time = ""; apSlotsRender(); });
+      box.querySelector("[data-hb-apslots]").addEventListener("change", function () { apSel.time = this.value; });
       apDaysRender(); apSlotsRender();
       return;
     }
@@ -2304,8 +2307,6 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (t.closest("[data-hb-apgo]")) { apFilter = "today"; dview("appt"); return; }
     if (t.closest("[data-hb-ptappt]")) { var gp = ptGroup(ptCur)[0]; if (!gp) return; dview("appt"); apPref = { name: gp.name, species: gp.species, breed: gp.breed, owner: gp.owner, phone: gp.phone, pkey: gp.pkey }; apEditId = ""; apMode = "form"; apShow(); return; }
     if (!apBox() || !apBox().contains(t)) return;
-    if ((b = t.closest("[data-hb-apday]"))) { var dv = b.getAttribute("data-hb-apday"), oth = apBox().querySelector("[data-hb-apother]"); if (dv === "other") { oth.hidden = false; apSel.date = APJ.d.get() || apSel.date; } else { oth.hidden = true; apSel.date = dv; } apSel.time = ""; apDaysRender(); apSlotsRender(); return; }
-    if ((b = t.closest("[data-hb-aptime]"))) { apSel.time = b.getAttribute("data-hb-aptime"); apSlotsRender(); return; }
     if (t.closest("[data-hb-apnew]")) { apPref = null; apEditId = ""; apMode = "form"; return apShow(); }
     if (t.closest("[data-hb-apref]")) return apLoad();
     if (t.closest("[data-hb-apcancel]")) { apMode = "list"; apPref = null; apEditId = ""; return apShow(); }
