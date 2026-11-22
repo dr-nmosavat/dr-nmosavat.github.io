@@ -64,6 +64,7 @@ var H = {
   allTypes: ["واکسن", "ضدانگل داخلی", "ضدانگل خارجی (کک و کنه)", "ویزیت", "وزن", "دارو", "عقیم‌سازی", "آزمایش", "سایر"]
 };
 var PET_COLS = ['code', 'key', 'name', 'en', 'owner', 'guardian', 'species', 'breed', 'breedEn', 'birth', 'plan', 'consent', 'created', 'updated', 'deleted', 'auth', 'sex', 'neut', 'phone'];
+var SMS_COLS = ['time', 'to', 'kind', 'text', 'status', 'response'];
 var PT_COLS = ['id', 'pkey', 'created', 'updated', 'date', 'name', 'species', 'owner', 'phone', 'reason', 'note', 'follow', 'code', 'deleted'];
 var REC_COLS = ['id', 'code', 'type', 'date', 'name', 'brand', 'serial', 'place', 'extra', 'freq', 'how', 'dur', 'end', 'weight', 'next', 'closed', 'dr', 'created', 'updated', 'deleted', 'src'];
 
@@ -181,6 +182,7 @@ function health_(b) {
     if (a === 'patSave') return patSave_(b);
     if (a === 'patDel') return patDel_(b);
     if (a === 'patPatient') return patPatient_(b);
+    if (a === 'patSms') return patSms_(b);
   } finally { lock.releaseLock(); }
   return { ok: false, err: 'bad' };
 }
@@ -308,7 +310,7 @@ function doGet(e) {
   var p = (e && e.parameter) || {};
   if (p.action === 'spin') return json_(spin_(p));
   if (p.action === 'verify') return verifyPage_(p);
-  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v12-patients' });
+  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v13-sms' });
 }
 
 // ======================= چرخ هدیه =======================
@@ -451,6 +453,35 @@ function petReqList_() {
   rows.sort(function (x, y) { return x.created < y.created ? 1 : -1; });
   return { ok: true, items: rows.slice(0, 200).map(function (r) { return { id: r.id, created: r.created, status: r.status, name: r.name, species: r.species, owner: r.owner, contact: r.contact, birth: r.birth, note: r.note, code: r.code }; }) };
 }
+// ---- پیامک (ملی‌پیامک): تنظیمات در Script Properties — SMS_TOKEN، SMS_FROM، (اختیاری) SMS_URL و SMS_TEXT_NEW ----
+function smsPhone_(v) {
+  var d = String(v || '').replace(/[^0-9+]/g, '');
+  if (/^\+989\d{9}$/.test(d)) d = '0' + d.slice(3); else if (/^989\d{9}$/.test(d)) d = '0' + d.slice(2); else if (/^9\d{9}$/.test(d)) d = '0' + d;
+  return /^09\d{9}$/.test(d) ? d : '';
+}
+function sendSms_(to, text, kind) {
+  var token = prop_('SMS_TOKEN'); if (!token) return { ok: false, err: 'sms_off' };
+  var num = smsPhone_(to); if (!num) return { ok: false, err: 'bad_phone' };
+  var url = prop_('SMS_URL') || ('https://console.melipayamak.com/api/send/simple/' + token);
+  var status = '', body = '', ok = false;
+  try {
+    var res = UrlFetchApp.fetch(url, { method: 'post', contentType: 'application/json', muteHttpExceptions: true, payload: JSON.stringify({ from: prop_('SMS_FROM'), to: num, text: text }) });
+    status = String(res.getResponseCode()); body = String(res.getContentText()).slice(0, 300); ok = res.getResponseCode() >= 200 && res.getResponseCode() < 300;
+  } catch (e) { status = 'EXC'; body = String(e).slice(0, 300); }
+  try { writeRow_(hsheet_('SMS', SMS_COLS), SMS_COLS, { time: nowIso_(), to: num, kind: kind || '', text: clip_(text, 300), status: status, response: body }, 0); } catch (e2) {}
+  return ok ? { ok: true, status: status } : { ok: false, err: 'fail', msg: (status + ' ' + body).slice(0, 160) };
+}
+function patSms_(b) {
+  var rows = readAll_(hsheet_('Patients', PT_COLS), PT_COLS).filter(function (r) { return r.pkey === String(b.pkey || '') && r.deleted !== '1'; });
+  if (!rows.length) return { ok: false, err: 'notfound' };
+  rows.sort(function (x, y) { return x.date < y.date ? 1 : -1; });
+  var r = rows[0], cache = CacheService.getScriptCache(), key = 'sms_' + r.pkey;
+  if (cache.get(key)) return { ok: false, err: 'rate' };
+  var tpl = prop_('SMS_TEXT_NEW') || 'سرپرست گرامی، پروندهٔ {name} در کلینیک دامپزشکی دکتر نیلوفر مساوات ثبت شد. drniloofarmosavat.ir';
+  var out = sendSms_(r.phone, tpl.replace(/\{name\}/g, r.name), 'patient');
+  if (out.ok) cache.put(key, '1', 600);   // جلوگیری از ارسال تکراری تا ۱۰ دقیقه
+  return out;
+}
 // ---- دفتر «بیماران من» (فقط دکتر؛ هر ردیف = یک مراجعه) ----
 function patOut_(r) { return { id: r.id, pkey: r.pkey, date: r.date, name: r.name, species: r.species, owner: r.owner, phone: r.phone, reason: r.reason, note: r.note, follow: r.follow, code: r.code }; }
 function patList_() {
@@ -512,6 +543,7 @@ var LOOK = {
     widths: [130, 140, 110, 110, 130, 110, 80, 110, 120, 100, 120, 90, 150, 150, 90, 100, 90, 130, 150], clip: [2, 11], gray: [2, 11], green: [1, 16], del: 15 },
   Patients: { color: '#0e7490', labels: ['شناسهٔ مراجعه', 'شناسهٔ بیمار', 'ثبت شد', 'ویرایش', 'تاریخ مراجعه', 'نام پت', 'گونه', 'سرپرست', 'تلفن (محرمانه)', 'دلیل / تشخیص', 'یادداشت', 'تاریخ پیگیری', 'کد شناسنامه', 'حذف‌شده؟ (۱=بله)'],
     widths: [110, 100, 150, 150, 100, 110, 80, 130, 130, 200, 260, 100, 110, 90], clip: [11], gray: [2, 3, 4, 13], del: 14 },
+  SMS: { color: '#b45309', labels: ['زمان', 'شماره', 'نوع', 'متن', 'وضعیت (کد HTTP)', 'پاسخ سرویس‌دهنده'], widths: [150, 120, 90, 320, 110, 320], clip: [4, 6], gray: [1] },
   Records: { color: '#0f766e', labels: ['شناسه', 'کد پت', 'نوع', 'تاریخ', 'نام', 'برند', 'سریال', 'محل', 'توضیح', 'تکرار', 'روش', 'مدت', 'پایان', 'وزن', 'نوبت بعدی', 'بسته‌شده؟', 'ثبت دکتر؟', 'ساخته شد', 'ویرایش', 'حذف‌شده؟ (۱=بله)', 'منبع (old=سابقهٔ قبلی)'],
     widths: [110, 90, 130, 100, 150, 110, 110, 110, 140, 90, 90, 80, 100, 70, 100, 80, 80, 150, 150, 90, 110], gray: [1], del: 20 },
   Adoptions: { color: '#b36b00', labels: ['کد', 'زمان ثبت', 'وضعیت', 'گونه', 'نام', 'سن', 'جنس', 'عقیم', 'واکسن', 'رفتار', 'دلیل واگذاری', 'شهر', 'تلفن (محرمانه)', 'عکس (داده)', 'یادداشت', 'تاریخ تأیید', 'ویرایش'],
@@ -554,6 +586,14 @@ function look_(sh, spec) {
   } catch (e) { lastLookError_ = String(e); }
 }
 // از منوی «🐾 سایت دکتر» (بالای شیت) یا از ویرایشگر اسکریپت اجرا کنید؛ ظاهر همهٔ جدول‌ها را به‌روز می‌کند
+function testSms() {
+  var ui = SpreadsheetApp.getUi();
+  if (!prop_('SMS_TOKEN')) return ui.alert('هنوز SMS_TOKEN در Script Properties ثبت نشده است.');
+  var r = ui.prompt('آزمایش پیامک', 'شمارهٔ موبایل خودتان را بنویسید (مثل 09123456789):', ui.ButtonSet.OK_CANCEL);
+  if (r.getSelectedButton() !== ui.Button.OK) return;
+  var out = sendSms_(r.getResponseText(), 'آزمایش پیامک سایت کلینیک دکتر مساوات', 'test');
+  ui.alert(out.ok ? 'درخواست ارسال شد (کد ' + out.status + '). اگر پیامک نرسید، شیت «SMS» را ببینید: ستون «پاسخ سرویس‌دهنده» دلیل را می‌نویسد.' : 'ارسال ناموفق: ' + (out.err || '') + ' ' + (out.msg || ''));
+}
 function formatSheets() {
   var ss = SpreadsheetApp.getActiveSpreadsheet(), done = [];
   try { migrate_(ss); } catch (em) { lastLookError_ = 'migrate: ' + String(em); }
@@ -630,6 +670,7 @@ function onOpen() {
       .addItem('🎨 زیباسازی جدول‌ها', 'formatSheets')
       .addItem('💾 گرفتن پشتیبان', 'backupNow')
       .addItem('🔔 آزمایش اطلاع‌رسانی', 'testNotify')
+      .addItem('📩 آزمایش پیامک', 'testSms')
       .addToUi();
   } catch (e) {}
 }
