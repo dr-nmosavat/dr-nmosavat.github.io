@@ -2057,8 +2057,9 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   }
   function ptSpecies(sel) { return '<div class="seg" data-seg="hb-ptsp">' + ["سگ", "گربه", "پرنده", "دیگر"].map(function (x) { return '<button type="button"' + (x === (sel || "سگ") ? ' class="on"' : "") + ' data-v="' + x + '">' + x + "</button>"; }).join("") + "</div>"; }
   function ptIdFields(r, lk) {
-    return '<div class="fld"><label>📞 شمارهٔ تماس</label><input data-pt="phone"' + (lk ? ' data-hb-lk="pt"' : "") + ' type="tel" inputmode="tel" dir="ltr" maxlength="16" placeholder="09123456789" autocomplete="off" value="' + esc(r && r.phone || "") + '">' + (lk ? '<div class="hb-lkres" data-hb-lkres="pt"></div>' : "") + "</div>"
-      + '<div class="fld"><label>نام پت</label><input data-pt="name"' + (lk ? ' data-hb-lk="pt" autocomplete="off"' : "") + ' type="text" maxlength="40" value="' + esc(r && r.name || "") + '"></div><div class="fld"><label>گونه</label>' + ptSpecies(r && r.species) + "</div>"
+    return '<div class="fld"><label>' + (lk ? '🔎 نام پت <small>(با تایپ نام، در سوابق جستجو می‌شود)</small>' : "نام پت") + '</label><input data-pt="name"' + (lk ? ' data-hb-lk="pt" autocomplete="off"' : "") + ' type="text" maxlength="40" value="' + esc(r && r.name || "") + '">' + (lk ? '<div class="hb-lkres" data-hb-lkres="pt"></div>' : "") + "</div>"
+      + '<div class="fld"><label>📞 شمارهٔ تماس' + (lk ? ' <small>(با شماره هم جستجو می‌شود)</small>' : "") + '</label><input data-pt="phone"' + (lk ? ' data-hb-lk="pt"' : "") + ' type="tel" inputmode="tel" dir="ltr" maxlength="16" placeholder="09123456789" autocomplete="off" value="' + esc(r && r.phone || "") + '"></div>'
+      + '<div class="fld"><label>گونه</label>' + ptSpecies(r && r.species) + "</div>"
       + '<div class="fld"><label>نژاد <small>(اختیاری)</small></label><input data-pt="breed" type="text" maxlength="40" value="' + esc(r && r.breed || "") + '"></div><div class="fld"><label>نام سرپرست</label><input data-pt="owner" type="text" maxlength="40" value="' + esc(r && r.owner || "") + '"></div>';
   }
   function ptShow() {
@@ -2258,9 +2259,10 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       var v = apPref || {}, e = apEditId ? apItems.filter(function (x) { return x.id === apEditId; })[0] : null; if (e) v = e;
       apSel = { date: v.date || (apFilter === "tomorrow" ? isoPlus(apToday || isoNow(), 1) : (apToday || isoNow())), time: v.time || "" }; apLink = v.pkey || "";
       box.innerHTML = '<div class="hb-ptform hb-apform"><h3 class="hb-pth">' + (e ? "ویرایش نوبت" : "ثبت نوبت") + '</h3>'
-        + '<div class="fld"><label>📞 شمارهٔ تماس</label><input data-ap="phone" data-hb-lk="ap" type="tel" inputmode="tel" dir="ltr" maxlength="16" placeholder="09123456789" autocomplete="off" value="' + esc(v.phone || "") + '"><div class="hb-lkres" data-hb-lkres="ap"></div></div>'
+        + '<div class="fld"><label>🔎 نام پت <small>(با تایپ نام، در سوابق جستجو می‌شود)</small></label><input data-ap="name" data-hb-lk="ap" type="text" autocomplete="off" maxlength="40" value="' + esc(v.name || "") + '"><div class="hb-lkres" data-hb-lkres="ap"></div></div>'
+        + '<div class="fld"><label>📞 شمارهٔ تماس <small>(با شماره هم جستجو می‌شود)</small></label><input data-ap="phone" data-hb-lk="ap" type="tel" inputmode="tel" dir="ltr" maxlength="16" placeholder="09123456789" autocomplete="off" value="' + esc(v.phone || "") + '"></div>'
         + '<div class="hb-apchip" data-hb-apchip>' + (v.pkey ? "بیمار قبلی" : "بیمار جدید") + '</div>'
-        + '<div class="fld"><label>نام پت <small>(جستجو با نام یا شماره)</small></label><input data-ap="name" data-hb-lk="ap" type="text" autocomplete="off" maxlength="40" value="' + esc(v.name || "") + '"></div><div class="fld"><label>گونه</label>' + ptSpecies(v.species) + '</div>'
+        + '<div class="fld"><label>گونه</label>' + ptSpecies(v.species) + '</div>'
         + '<div class="fld"><label>نژاد <small>(اختیاری)</small></label><input data-ap="breed" type="text" maxlength="40" value="' + esc(v.breed || "") + '"></div><div class="fld"><label>نام سرپرست</label><input data-ap="owner" type="text" maxlength="40" value="' + esc(v.owner || "") + '"></div>'
         + '<div class="fld"><label>دلیل نوبت</label>' + (SECP ? '<input data-ap="reason" type="text" maxlength="150" placeholder="مثلاً: برای ویزیت بیاید" value="' + esc(v.reason || "") + '">' : apReasonSel(v.reason)) + '</div><div class="fld"><label>یادداشت <small>(اختیاری)</small></label><input data-ap="note" type="text" maxlength="300" value="' + esc(v.note || "") + '"></div>'
         + '<div class="hb-aptop"><label class="hb-aplbl">📅 روز نوبت</label><div class="hb-days" data-hb-apdays></div><div class="fld" data-hb-apother hidden><div class="jd" data-pjd="apd"></div></div><label class="hb-aplbl">🕐 ساعت</label><div class="hb-slots" data-hb-apslots></div></div>'
