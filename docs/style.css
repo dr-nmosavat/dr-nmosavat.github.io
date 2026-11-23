@@ -2163,3 +2163,11 @@ body.hb-drpage .hb-staffhdr { position: -webkit-sticky; position: sticky; top: 0
 .hb-ptvd { margin-top: 8px; padding: 10px 12px; border-radius: 10px; background: #fff; border: 1px solid #d7e0ec; }
 .hb-ptvd[hidden] { display: none !important; }
 .hb-ptvdb { text-align: center; margin-top: 8px; } .hb-mut { color: #7a8597; }
+/* آیپد قدیمی: کادر رمز داخل صفحه، کنار دکمهٔ ورود */
+.hb-qrm.hb-inline { position: static !important; display: block !important; background: none !important; padding: 0 !important; margin: 10px auto 0; max-width: 520px; }
+.hb-qrm.hb-inline [data-hb-dr-close] { display: none; }
+.hb-qrm.hb-inline .hb-qrc { margin: 0 auto; }
+.hb-qrm.hb-inline { width: 100%; box-sizing: border-box; }
+.hb-qrm.hb-inline .hb-qrc { margin-left: auto !important; margin-right: auto !important; max-width: 420px; width: 100%; box-sizing: border-box; }
+.hb-qrm.hb-inline .hb-qrc > h2, .hb-qrm.hb-inline .hb-qrc > p:not(.hb-err) { display: none; }
+.hb-qrm.hb-inline { margin: 10px auto 0 !important; }

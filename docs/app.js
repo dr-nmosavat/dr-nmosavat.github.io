@@ -1428,9 +1428,15 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       else if (iosAnchor && iosAnchor.parentNode && !m.classList.contains("hb-guide")) iosAnchor.parentNode.insertBefore(m, iosAnchor.nextSibling);
       new MutationObserver(function () {
         if (m.hidden) return;
-        setTimeout(function () { try { m.scrollIntoView(true); } catch (e) { try { window.scrollTo(0, Math.max(0, m.getBoundingClientRect().top + (window.pageYOffset || 0) - 12)); } catch (e2) {} } }, 80);
+        setTimeout(function () { try { var hd = document.querySelector(".hb-staffhdr"), off = (hd ? hd.offsetHeight : 0) + 16; window.scrollTo(0, Math.max(0, m.getBoundingClientRect().top + (window.pageYOffset || 0) - off)); } catch (e2) {} }, 80);   // زیر نوار ثابت بالا پنهان نشود
       }).observe(m, { attributes: true, attributeFilter: ["hidden"] });
     });
+    // آیپد قدیمی: وقتی صفحهٔ ورود نمایش داده می‌شود، کادر رمز همان‌جا باز باشد (بدون نیاز به لمس «ورود»)
+    var gateI = q("[data-hb-drgate]"), drmI = q("[data-hb-drm]");
+    if (gateI && drmI) {
+      var syncI = function () { if (!gateI.hidden) { drmI.hidden = false; drmI.classList.add("hb-inline"); } else if (drmI.classList.contains("hb-inline")) { drmI.hidden = true; drmI.classList.remove("hb-inline"); } };
+      new MutationObserver(syncI).observe(gateI, { attributes: true, attributeFilter: ["hidden"] }); setTimeout(syncI, 50);
+    }
   }
   function fitTrack() { var tr = q("[data-hb-track]"); if (!tr) return; if (IOSMODE) { tr.style.height = "auto"; iosShow(curPg); return; } var h = 0; [].forEach.call(tr.children, function (s) { h = Math.max(h, s.scrollHeight); }); tr.style.height = h + "px"; }
   window.addEventListener("resize", function () { if (q("[data-hb-track]")) fitTrack(); });
