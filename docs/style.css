@@ -2108,3 +2108,4 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .hb-qrws .hb-ptday { margin: 0 8px 0 0; align-self: stretch; min-width: 118px; }
 @media (max-width: 560px) { .hb-qrws { flex-wrap: wrap !important; } .hb-qrws .hb-qr1 { flex-basis: 100%; } .hb-qrws .hb-callq, .hb-qrws .hb-ptday { flex: 1 1 40%; margin: 6px 0 0 6px; } }
 .hb-qrws .hb-callq, .hb-qrws .hb-ptday { align-self: center; min-height: 44px; }
+[data-hb-brsel][hidden], [data-ap="breed"][hidden], [data-pt="breed"][hidden] { display: none !important; } [data-hb-brsel] + input:not([hidden]) { margin-top: 6px; }
