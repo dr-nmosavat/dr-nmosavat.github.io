@@ -2298,3 +2298,13 @@ html.hb-dr [data-dview="rep"] [data-hb-searchbox], html.hb-dr [data-dview="rep"]
 .hb-bsearch { width: 100%; min-height: 44px; margin: 6px 0 2px; box-sizing: border-box; }
 .hb-bman { display: block; width: 100%; margin: 6px 0 !important; }
 .hb-unb { background: #fff8e1; border: 1px solid #f0d28a; border-radius: 12px; padding: 10px 12px; margin-top: 12px; } .hb-unb > b { color: #8a5a00; }
+/* منشی: کارت باریک بیمار — تلفن داخل کارت، «به امروز» کنار */
+.hb-qrws.hb-sc { display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; align-items: stretch !important; margin-bottom: 6px; }
+.hb-qrws.hb-sc .hb-qr1 { flex: 1 1 auto !important; min-width: 0; padding: 6px 10px !important; }
+.hb-qrws.hb-sc .hb-qr1 b { font-size: 14.5px; } .hb-qrws.hb-sc .hb-qr1 small { display: block; font-size: 12px; }
+.hb-scph { display: inline-block; margin-top: 2px; font-size: 13px; font-weight: 700; color: #1f5aa6; text-decoration: none; direction: ltr; }
+.hb-scday { flex: 0 0 70px; margin: 0 6px 0 0; border: 1.5px solid #1f5aa6; background: #1f5aa6; color: #fff; border-radius: 12px; font: inherit; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4px 2px; }
+.hb-scday span { font-size: 20px; line-height: 1.1; } .hb-scday small { font-size: 11.5px; font-weight: 700; white-space: nowrap; }
+.hb-scday.on { background: #e2f4ea; border-color: #22a35a; color: #12684a; }
+/* امروز: حذف از صف */
+.hb-qdel { flex: 0 0 34px; width: 34px; margin: 0 6px 0 0; border: 1px solid #e4b4b4; background: #fff; color: #b3382c; border-radius: 10px; font: inherit; font-size: 15px; cursor: pointer; }
