@@ -1834,7 +1834,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (t.closest("[data-hb-dr-close]") || t === q("[data-hb-drm]")) return closeModal("[data-hb-drm]");
     if (t.closest("[data-hb-dr-ok]")) {
       var pw = q("[data-hb-drpw]").value.trim(), er0 = q("[data-hb-drerr]"), fin0 = function () { try { localStorage.setItem("dm_hb_dr", "1"); } catch (x) {} closeModal("[data-hb-drm]"); curType = "واکسن"; applyRole(); render(); if (!(DRPAGE && srvOn() && todayBox())) dview("list"); toast(SECP ? "خوش آمدید 👋" : "خوش آمدید خانم دکتر 👩‍⚕️"); };
-      if (srvOn()) api({ a: "drLogin", pass: pw, rem: q("[data-hb-remember]").checked ? 1 : 0 }).then(function (j) { if (!j.ok) { er0.textContent = j.err === "auth" ? "رمز درست نیست." : errMsg(j.err); er0.hidden = false; return; } if (j.role === "sec" && !SECP) { er0.textContent = "این رمز مخصوص منشی است؛ از صفحهٔ منشی وارد شوید."; er0.hidden = false; return; } tokSet(j.t); fin0(); });
+      if (srvOn()) api({ a: "drLogin", pass: pw, rem: q("[data-hb-remember]").checked ? 1 : 0 }).then(function (j) { if (!j.ok) { er0.textContent = j.err === "auth" ? "رمز درست نیست." : errMsg(j.err); er0.hidden = false; return; } if (j.role === "sec" && !SECP) { er0.textContent = "این رمز مخصوص منشی است؛ از صفحهٔ منشی وارد شوید."; er0.hidden = false; return; } if (j.role === "mgr") { er0.textContent = "این رمز مدیر است؛ صفحهٔ مدیر هنوز ساخته نشده است."; er0.hidden = false; return; } tokSet(j.t); fin0(); });
       else checkDrPass(pw).then(function (ok) { if (!ok) { er0.textContent = "رمز درست نیست."; er0.hidden = false; return; } fin0(); });
       return;
     }

@@ -182,7 +182,7 @@ function nowIso_() { return Utilities.formatDate(new Date(), CFG.tz, "yyyy-MM-dd
 // ---- توکن دکتر ----
 function mkToken_(days, role) {
   var exp = Date.now() + (days || H.tokenDays) * 86400000;
-  return role === 'sec' ? exp + '.' + sig16_('sec|' + exp) + 's' : exp + '.' + sig16_('dr|' + exp);
+  return role === 'sec' ? exp + '.' + sig16_('sec|' + exp) + 's' : role === 'mgr' ? exp + '.' + sig16_('mgr|' + exp) + 'm' : exp + '.' + sig16_('dr|' + exp);
 }
 function sig16_(txt) {
   var raw = Utilities.computeHmacSha256Signature(txt, prop_('SECRET') || 'change-me');
@@ -191,11 +191,14 @@ function sig16_(txt) {
 function okToken_(t) { return roleOf_(t) === 'dr'; }
 // نقش از روی توکن: 'dr' (دکتر) | 'sec' (منشی) | ''
 function roleOf_(t) {
-  var m = /^(\d{10,16})\.([0-9a-f]{24})(s?)$/.exec(String(t || '')); if (!m || Number(m[1]) <= Date.now()) return '';
+  var m = /^(\d{10,16})\.([0-9a-f]{24})([sm]?)$/.exec(String(t || '')); if (!m || Number(m[1]) <= Date.now()) return '';
   if (m[3] === 's') return sig16_('sec|' + m[1]) === m[2] ? 'sec' : '';
+  if (m[3] === 'm') return sig16_('mgr|' + m[1]) === m[2] ? 'mgr' : '';
   return sig16_('dr|' + m[1]) === m[2] ? 'dr' : '';
 }
 // کارهایی که منشی اجازه دارد (فقط نوبت، بیماران و امروز؛ نه شناسنامه و واگذاری)
+// مدیر: همه‌چیز را می‌بیند (حتی یادداشت پزشکی)؛ تعرفه و باطل کردن فاکتور مجاز؛ ثبت/تغییر پرونده، نوبت و صف نه
+var MGR_NO = { savePet: 1, saveRec: 1, delRec: 1, rotate: 1, deletePet: 1, useCode: 1, patSave: 1, patDel: 1, patPatient: 1, patSms: 1, petRemind: 1, petReqSet: 1, adoptSet: 1, apSave: 1, apSet: 1, apRemind: 1, qAdd: 1, qSet: 1, invSave: 1, invPay: 1, touch: 1 };
 var SEC_OK = { svcList: 1, invList: 1, invPay: 1, qList: 1, qAdd: 1, qSet: 1, lookup: 1, apRemind: 1, patList: 1, patSave: 1, patPatient: 1, patSms: 1, touch: 1, todayList: 1, apList: 1, apSave: 1, apSet: 1 };
 function ownerOk_(code, key) {
   var pet = findPet_(code); return pet && !pet.deleted && key && pet.key === String(key) ? pet : null;
@@ -243,7 +246,7 @@ function health_(b) {
   if (a === 'petReqSubmit') return petReqSubmit_(b);
   if (a === 'verifyPublic') return verifyPublic_(b);
   // ---- دکتر ----
-  var role0 = roleOf_(b.t); if (!role0 || (role0 === 'sec' && !SEC_OK[a])) return { ok: false, err: 'auth' };
+  var role0 = roleOf_(b.t); if (!role0 || (role0 === 'sec' && !SEC_OK[a]) || (role0 === 'mgr' && MGR_NO[a])) return { ok: false, err: 'auth' };
   if (role0 === 'sec' && a === 'patSave' && b.v) { b.v.note = ''; b.v.follow = ''; }   // منشی یادداشت درمان و پیگیری ثبت نمی‌کند
   b.role = role0;
   var lock = LockService.getScriptLock(); lock.waitLock(15000);
@@ -292,8 +295,8 @@ function health_(b) {
 function drLogin_(b) {
   var cache = CacheService.getScriptCache(), fails = Number(cache.get('drfails') || 0);
   if (fails >= H.maxFails) return { ok: false, err: 'locked' };
-  var pass = prop_('DR_PASS'), sp = prop_('SEC_PASS'), given = String(b.pass || ''), role = '';
-  if (pass && given === pass) role = 'dr'; else if (sp && given === sp) role = 'sec';
+  var pass = prop_('DR_PASS'), sp = prop_('SEC_PASS'), mp = prop_('MGR_PASS'), given = String(b.pass || ''), role = '';
+  if (pass && given === pass) role = 'dr'; else if (sp && given === sp) role = 'sec'; else if (mp && given === mp) role = 'mgr';   // MGR_PASS: حساب مدیر (اختیاری)
   if (!role) { cache.put('drfails', String(fails + 1), 600); return { ok: false, err: 'auth' }; }
   cache.remove('drfails');
   return { ok: true, role: role, t: mkToken_(b.rem ? 30 : 0, role) };   // «مرا به خاطر بسپار» = ۳۰ روز
