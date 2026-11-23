@@ -2193,17 +2193,18 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       var er = q("[data-hb-pterr]"), btn = q("[data-hb-ptsavenew]"), id = ptIdVals(), vv = ptVisitVals(); if (!id.name) { er.textContent = "نام پت را بنویسید."; er.hidden = false; ptF("name").focus(); return; }
       if (!vv.reason) { er.textContent = "دلیل مراجعه را بنویسید."; er.hidden = false; return; }
       er.hidden = true; btn.disabled = true; var smsBox = q("[data-hb-ptsms-cb]"), wantSms = !!(smsBox && smsBox.checked); var v = { name: id.name, species: id.species, breed: id.breed, owner: id.owner, phone: id.phone, date: vv.date, reason: vv.reason, note: vv.note, follow: vv.follow, pkey: "" };
-      api({ a: "patSave", t: tokGet(), id: "", v: v }).then(function (j) { btn.disabled = false; if (!j.ok) { er.textContent = errMsg(j.err); er.hidden = false; return; } ptFollowAppt(j.item, j.item.pkey, vv); ptItems.unshift(j.item); if (!SECP && vv.date === isoNow() && vv.note) setTimeout(function () { markVisited(j.item.pkey); }, 0); ptCur = j.item.pkey; ptMode = SECP ? "list" : "file"; ptEditV = null; toast("✅ بیمار ثبت شد · " + j.item.name + " · اولین مراجعه ثبت شد"); if (ptFromAp) { var fa = ptFromAp; ptFromAp = ""; api({ a: "apSet", t: tokGet(), id: fa, status: "done" }); apItems.forEach(function (x) { if (x.id === fa) x.status = "done"; }); } ptPre = null; ptShow(); if (wantSms) ptSendSms(j.item.pkey); });
+      api({ a: "patSave", t: tokGet(), id: "", v: v }).then(function (j) { btn.disabled = false; if (!j.ok) { er.textContent = errMsg(j.err); er.hidden = false; return; } ptFollowAppt(j.item, j.item.pkey, vv); ptItems.unshift(j.item); if (!SECP && vv.date === isoNow() && vv.note) setTimeout(function () { markVisited(j.item.pkey); }, 0); if (!SECP) { setTimeout(ptToToday, 0); } ptCur = j.item.pkey; ptMode = SECP ? "list" : "file"; ptEditV = null; toast("✅ بیمار ثبت شد · " + j.item.name + " · اولین مراجعه ثبت شد"); if (ptFromAp) { var fa = ptFromAp; ptFromAp = ""; api({ a: "apSet", t: tokGet(), id: fa, status: "done" }); apItems.forEach(function (x) { if (x.id === fa) x.status = "done"; }); } ptPre = null; ptShow(); if (wantSms) ptSendSms(j.item.pkey); });
       return;
     }
     if (t.closest("[data-hb-ptsavev]")) {
       var er2 = q("[data-hb-pterr2]"), btn2 = q("[data-hb-ptsavev]"), g = ptGroup(ptCur)[0], vv2 = ptVisitVals(); if (!g) return;
       if (!vv2.reason) { er2.textContent = "دلیل مراجعه را بنویسید."; er2.hidden = false; return; }
       er2.hidden = true; btn2.disabled = true; var v2 = { name: g.name, species: g.species, breed: g.breed, owner: g.owner, phone: g.phone, date: vv2.date, reason: vv2.reason, note: vv2.note, follow: vv2.follow, pkey: ptCur };
+      var wasEdit = !!ptEditV;
       api({ a: "patSave", t: tokGet(), id: ptEditV ? ptEditV.id : "", v: v2 }).then(function (j) {
         btn2.disabled = false; if (!j.ok) { er2.textContent = errMsg(j.err); er2.hidden = false; return; }
         if (!ptEditV || ptEditV.follow !== vv2.follow) ptFollowAppt(g, ptCur, vv2); if (ptEditV) ptItems = ptItems.map(function (x) { return x.id === j.item.id ? j.item : x; }); else ptItems.unshift(j.item);
-        ptItems.sort(function (x, y) { return x.date < y.date ? 1 : x.date > y.date ? -1 : 0; }); ptEditV = null; toast("✅ مراجعه ثبت شد"); ptShow(); if (!SECP && vv2.date === isoNow() && vv2.note) markVisited(ptCur);
+        ptItems.sort(function (x, y) { return x.date < y.date ? 1 : x.date > y.date ? -1 : 0; }); ptEditV = null; toast("✅ مراجعه ثبت شد"); if (!SECP && vv2.date === isoNow() && vv2.note) markVisited(ptCur); if (!SECP && !wasEdit) ptToToday(); else ptShow();
       });
       return;
     }
@@ -2302,6 +2303,8 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     var el = q("[data-hb-tdap]"); if (!el) return; var l = apItems.filter(function (r) { return r.date === apToday && r.status === "booked" && !(r.pkey && visitedToday(r.pkey)); });
     el.innerHTML = l.length ? '<div class="hb-ptdue hb-tdapb"><b>⏳ در انتظار ویزیت (' + toolFa(l.length) + ")</b>" + l.map(function (r) { return '<button type="button" class="hb-ptdr" data-hb-apgo><span>' + (r.time ? toolFa(r.time) + " · " : "") + esc(r.name) + (r.owner ? " · " + esc(r.owner) : "") + "</span></button>"; }).join("") + "</div>" : "";
   }
+  // بعد از ثبت ویزیت: فرم بسته شود و به «امروز» برگردد
+  function ptToToday() { ptMode = "list"; ptEditV = null; dview("today"); try { window.scrollTo(0, 0); } catch (e) {} }
   function ptJump(k) { if (SECP) return; ptPending = k; touchLog("patient", k); dview("pt"); if (ptLoaded && ptGroup(k).length) { ptPending = ""; ptCur = k; ptMode = "file"; ptEditV = null; ptShow(); } }
 
   // نوبت‌دهی
