@@ -2258,3 +2258,6 @@ body.hb-drpage { background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22h
   .hb-tdr .btn { min-height: 32px; font-size: 12px; padding: 0 8px; }
 }
 @media (max-width: 560px) { .hb-tdri { flex-basis: 100%; } .hb-tdr .btn { flex: 1 1 40%; margin: 4px 2px 0 !important; justify-content: center; } }
+.hb-tdtag { display: inline-block; margin-inline-start: 6px; padding: 1px 8px; border-radius: 999px; background: #e6eef9; color: #1f5aa6; border: 1px solid #b9d3f7; font-size: 11.5px; font-weight: 700; vertical-align: middle; }
+.hb-tdsecw { color: #8a5a00; border-top: 0; padding-top: 0; margin-top: 4px; }
+.hb-tdoth { margin-top: 12px; } .hb-tdoth summary { cursor: pointer; color: #5b6b80; font-size: 13.5px; padding: 6px 0; }

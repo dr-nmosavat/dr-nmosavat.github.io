@@ -1990,7 +1990,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   var tabBase = {};
   var tabCnt = {};
   function grpBadges() { var G = { clients: ["today", "appt"], book: ["req"], more: ["adopt"] }; [].forEach.call(root.querySelectorAll("[data-hb-grp]"), function (gb) { var g = gb.getAttribute("data-hb-grp"), sum = 0; (G[g] || []).forEach(function (v) { sum += tabCnt[v] || 0; }); if (!gb.getAttribute("data-base")) gb.setAttribute("data-base", gb.textContent); gb.textContent = gb.getAttribute("data-base") + (sum ? " (" + toolFa(sum) + ")" : ""); gb.classList.toggle("has-new", sum > 0); }); }
-  function apCountAll() { var td = apToday || isoNow(); return apItems.filter(function (r) { return r.status === "booked" && r.date >= td; }).length; }
+  function apCountAll() { var td = apToday || isoNow(); return apItems.filter(function (r) { return r.status === "booked" && r.date >= td && !isQueue(r) && !(r.date === td && cameOn(r)); }).length; }
   function setTabCount(v, n) { tabCnt[v] = n; grpBadges(); var b = q('[data-hb-dtab="' + v + '"]'); if (!b) return; if (!tabBase[v]) tabBase[v] = b.textContent;
     if (v === "appt") { b.innerHTML = esc(tabBase[v]) + (n ? ' <span class="hb-apdot">' + toolFa(n) + "</span>" : ""); b.classList.remove("has-new"); return; } b.textContent = tabBase[v] + (n ? " (" + toolFa(n) + ")" : ""); b.classList.toggle("has-new", n > 0); }
   function tabCounts() {
@@ -2142,14 +2142,17 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     box.innerHTML = '<div class="hb-pttool"><input type="search" data-hb-ptq autocomplete="off" placeholder="🔎 جستجو: نام، سرپرست، تلفن یا تشخیص"><button type="button" class="btn small ghost" data-hb-ptref aria-label="تازه‌سازی">🔄</button></div><div data-hb-ptfollow></div><div class="hb-adlist" data-hb-ptlist></div>';
     ptRenderList();
   }
-  function ptInToday(k) { var td = apToday || isoNow(); return apItems.some(function (x) { return x.pkey === k && x.date === td && x.status === "booked"; }); }
+  // صف امروز (حضور همین الان) جدا از نوبت؛ فعلاً در همان شیت نوبت‌ها با برچسب «[صف]» در یادداشت
+  var QM = "[صف]";
+  function isQueue(r) { return /^(\[صف\]|ارسال از پذیرش)/.test(String(r && r.note || "")); }
+  function ptInToday(k) { var td = apToday || isoNow(); return !!k && apItems.some(function (x) { return x.pkey === k && x.date === td && x.status === "booked"; }); }
   // منشی: افزودن بیمار به «نوبت‌های امروز» دکتر (یک نوبتِ امروز با ساعت همین الان)
   function ptToday(o, btn) {
     if (ptInToday(o.pkey)) return toast("«" + o.name + "» از قبل در لیست امروز است.");
     var d = new Date(), hm = ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2); if (btn) btn.disabled = true;
-    api({ a: "apSave", t: tokGet(), id: "", v: { date: apToday || isoNow(), time: hm, name: o.name, species: o.species, breed: o.breed || "", owner: o.owner, phone: o.phone, reason: "در انتظار ویزیت", note: "ارسال از پذیرش", pkey: o.pkey || "", rem: 0 } }).then(function (j) {
+    api({ a: "apSave", t: tokGet(), id: "", v: { date: apToday || isoNow(), time: hm, name: o.name, species: o.species, breed: o.breed || "", owner: o.owner, phone: o.phone, reason: "در انتظار ویزیت", note: QM + " ارسال از پذیرش", pkey: o.pkey || "", rem: 0 } }).then(function (j) {
       if (btn) btn.disabled = false; if (!j.ok) return toast("⚠️ " + errMsg(j.err), 7000);
-      apItems.push(j.item); setTabCount("appt", apCountAll());
+      apItems.push(j.item);
       toast("✅ «" + o.name + "» به لیست امروز دکتر اضافه شد"); if (ptBox() && ptMode === "list") ptRenderList(); if (todayBox()) todayRender();
     });
   }
@@ -2288,7 +2291,31 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function markVisited(k) {
     var td = apToday || isoNow();
     apItems.forEach(function (x) { if (x.pkey === k && x.date === td && x.status === "booked") { x.status = "done"; api({ a: "apSet", t: tokGet(), id: x.id, status: "done" }); } });
+    // ویزیت بدون صف/نوبت: یک ردیف صفِ «آمد» ساخته می‌شود تا پذیرش هم «ویزیت شد» را ببیند
+    var has = apItems.some(function (x) { return x.pkey === k && x.date === td && x.status !== "cancelled"; }), g = ptGroup(k)[0];
+    if (!has && g) { var d0 = new Date(), hm0 = ("0" + d0.getHours()).slice(-2) + ":" + ("0" + d0.getMinutes()).slice(-2);
+      api({ a: "apSave", t: tokGet(), id: "", v: { date: td, time: hm0, name: g.name, species: g.species, breed: g.breed || "", owner: g.owner, phone: g.phone, reason: "ویزیت", note: QM + " ویزیت دکتر", pkey: k, rem: 0 } }).then(function (j) { if (!j.ok) return; j.item.status = "done"; apItems.push(j.item); api({ a: "apSet", t: tokGet(), id: j.item.id, status: "done" }); if (todayBox()) todayRender(); }); }
     setTabCount("appt", apCountAll()); if (todayBox()) todayRender();
+  }
+  // صف امروز: نوبت‌های امروز + «به امروز»ها + ویزیت‌شده‌های امروز
+  function todayEntries() {
+    var td = apToday || isoNow(), map = {}, list = [];
+    function key(r) { if (r.pkey) return r.pkey; var ph = phN(r.phone || ""); if (ph) { var m = apItems.filter(function (x) { return x.date === td && x.pkey && phN(x.phone || "") === ph; })[0] || ptItems.filter(function (x) { return phN(x.phone || "") === ph; })[0]; if (m) return m.pkey; } return "A:" + r.id; }
+    function ent(k, r) { var e = map[k]; if (!e) { e = map[k] = { k: k, pkey: k.indexOf("A:") === 0 ? "" : k, name: r.name, species: r.species, owner: r.owner, phone: r.phone, ap: null, q: null }; list.push(e); } return e; }
+    apItems.forEach(function (r) { if (r.date !== td || r.status === "cancelled") return; var e = ent(key(r), r); if (isQueue(r)) { if (!e.q || r.status === "done") e.q = r; } else if (!e.ap) e.ap = r; });
+    if (!SECP) ptItems.forEach(function (r) { if (r.date === td && String(r.note || "").trim()) ent(r.pkey, r); });
+    var other = todayItems.filter(function (it) { if (it.kind === "patient" && map[it.ref]) { var e = map[it.ref]; e.phone = e.phone || it.phone; e.species = e.species || it.species; e.owner = e.owner || it.owner; return false; } return true; });
+    var wait = [], done = [];
+    list.forEach(function (e) { ((e.pkey && visitedToday(e.pkey)) || (e.q && e.q.status === "done") || (e.ap && e.ap.status === "done") ? done : wait).push(e); });
+    var tk = function (e) { return (e.ap && e.ap.time) || (e.q && e.q.time) || "99"; };
+    wait.sort(function (a, b) { return tk(a) < tk(b) ? -1 : tk(a) > tk(b) ? 1 : 0; });
+    return { wait: wait, done: done, other: other };
+  }
+  function qCard(e, done) {
+    var open = e.pkey ? 'data-hb-tdpt="' + esc(e.pkey) + '"' : "data-hb-apgo";
+    var tag = e.ap ? ' <span class="hb-tdtag">🗓 نوبت' + (done ? " داشت" : "") + (e.ap.time ? " " + toolFa(e.ap.time) : "") + "</span>" : "";
+    var st = done ? ' <span class="hb-tdvb">ویزیت شد</span>' : ' <span class="hb-tdwb">⏳ در انتظار</span>';
+    return '<div class="hb-qrw hb-tdc' + (done ? " hb-tdv" : " hb-tdw") + '"><button type="button" class="hb-qr1" ' + open + "><b>" + (done ? "✅ " : "") + esc(e.name || "—") + st + tag + "</b><small>" + esc(e.species || "") + (e.owner ? " · " + esc(e.owner) : "") + (!e.ap && e.q && e.q.time && !done ? " · ورود " + toolFa(e.q.time) : "") + "</small></button>" + (e.phone ? '<a class="hb-call hb-callq" dir="ltr" href="tel:' + esc(e.phone) + '">📞 ' + esc(e.phone) + "</a>" : "") + "</div>";
   }
   function todayCard(it, done) {
     var open = it.kind === "pet" ? 'data-hb-qopen="' + esc(it.ref) + '"' : it.kind === "appt" && !it.ref ? "data-hb-apgo" : 'data-hb-tdpt="' + esc(it.ref) + '"';
@@ -2316,14 +2343,13 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function todayRender() {
     var box = todayBox(); if (!box) return; var iso = isoNow();
     box.innerHTML = (SECP ? '<div class="hb-tdhead hb-tdsrch"><input type="search" data-hb-tdq autocomplete="off" placeholder="🔎 جستجوی بیمار با نام یا شماره" value="' + esc(tdQ) + '"><button type="button" class="btn small ghost" data-hb-tdref aria-label="تازه‌سازی">🔄</button></div><div data-hb-tdres>' + tdResHtml() + "</div>" : '<div class="hb-tdhead"><b>امروز · ' + esc(wdOf(iso)) + " " + esc(jLabel(iso)) + '</b><span>' + toolFa(todayItems.length) + ' مورد</span><button type="button" class="btn small ghost" data-hb-tdref aria-label="تازه‌سازی">🔄</button></div>') + '<div data-hb-tdap></div>'
-      + (todayItems.length || apItems.some(function (r) { return r.date === (apToday || isoNow()) && r.status === "booked"; }) ? (function () {
-        var wait = [], done = [], td = apToday || isoNow(), wap = apItems.filter(function (r) { return r.date === td && r.status === "booked" && !(r.pkey && visitedToday(r.pkey)); }), used = {};
-        var all = todayItems.map(function (it) { var a = it.kind === "patient" ? wap.filter(function (r) { return r.pkey === it.ref; })[0] : null; if (a) used[a.id] = 1; var o = {}; for (var k in it) o[k] = it[k]; o._wait = a || null; return o; });
-        wap.forEach(function (r) { if (!used[r.id]) all.push({ kind: "appt", ref: r.pkey || "", name: r.name, owner: r.owner, phone: r.phone, species: r.species, tags: [], time: "", _wait: r }); });
-        all.forEach(function (it) { ((it.kind === "patient" || it.kind === "appt") && it.ref && visitedToday(it.ref) ? done : wait).push(it); });
-        wait.sort(function (x, y) { var a = x._wait ? "0" + (x._wait.time || "99") : "1", b = y._wait ? "0" + (y._wait.time || "99") : "1"; return a < b ? -1 : a > b ? 1 : 0; });
-        return wait.map(function (it) { return todayCard(it, false); }).join("") + (done.length ? '<h4 class="hb-tdsec">✅ ویزیت‌شده‌های امروز (' + toolFa(done.length) + ")</h4>" + done.map(function (it) { return todayCard(it, true); }).join("") : "");
-      })() : '<p class="hb-qmsg">امروز هنوز موردی نیست. از «ثبت بیمار جدید» یا «شناسنامه» شروع کنید.</p>');
+      + (function () {
+        var g = todayEntries(), w = g.wait, dn = g.done, ot = g.other; setTimeout(function () { setTabCount("today", w.length); }, 0);
+        if (!w.length && !dn.length && !ot.length) return '<p class="hb-qmsg">' + (SECP ? "هنوز کسی در صف امروز نیست. بیمار را جستجو کنید و «📅 به امروز» بزنید." : "هنوز کسی در صف امروز نیست.") + "</p>";
+        return (w.length ? '<h4 class="hb-tdsec hb-tdsecw">⏳ در انتظار ویزیت (' + toolFa(w.length) + ")</h4>" + w.map(function (e) { return qCard(e, false); }).join("") : '<p class="hb-qmsg">کسی در انتظار ویزیت نیست.</p>')
+          + (dn.length ? '<h4 class="hb-tdsec">✅ ویزیت‌شده‌های امروز (' + toolFa(dn.length) + ")</h4>" + dn.map(function (e) { return qCard(e, true); }).join("") : "")
+          + (!SECP && ot.length ? '<details class="hb-tdoth"><summary>👁 سایر فعالیت‌های امروز (' + toolFa(ot.length) + ")</summary>" + ot.map(function (it) { return todayCard(it, false); }).join("") + "</details>" : "");
+      })();
     var sp0 = q("[data-hb-tdap]"); if (sp0) sp0.innerHTML = "";
   }
   // نوبت‌های امروز داخل خود کارت‌ها نشان داده می‌شوند («⏳ در انتظار ویزیت»)
@@ -2341,7 +2367,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function apBox() { return q("[data-hb-apbox]"); }
   function apEnter() { apMode = "list"; apLoad(); }
   function apLoad() {
-    var box = apBox(); if (!box) return; if (apMode === "list" && !apItems.length) box.innerHTML = '<p class="hb-qmsg">در حال بارگذاری…</p>';
+    var box = apBox(); if (!box) return; if (!ptLoaded) api({ a: "patList", t: tokGet() }).then(function (j) { if (j.ok) { ptItems = j.items || []; ptLoaded = true; if (apMode === "list") apShow(); } }); if (apMode === "list" && !apItems.length) box.innerHTML = '<p class="hb-qmsg">در حال بارگذاری…</p>';
     api({ a: "apList", t: tokGet() }).then(function (j) {
       if (!j.ok) { if (apMode === "list") box.innerHTML = '<p class="hb-qmsg">' + esc(errMsg(j.err)) + "</p>"; return; }
       apItems = j.items || []; apToday = j.today || isoNow(); setTabCount("appt", apCountAll());
@@ -2350,6 +2376,13 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   }
   var AP_ST = { booked: "⏳ در انتظار", done: "✅ آمد", noshow: "🚫 نیامد", cancelled: "❌ لغو شد" };
   var AP_REASONS = ["ویزیت مجدد"].concat(PT_REASONS);
+  // آمد/نیامد خودکار: اگر آن روز مراجعه یا ویزیتی برایش ثبت شده → آمد
+  function cameOn(r) {
+    if (r.status === "done") return true; var k = r.pkey, ph = phN(r.phone || ""), same = function (x) { return k ? x.pkey === k : ph && phN(x.phone || "") === ph; };
+    return ptItems.some(function (x) { return x.date === r.date && same(x); }) || apItems.some(function (x) { return isQueue(x) && x.date === r.date && x.status === "done" && same(x); });
+  }
+  function apOpen(r) { return r.status === "booked" && r.date >= (apToday || isoNow()) && !cameOn(r); }
+  function apStatus(r) { return r.status === "cancelled" ? "❌ لغو شد" : cameOn(r) ? "✅ آمد" : r.date < (apToday || isoNow()) ? "🚫 نیامد" : "⏳ در انتظار"; }
   function apReasonSel(v) {
     var r = v || ""; return '<select data-ap="reason">' + AP_REASONS.map(function (x) { return '<option value="' + esc(x) + '"' + (x === r ? " selected" : "") + ">" + esc(x) + "</option>"; }).join("") + '<option value="__other"' + (r && AP_REASONS.indexOf(r) < 0 ? " selected" : "") + '>سایر (خودم می‌نویسم)…</option></select><input data-ap="reasonx" type="text" maxlength="120" placeholder="دلیل را بنویسید" value="' + esc(r && AP_REASONS.indexOf(r) < 0 ? r : "") + '"' + (r && AP_REASONS.indexOf(r) < 0 ? "" : " hidden") + ">";
   }
@@ -2394,15 +2427,15 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       return;
     }
     var td = apToday || isoNow(), tm = isoPlus(td, 1);
-    var l = apItems.filter(function (r) { return apFilter === "today" ? r.date === td : apFilter === "tomorrow" ? r.date === tm : apFilter === "upcoming" ? r.date > td : r.date < td; });
+    var l = apItems.filter(function (r) { return !isQueue(r) && apFilter === "today" ? r.date === td : apFilter === "tomorrow" ? r.date === tm : apFilter === "upcoming" ? r.date > td : r.date < td; });
     l.sort(function (a, b) { var k = (a.date + a.time) < (b.date + b.time) ? -1 : 1; return apFilter === "past" ? -k : k; });
     var FL = [["today", "امروز"], ["tomorrow", "فردا"], ["upcoming", "آینده"], ["past", "گذشته"]];
-    box.innerHTML = '<div class="hb-pttool"><button type="button" class="btn small ghost" data-hb-apref aria-label="تازه‌سازی">🔄</button></div><div class="seg hb-adf" data-hb-apseg>' + FL.map(function (f) { var nb = f[0] === "past" ? 0 : apItems.filter(function (r) { return r.status === "booked" && (f[0] === "today" ? r.date === td : f[0] === "tomorrow" ? r.date === tm : r.date > td); }).length; return '<button type="button"' + (apFilter === f[0] ? ' class="on"' : "") + ' data-hb-apf="' + f[0] + '">' + f[1] + (nb ? ' <span class="hb-apdot">' + toolFa(nb) + "</span>" : "") + "</button>"; }).join("") + '</div><div class="hb-adlist">'
+    box.innerHTML = '<div class="hb-pttool"><button type="button" class="btn small ghost" data-hb-apref aria-label="تازه‌سازی">🔄</button></div><div class="seg hb-adf" data-hb-apseg>' + FL.map(function (f) { var nb = f[0] === "past" ? 0 : apItems.filter(function (r) { return r.status === "booked" && !isQueue(r) && !cameOn(r) && (f[0] === "today" ? r.date === td : f[0] === "tomorrow" ? r.date === tm : r.date > td); }).length; return '<button type="button"' + (apFilter === f[0] ? ' class="on"' : "") + ' data-hb-apf="' + f[0] + '">' + f[1] + (nb ? ' <span class="hb-apdot">' + toolFa(nb) + "</span>" : "") + "</button>"; }).join("") + '</div><div class="hb-adlist">'
       + (l.length ? l.map(function (r) {
         var smi = r.smsAt ? '<small class="hb-apsm">📩 یادآور رفت ✅ ' + esc(fd(r.smsAt)) + "</small>" : r.rem ? '<small class="hb-apsm">📩 یادآور روشن</small>' : "";
-        return '<article class="hb-adc hb-apc ap-' + esc(r.status) + '"><div class="hb-adh"><b>' + (r.time ? toolFa(r.time) : "بدون ساعت") + " · " + esc(r.name) + "</b><span>" + esc(r.species) + (r.owner ? " · " + esc(r.owner) : "") + "</span><em>" + AP_ST[r.status] + "</em></div><p>" + (apFilter === "upcoming" || apFilter === "past" ? esc(wdOf(r.date)) + " " + esc(jLabel(r.date)) + " · " : "") + esc(r.reason || "") + (r.note ? " · " + esc(r.note) : "") + (r.phone ? ' · <a class="hb-call" dir="ltr" href="tel:' + esc(r.phone) + '">📞 ' + esc(r.phone) + "</a>" : "") + (smi ? " · " + smi : "") + '</p><div class="hb-adb hb-apacts">'
-          + (r.status === "booked" ? '<button type="button" class="btn small primary" data-hb-apin="' + esc(r.id) + '">📥 ثبت ورود</button><button type="button" class="btn small ghost" data-hb-aprem="' + esc(r.id) + '">📩 یادآور</button><button type="button" class="btn small ghost" data-hb-apst="noshow" data-id="' + esc(r.id) + '">🚫 نیامد</button><button type="button" class="btn small ghost hb-danger" data-hb-apst="cancelled" data-id="' + esc(r.id) + '">❌ لغو</button>' : '<button type="button" class="btn small" data-hb-apst="booked" data-id="' + esc(r.id) + '">↩︎ بازگردانی</button>')
-          + '<button type="button" class="btn small ghost" data-hb-apedit="' + esc(r.id) + '">✏️ ویرایش</button><button type="button" class="btn small ghost hb-danger" data-hb-apdel="' + esc(r.id) + '" aria-label="حذف">🗑</button></div></article>';
+        return '<article class="hb-adc hb-apc ap-' + esc(r.status) + '"><div class="hb-adh"><b>' + (r.time ? toolFa(r.time) : "بدون ساعت") + " · " + esc(r.name) + "</b><span>" + esc(r.species) + (r.owner ? " · " + esc(r.owner) : "") + "</span><em>" + apStatus(r) + "</em></div><p>" + (apFilter === "upcoming" || apFilter === "past" ? esc(wdOf(r.date)) + " " + esc(jLabel(r.date)) + " · " : "") + esc(r.reason || "") + (r.note ? " · " + esc(r.note) : "") + (r.phone ? ' · <a class="hb-call" dir="ltr" href="tel:' + esc(r.phone) + '">📞 ' + esc(r.phone) + "</a>" : "") + (smi ? " · " + smi : "") + '</p><div class="hb-adb hb-apacts">'
+          + (apOpen(r) ? '<button type="button" class="btn small ghost" data-hb-aprem="' + esc(r.id) + '">📩 یادآور</button><button type="button" class="btn small ghost" data-hb-apedit="' + esc(r.id) + '">✏️ ویرایش</button><button type="button" class="btn small ghost hb-danger" data-hb-apst="cancelled" data-id="' + esc(r.id) + '">❌ لغو</button>' : "")
+          + '</div></article>';
       }).join("") : '<p class="hb-qmsg">نوبتی در این بازه نیست.</p>') + "</div>";
   }
   document.addEventListener("click", function (e) {
