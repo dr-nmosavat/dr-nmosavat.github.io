@@ -2291,19 +2291,26 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     setTabCount("appt", apCountAll()); if (todayBox()) todayRender();
   }
   function todayCard(it, done) {
-    var open = it.kind === "pet" ? 'data-hb-qopen="' + esc(it.ref) + '"' : 'data-hb-tdpt="' + esc(it.ref) + '"';
-    return '<div class="hb-qrw hb-tdc' + (done ? " hb-tdv" : "") + '"><button type="button" class="hb-qr1" ' + open + "><b>" + (done ? "✅ " : "") + esc(it.name || "—") + (done ? ' <span class="hb-tdvb">ویزیت شد</span>' : "") + "</b><small>" + (it.kind === "pet" ? "📒 شناسنامه" : "🩺 بیمار") + " · " + esc(it.species || "") + (it.owner ? " · " + esc(it.owner) : "") + "</small><small>" + it.tags.map(function (g) { return TD_TAG[g] || g; }).join(" · ") + (it.time ? " · " + toolFa(it.time) : "") + "</small></button>" + (it.phone ? '<a class="hb-call hb-callq" dir="ltr" href="tel:' + esc(it.phone) + '">📞 ' + esc(it.phone) + "</a>" : "") + "</div>";
+    var open = it.kind === "pet" ? 'data-hb-qopen="' + esc(it.ref) + '"' : it.kind === "appt" && !it.ref ? "data-hb-apgo" : 'data-hb-tdpt="' + esc(it.ref) + '"';
+    var wb = !done && it._wait ? ' <span class="hb-tdwb">⏳ در انتظار ویزیت' + (it._wait.time ? " · " + toolFa(it._wait.time) : "") + "</span>" : "";
+    return '<div class="hb-qrw hb-tdc' + (done ? " hb-tdv" : "") + (wb ? " hb-tdw" : "") + '"><button type="button" class="hb-qr1" ' + open + "><b>" + (done ? "✅ " : "") + esc(it.name || "—") + (done ? ' <span class="hb-tdvb">ویزیت شد</span>' : "") + wb + "</b><small>" + (it.kind === "pet" ? "📒 شناسنامه" : it.kind === "appt" ? "🗓 نوبت" : "🩺 بیمار") + " · " + esc(it.species || "") + (it.owner ? " · " + esc(it.owner) : "") + "</small><small>" + it.tags.map(function (g) { return TD_TAG[g] || g; }).join(" · ") + (it.time ? " · " + toolFa(it.time) : "") + "</small></button>" + (it.phone ? '<a class="hb-call hb-callq" dir="ltr" href="tel:' + esc(it.phone) + '">📞 ' + esc(it.phone) + "</a>" : "") + "</div>";
   }
   function todayRender() {
     var box = todayBox(); if (!box) return; var iso = isoNow();
     box.innerHTML = '<div class="hb-tdhead"><b>امروز · ' + esc(wdOf(iso)) + " " + esc(jLabel(iso)) + '</b><span>' + toolFa(todayItems.length) + ' مورد</span><button type="button" class="btn small ghost" data-hb-tdref aria-label="تازه‌سازی">🔄</button></div><div data-hb-tdap></div>'
-      + (todayItems.length ? (function () {
-        var wait = [], done = []; todayItems.forEach(function (it) { (it.kind === "patient" && visitedToday(it.ref) ? done : wait).push(it); });
+      + (todayItems.length || apItems.some(function (r) { return r.date === (apToday || isoNow()) && r.status === "booked"; }) ? (function () {
+        var wait = [], done = [], td = apToday || isoNow(), wap = apItems.filter(function (r) { return r.date === td && r.status === "booked" && !(r.pkey && visitedToday(r.pkey)); }), used = {};
+        var all = todayItems.map(function (it) { var a = it.kind === "patient" ? wap.filter(function (r) { return r.pkey === it.ref; })[0] : null; if (a) used[a.id] = 1; var o = {}; for (var k in it) o[k] = it[k]; o._wait = a || null; return o; });
+        wap.forEach(function (r) { if (!used[r.id]) all.push({ kind: "appt", ref: r.pkey || "", name: r.name, owner: r.owner, phone: r.phone, species: r.species, tags: [], time: "", _wait: r }); });
+        all.forEach(function (it) { ((it.kind === "patient" || it.kind === "appt") && it.ref && visitedToday(it.ref) ? done : wait).push(it); });
+        wait.sort(function (x, y) { var a = x._wait ? "0" + (x._wait.time || "99") : "1", b = y._wait ? "0" + (y._wait.time || "99") : "1"; return a < b ? -1 : a > b ? 1 : 0; });
         return wait.map(function (it) { return todayCard(it, false); }).join("") + (done.length ? '<h4 class="hb-tdsec">✅ ویزیت‌شده‌های امروز (' + toolFa(done.length) + ")</h4>" + done.map(function (it) { return todayCard(it, true); }).join("") : "");
       })() : '<p class="hb-qmsg">امروز هنوز موردی نیست. از «ثبت بیمار جدید» یا «شناسنامه» شروع کنید.</p>');
-    todayApStrip();
+    var sp0 = q("[data-hb-tdap]"); if (sp0) sp0.innerHTML = "";
   }
-  function todayApStrip() {
+  // نوبت‌های امروز داخل خود کارت‌ها نشان داده می‌شوند («⏳ در انتظار ویزیت»)
+  function todayApStrip() { if (todayBox()) todayRender(); }
+  function todayApStripOld() {
     var el = q("[data-hb-tdap]"); if (!el) return; var l = apItems.filter(function (r) { return r.date === apToday && r.status === "booked" && !(r.pkey && visitedToday(r.pkey)); });
     el.innerHTML = l.length ? '<div class="hb-ptdue hb-tdapb"><b>⏳ در انتظار ویزیت (' + toolFa(l.length) + ")</b>" + l.map(function (r) { return '<button type="button" class="hb-ptdr" data-hb-apgo><span>' + (r.time ? toolFa(r.time) + " · " : "") + esc(r.name) + (r.owner ? " · " + esc(r.owner) : "") + "</span></button>"; }).join("") + "</div>" : "";
   }
