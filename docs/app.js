@@ -2100,8 +2100,19 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       ptInitVisit(ptEditV); if (ptEditV) { q("[data-hb-ptvt]").textContent = "ویرایش مراجعه"; q("[data-hb-ptsavev]").textContent = "ذخیرهٔ ویرایش"; q("[data-hb-ptvcancel]").hidden = false; }
       return;
     }
-    box.innerHTML = '<div class="hb-pttool"><input type="search" data-hb-ptq autocomplete="off" placeholder="🔎 جستجو: نام، سرپرست، تلفن یا تشخیص"><button type="button" class="btn small primary" data-hb-ptnew>＋ ثبت بیمار جدید</button><button type="button" class="btn small ghost" data-hb-ptref aria-label="تازه‌سازی">🔄</button></div><div data-hb-ptfollow></div><div class="hb-adlist" data-hb-ptlist></div>';
+    box.innerHTML = '<div class="hb-pttool"><input type="search" data-hb-ptq autocomplete="off" placeholder="🔎 جستجو: نام، سرپرست، تلفن یا تشخیص"><button type="button" class="btn small ghost" data-hb-ptref aria-label="تازه‌سازی">🔄</button></div><div data-hb-ptfollow></div><div class="hb-adlist" data-hb-ptlist></div>';
     ptRenderList();
+  }
+  function ptInToday(k) { var td = apToday || isoNow(); return apItems.some(function (x) { return x.pkey === k && x.date === td && x.status === "booked"; }); }
+  // منشی: افزودن بیمار به «نوبت‌های امروز» دکتر (یک نوبتِ امروز با ساعت همین الان)
+  function ptToday(o, btn) {
+    if (ptInToday(o.pkey)) return toast("«" + o.name + "» از قبل در لیست امروز است.");
+    var d = new Date(), hm = ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2); if (btn) btn.disabled = true;
+    api({ a: "apSave", t: tokGet(), id: "", v: { date: apToday || isoNow(), time: hm, name: o.name, species: o.species, breed: o.breed || "", owner: o.owner, phone: o.phone, reason: "در انتظار ویزیت", note: "ارسال از پذیرش", pkey: o.pkey || "", rem: 0 } }).then(function (j) {
+      if (btn) btn.disabled = false; if (!j.ok) return toast("⚠️ " + errMsg(j.err), 7000);
+      apItems.push(j.item); setTabCount("appt", apItems.filter(function (r) { return r.date === (apToday || isoNow()) && r.status === "booked"; }).length);
+      toast("✅ «" + o.name + "» به لیست امروز دکتر اضافه شد"); if (ptBox() && ptMode === "list") ptRenderList();
+    });
   }
   function ptRenderList() {
     var qi = ptBox().querySelector("[data-hb-ptq]"), qs = faDigits(qi ? qi.value : "").trim().toLowerCase(), box = ptBox().querySelector("[data-hb-ptlist]"), fb = ptBox().querySelector("[data-hb-ptfollow]"), now = isoNow();
@@ -2111,6 +2122,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     fb.innerHTML = due.length && !qs ? '<div class="hb-ptdue"><b>🔔 پیگیری‌ها (' + toolFa(due.length) + ")</b>" + due.slice(0, 8).map(function (g) { var r = g[0]; return '<button type="button" class="hb-ptdr" data-hb-ptopen="' + esc(r.pkey) + '"><span>' + esc(r.name) + (r.owner ? " · " + esc(r.owner) : "") + "</span><small>" + (r.follow < now ? "عقب‌افتاده · " : r.follow === now ? "امروز · " : "") + esc(fd(r.follow)) + "</small></button>"; }).join("") + "</div>" : "";
     box.innerHTML = shown.length ? shown.map(function (g) {
       var r = g[0];
+      if (SECP) return '<div class="hb-qrw hb-qrws"><div class="hb-qr1"><b>' + esc(r.name) + "</b><small>" + esc(r.species) + (r.breed ? " · " + esc(r.breed) : "") + (r.owner ? " · " + esc(r.owner) : "") + "</small><small>آخرین مراجعه: " + esc(fd(r.date)) + "</small></div>" + (r.phone ? '<a class="hb-call hb-callq" dir="ltr" href="tel:' + esc(r.phone) + '">📞 ' + esc(r.phone) + "</a>" : "") + '<button type="button" class="btn small primary hb-ptday" data-hb-pttoday="' + esc(r.pkey) + '">' + (ptInToday(r.pkey) ? "✅ در لیست امروز" : "📅 به امروز") + "</button></div>";
       return '<div class="hb-qrw"><button type="button" class="hb-qr1" data-hb-ptopen="' + esc(r.pkey) + '"><b>' + esc(r.name) + (smsMap()[r.pkey] || g.some(function (x) { return x.smsAt; }) ? " 📩" : "") + "</b><small>" + esc(r.species) + (r.owner ? " · " + esc(r.owner) : "") + " · " + toolFa(g.length) + " مراجعه</small><small>آخرین: " + esc(fd(r.date)) + (r.reason ? " · " + esc(r.reason) : "") + "</small></button>" + (r.phone ? '<a class="hb-call hb-callq" dir="ltr" href="tel:' + esc(r.phone) + '">📞 ' + esc(r.phone) + "</a>" : "") + "</div>";
     }).join("") : '<p class="hb-qmsg">' + (ptItems.length ? "موردی پیدا نشد." : "هنوز بیماری ثبت نشده است. با «ثبت بیمار جدید» شروع کنید.") + "</p>";
   }
@@ -2129,7 +2141,9 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (t.closest("[data-hb-ptnew]")) { ptPre = null; ptFromAp = ""; ptMode = "new"; return ptShow(); }
     if (t.closest("[data-hb-ptref]")) { ptLoaded = false; return ptLoad(); }
     if (t.closest("[data-hb-ptback]")) { ptMode = "list"; ptEditV = null; return ptShow(); }
-    if ((b = t.closest("[data-hb-ptopen]"))) { ptCur = b.getAttribute("data-hb-ptopen"); touchLog("patient", ptCur, (ptGroup(ptCur)[0] || {}).name); ptMode = "file"; ptEditV = null; ptShow(); try { window.scrollTo(0, ptBox().getBoundingClientRect().top + window.pageYOffset - 80); } catch (x) {} return; }
+    if ((b = t.closest("[data-hb-pttoday]"))) { var gt = ptGroup(b.getAttribute("data-hb-pttoday"))[0]; if (gt) ptToday(gt, b); return; }
+    if ((b = t.closest("[data-hb-ptopen]")) && SECP) return;
+    if (b) { ptCur = b.getAttribute("data-hb-ptopen"); touchLog("patient", ptCur, (ptGroup(ptCur)[0] || {}).name); ptMode = "file"; ptEditV = null; ptShow(); try { window.scrollTo(0, ptBox().getBoundingClientRect().top + window.pageYOffset - 80); } catch (x) {} return; }
     if (t.closest("[data-hb-ptidedit]")) { q("[data-hb-ptidf]").hidden = false; return; }
     if (t.closest("[data-hb-ptidcancel]")) { q("[data-hb-ptidf]").hidden = true; return; }
     if (t.closest("[data-hb-ptvcancel]")) { ptEditV = null; return ptShow(); }
@@ -2141,7 +2155,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       var er = q("[data-hb-pterr]"), btn = q("[data-hb-ptsavenew]"), id = ptIdVals(), vv = ptVisitVals(); if (!id.name) { er.textContent = "نام پت را بنویسید."; er.hidden = false; ptF("name").focus(); return; }
       if (!vv.reason) { er.textContent = "دلیل مراجعه را بنویسید."; er.hidden = false; return; }
       er.hidden = true; btn.disabled = true; var smsBox = q("[data-hb-ptsms-cb]"), wantSms = !!(smsBox && smsBox.checked); var v = { name: id.name, species: id.species, breed: id.breed, owner: id.owner, phone: id.phone, date: vv.date, reason: vv.reason, note: vv.note, follow: vv.follow, pkey: "" };
-      api({ a: "patSave", t: tokGet(), id: "", v: v }).then(function (j) { btn.disabled = false; if (!j.ok) { er.textContent = errMsg(j.err); er.hidden = false; return; } ptFollowAppt(j.item, j.item.pkey, vv); ptItems.unshift(j.item); ptCur = j.item.pkey; ptMode = "file"; ptEditV = null; toast("✅ بیمار ثبت شد · " + j.item.name + " · اولین مراجعه ثبت شد"); if (ptFromAp) { var fa = ptFromAp; ptFromAp = ""; api({ a: "apSet", t: tokGet(), id: fa, status: "done" }); apItems.forEach(function (x) { if (x.id === fa) x.status = "done"; }); } ptPre = null; ptShow(); if (wantSms) ptSendSms(j.item.pkey); });
+      api({ a: "patSave", t: tokGet(), id: "", v: v }).then(function (j) { btn.disabled = false; if (!j.ok) { er.textContent = errMsg(j.err); er.hidden = false; return; } ptFollowAppt(j.item, j.item.pkey, vv); ptItems.unshift(j.item); ptCur = j.item.pkey; ptMode = SECP ? "list" : "file"; ptEditV = null; toast("✅ بیمار ثبت شد · " + j.item.name + " · اولین مراجعه ثبت شد"); if (ptFromAp) { var fa = ptFromAp; ptFromAp = ""; api({ a: "apSet", t: tokGet(), id: fa, status: "done" }); apItems.forEach(function (x) { if (x.id === fa) x.status = "done"; }); } ptPre = null; ptShow(); if (wantSms) ptSendSms(j.item.pkey); });
       return;
     }
     if (t.closest("[data-hb-ptsavev]")) {
@@ -2195,6 +2209,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   document.addEventListener("click", function (e) {
     var b = e.target.closest && e.target.closest("[data-hb-lkpick]"); if (!b) return;
     var ctx = b.getAttribute("data-hb-lkpick"), it = (lkRes[ctx] || [])[+b.getAttribute("data-i")]; if (!it) return;
+    if (ctx === "pt" && it.kind === "patient" && it.pkey && SECP) { if (confirm("«" + it.name + "» قبلاً پرونده دارد. به لیست امروز دکتر اضافه شود؟")) { ptToday(it); ptMode = "list"; ptShow(); } return; }
     if (ctx === "pt" && it.kind === "patient" && it.pkey) { if (confirm("«" + it.name + "» قبلاً پرونده دارد. پرونده‌اش باز شود؟ (برای مراجعهٔ جدید از داخل پرونده ثبت کنید)")) { ptPre = null; ptJump(it.pkey); } return; }
     var F = ctx === "ap" ? apF : ptF;
     ["name", "owner", "breed"].forEach(function (k) { var x = F(k); if (x && it[k]) x.value = it[k]; }); if (it.phone) F("phone").value = it.phone;
@@ -2236,7 +2251,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     var el = q("[data-hb-tdap]"); if (!el) return; var l = apItems.filter(function (r) { return r.date === apToday && r.status === "booked"; });
     el.innerHTML = l.length ? '<div class="hb-ptdue hb-tdapb"><b>🗓 نوبت‌های امروز (' + toolFa(l.length) + ")</b>" + l.map(function (r) { return '<button type="button" class="hb-ptdr" data-hb-apgo><span>' + (r.time ? toolFa(r.time) + " · " : "") + esc(r.name) + (r.owner ? " · " + esc(r.owner) : "") + "</span></button>"; }).join("") + "</div>" : "";
   }
-  function ptJump(k) { ptPending = k; touchLog("patient", k); dview("pt"); if (ptLoaded && ptGroup(k).length) { ptPending = ""; ptCur = k; ptMode = "file"; ptEditV = null; ptShow(); } }
+  function ptJump(k) { if (SECP) return; ptPending = k; touchLog("patient", k); dview("pt"); if (ptLoaded && ptGroup(k).length) { ptPending = ""; ptCur = k; ptMode = "file"; ptEditV = null; ptShow(); } }
 
   // نوبت‌دهی
   var apItems = [], apToday = "", apMode = "list", apFilter = "today", apEditId = "", apPref = null, APJ = {};
@@ -2299,7 +2314,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     var l = apItems.filter(function (r) { return apFilter === "today" ? r.date === td : apFilter === "tomorrow" ? r.date === tm : apFilter === "upcoming" ? r.date > td : r.date < td; });
     l.sort(function (a, b) { var k = (a.date + a.time) < (b.date + b.time) ? -1 : 1; return apFilter === "past" ? -k : k; });
     var FL = [["today", "امروز"], ["tomorrow", "فردا"], ["upcoming", "آینده"], ["past", "گذشته"]];
-    box.innerHTML = '<div class="hb-pttool"><button type="button" class="btn small primary" data-hb-apnew>＋ نوبت جدید</button><button type="button" class="btn small ghost" data-hb-apref aria-label="تازه‌سازی">🔄</button></div><div class="seg hb-adf" data-hb-apseg>' + FL.map(function (f) { return '<button type="button"' + (apFilter === f[0] ? ' class="on"' : "") + ' data-hb-apf="' + f[0] + '">' + f[1] + "</button>"; }).join("") + '</div><div class="hb-adlist">'
+    box.innerHTML = '<div class="hb-pttool"><button type="button" class="btn small ghost" data-hb-apref aria-label="تازه‌سازی">🔄</button></div><div class="seg hb-adf" data-hb-apseg>' + FL.map(function (f) { return '<button type="button"' + (apFilter === f[0] ? ' class="on"' : "") + ' data-hb-apf="' + f[0] + '">' + f[1] + "</button>"; }).join("") + '</div><div class="hb-adlist">'
       + (l.length ? l.map(function (r) {
         var smi = r.smsAt ? '<small class="hb-smsst">📩 یادآور رفت ✅ ' + esc(fd(r.smsAt)) + "</small>" : r.rem ? '<small class="hb-smsst">📩 یادآور: روشن</small>' : '<small class="hb-smsst">📩 یادآور: خاموش</small>';
         return '<article class="hb-adc hb-apc ap-' + esc(r.status) + '">' + smi + '<div class="hb-adh"><b>' + (r.time ? toolFa(r.time) : "بدون ساعت") + " · " + esc(r.name) + "</b><span>" + esc(r.species) + (r.owner ? " · " + esc(r.owner) : "") + "</span><em>" + AP_ST[r.status] + "</em></div><p>" + (apFilter === "upcoming" || apFilter === "past" ? esc(wdOf(r.date)) + " " + esc(jLabel(r.date)) + " · " : "") + esc(r.reason || "") + (r.note ? " · " + esc(r.note) : "") + (r.phone ? ' · <a class="hb-call" dir="ltr" href="tel:' + esc(r.phone) + '">📞 ' + esc(r.phone) + "</a>" : "") + '</p><div class="hb-adb">'

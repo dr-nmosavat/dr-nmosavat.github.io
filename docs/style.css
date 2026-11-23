@@ -2094,3 +2094,9 @@ body.hb-drpage .hb-drgate { text-align: center; max-width: 100%; box-sizing: bor
 body.hb-drpage .hb-drgate p { margin-left: auto; margin-right: auto; max-width: 420px; word-wrap: break-word; overflow-wrap: break-word; }
 body.hb-drpage .hb-drgate .btn { display: inline-block; }
 html, body { max-width: 100%; overflow-x: hidden; }
+/* منشی: «مراجعین» وسط؛ کارت بیمار بدون ورود به پرونده */
+.hb-secpage .hb-nav1 { display: flex; justify-content: center; }
+.hb-secpage .hb-nav1 button { flex: 0 1 380px; }
+.hb-qrws { flex-wrap: wrap; } .hb-qrws .hb-qr1 { cursor: default; }
+.hb-ptday { white-space: nowrap; margin: 4px; }
+.hb-secpage [data-hb-ptfollow] { display: none; }
