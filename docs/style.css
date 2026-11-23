@@ -2100,3 +2100,11 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .hb-qrws { flex-wrap: wrap; } .hb-qrws .hb-qr1 { cursor: default; }
 .hb-ptday { white-space: nowrap; margin: 4px; }
 .hb-secpage [data-hb-ptfollow] { display: none; }
+/* منشی: کارت فشرده؛ شماره و «به امروز» کنار کارت */
+.hb-qrws { flex-wrap: nowrap !important; flex-direction: row !important; align-items: center; }
+.hb-qrws .hb-qr1 { padding: 6px 12px; }
+.hb-qrws .hb-qr1 small + small { display: inline; }
+.hb-qrws .hb-callq { margin-right: 8px; margin-left: 0; align-self: stretch; }
+.hb-qrws .hb-ptday { margin: 0 8px 0 0; align-self: stretch; min-width: 118px; }
+@media (max-width: 560px) { .hb-qrws { flex-wrap: wrap !important; } .hb-qrws .hb-qr1 { flex-basis: 100%; } .hb-qrws .hb-callq, .hb-qrws .hb-ptday { flex: 1 1 40%; margin: 6px 0 0 6px; } }
+.hb-qrws .hb-callq, .hb-qrws .hb-ptday { align-self: center; min-height: 44px; }
