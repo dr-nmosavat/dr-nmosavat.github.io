@@ -281,6 +281,7 @@ function health_(b) {
     if (a === 'invSave') return invSave_(b);
     if (a === 'invList') return invList_(b);
     if (a === 'invPay') return invPay_(b);
+    if (a === 'invVoid') return invVoid_(b);
     if (a === 'qList') return qList_();
     if (a === 'qAdd') return qAdd_(b, role0);
     if (a === 'qSet') return qSet_(b);
@@ -418,7 +419,7 @@ function doGet(e) {
   }
   if (p.action === 'spin') return json_(spin_(p));
   if (p.action === 'verify') return verifyPage_(p);
-  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v29-panel' });
+  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v30-panel' });
 }
 
 // ======================= چرخ هدیه =======================
@@ -868,6 +869,14 @@ function invPay_(b) {   // دکتر یا منشی: فقط دریافت وجه
     if (amt <= 0) return { ok: false, err: 'bad' };
     r.paid = String(Math.min(total, num_(r.paid) + amt)); r.method = ['نقد', 'کارت', 'کارت‌به‌کارت'].indexOf(b.method) > -1 ? b.method : 'نقد';
     r.status = num_(r.paid) >= total ? 'paid' : 'partial'; r.paidAt = nowIso_(); r.updated = nowIso_();
+    writeRow_(sh, INV_COLS, r, r._row); return { ok: true, item: invOut_(r) };
+  }
+  return { ok: false, err: 'notfound' };
+}
+function invVoid_(b) {   // فقط دکتر (در SEC_OK نیست): باطل کردن فاکتور با دلیل
+  var sh = hsheet_('Invoices', INV_COLS), rows = readAll_(sh, INV_COLS), i;
+  for (i = 0; i < rows.length; i++) if (rows[i].id === String(b.id || '')) {
+    var r = rows[i]; r.status = 'void'; r.note = clip_((r.note ? r.note + ' · ' : '') + 'باطل شد: ' + clip_(b.why, 120) + (num_(r.paid) ? ' (پرداختی: ' + num_(r.paid) + ' تومان)' : ''), 400); r.updated = nowIso_();
     writeRow_(sh, INV_COLS, r, r._row); return { ok: true, item: invOut_(r) };
   }
   return { ok: false, err: 'notfound' };
