@@ -2156,3 +2156,10 @@ body.hb-drpage .hb-staffhdr { position: -webkit-sticky; position: sticky; top: 0
 .hb-tdvb { display: inline-block; margin-inline-start: 6px; padding: 1px 8px; border-radius: 999px; background: #22a35a; color: #fff; font-size: 11.5px; font-weight: 700; vertical-align: middle; }
 /* نوار کارتابل/میز پذیرش هنگام اسکرول ثابت بماند (زیر نوار «پنل کلینیک») */
 .hb-drbar.hb-titlebar { position: -webkit-sticky; position: sticky; top: var(--hdrh, 64px); z-index: 55; box-shadow: 0 4px 10px rgba(20,40,80,.06); }
+/* سوابق مراجعه: یک خط + دیدن/ویرایش/حذف */
+.hb-ptvh { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.hb-ptvt { flex: 1 1 200px; margin: 4px 0; }
+.hb-ptvb { display: flex; flex-wrap: wrap; } .hb-ptvb .btn { margin: 3px; min-width: 84px; justify-content: center; }
+.hb-ptvd { margin-top: 8px; padding: 10px 12px; border-radius: 10px; background: #fff; border: 1px solid #d7e0ec; }
+.hb-ptvd[hidden] { display: none !important; }
+.hb-ptvdb { text-align: center; margin-top: 8px; } .hb-mut { color: #7a8597; }
