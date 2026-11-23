@@ -2171,3 +2171,9 @@ body.hb-drpage .hb-staffhdr { position: -webkit-sticky; position: sticky; top: 0
 .hb-qrm.hb-inline .hb-qrc { margin-left: auto !important; margin-right: auto !important; max-width: 420px; width: 100%; box-sizing: border-box; }
 .hb-qrm.hb-inline .hb-qrc > h2, .hb-qrm.hb-inline .hb-qrc > p:not(.hb-err) { display: none; }
 .hb-qrm.hb-inline { margin: 10px auto 0 !important; }
+/* فرم مراجعهٔ امروز: جمع‌شونده (برای ویزیت‌شده‌ها پیش‌فرض جمع) */
+.hb-ptvform [data-hb-ptvt] { cursor: pointer; user-select: none; }
+.hb-ptvform.hb-coll > *:not([data-hb-ptvt]) { display: none !important; }
+.hb-ptvform.hb-coll { padding-bottom: 4px; background: #f3f7f4; }
+.hb-ptvform.hb-coll [data-hb-ptvt] { border-bottom: 0; margin-bottom: 0; color: #1d6b3a; }
+.hb-arw { font-size: 13px; color: #6b7a90; }
