@@ -2109,3 +2109,8 @@ html, body { max-width: 100%; overflow-x: hidden; }
 @media (max-width: 560px) { .hb-qrws { flex-wrap: wrap !important; } .hb-qrws .hb-qr1 { flex-basis: 100%; } .hb-qrws .hb-callq, .hb-qrws .hb-ptday { flex: 1 1 40%; margin: 6px 0 0 6px; } }
 .hb-qrws .hb-callq, .hb-qrws .hb-ptday { align-self: center; min-height: 44px; }
 [data-hb-brsel][hidden], [data-ap="breed"][hidden], [data-pt="breed"][hidden] { display: none !important; } [data-hb-brsel] + input:not([hidden]) { margin-top: 6px; }
+/* منشی: ثبت نوبت و ثبت بیمار جدید دو طرف «مراجعین» */
+.hb-secpage .hb-nav1 { display: flex; justify-content: center; align-items: stretch; }
+.hb-secpage .hb-nav1 button { flex: 1 1 0; margin: 0 4px; }
+.hb-secpage .hb-nav1 .hb-nav1-add { background: #1b7a4b; border-color: #1b7a4b; color: #fff; }
+@media (max-width: 560px) { .hb-secpage .hb-nav1 { flex-wrap: wrap; } .hb-secpage .hb-nav1 [data-hb-grp] { order: -1; flex-basis: 100%; margin-bottom: 8px; } }
