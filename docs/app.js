@@ -1413,6 +1413,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     var tr = q("[data-hb-track]"); try { tr.scrollLeft = (getComputedStyle(tr).direction === "rtl" ? -1 : 1) * curPg * tr.clientWidth; } catch (e0) {} fitTrack();
   }
   // آیفون/آیپد: به‌جای اسکرین scroll-snap، فقط صفحهٔ انتخاب‌شده نشان داده می‌شود و کشیدن انگشت جدا مدیریت می‌شود
+  (function () { function hh() { var h = document.querySelector(".hb-staffhdr"); if (h) document.documentElement.style.setProperty("--hdrh", (h.offsetHeight + 6) + "px"); } hh(); window.addEventListener("resize", hh); setTimeout(hh, 600); })();
   var IOSMODE = (function () { var m = /(iPhone|iPad|iPod).*? OS (\d+)_/.exec(navigator.userAgent); return !!(m && Number(m[2]) <= 14); })();   // فقط آیفون/آیپد با iOS ۱۴ و قدیمی‌تر
   if (IOSMODE) document.documentElement.classList.add("hb-ios");
   function iosShow(i) { var tr = q("[data-hb-track]"); if (!tr) return; [].forEach.call(tr.children, function (sl, n) { sl.classList.toggle("hb-on", n === i); }); }
@@ -1614,7 +1615,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   q("[data-hb-file]").addEventListener("change", function () { var inp = this; cropPhoto(inp.files[0], function (d) { formPhoto = d; showPhoto(); }); inp.value = ""; });
   q("[data-hb-file2]").addEventListener("change", function () { var inp = this; cropPhoto(inp.files[0], function (d) { var cp = curPet(); if (cp) { cp.photo = d; save(); render(); } }); inp.value = ""; });
   // جمع‌شدن سربرگ سایت هنگام پایین رفتن
-  (function () { var hd = document.querySelector("header.top"), ly = window.scrollY; if (!hd || !document.body.classList.contains("hb-page")) return; window.addEventListener("scroll", function () { var y = window.scrollY; if (y > ly + 6 && y > 90) hd.classList.add("fold"); else if (y < ly - 6 || y < 40) hd.classList.remove("fold"); ly = y; }, { passive: true }); })();
+  (function () { var hd = document.querySelector("header.top"), ly = window.scrollY; if (!hd || !document.body.classList.contains("hb-page") || document.body.classList.contains("hb-drpage")) return; window.addEventListener("scroll", function () { var y = window.scrollY; if (y > ly + 6 && y > 90) hd.classList.add("fold"); else if (y < ly - 6 || y < 40) hd.classList.remove("fold"); ly = y; }, { passive: true }); })();
   // ---- ارسال شناسنامه برای سرپرست (لینک) و دریافت ----
   function b64u(bytes) { var s = "", i; for (i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000)); return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
   function unb64u(t) { t = t.replace(/-/g, "+").replace(/_/g, "/"); while (t.length % 4) t += "="; var s = atob(t), b = new Uint8Array(s.length), i; for (i = 0; i < s.length; i++) b[i] = s.charCodeAt(i); return b; }
@@ -2120,7 +2121,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       var r = g[0];
       box.innerHTML = '<button type="button" class="btn small ghost hb-ptbk" data-hb-ptback>→ بازگشت به فهرست</button>'
         + '<div class="hb-ptfile" data-hb-ptfile><h4 class="hb-ptsec">اطلاعات پت و سرپرست</h4><div class="hb-ptinfo"><b class="hb-ptn1">' + esc(r.name) + "</b><span>" + esc(r.species) + (r.owner ? " · سرپرست: " + esc(r.owner) : "") + "</span>" + (r.phone ? '<a class="hb-call" dir="ltr" href="tel:' + esc(r.phone) + '">📞 ' + esc(r.phone) + "</a>" : "<small>شمارهٔ تماس ثبت نشده</small>") + "</div>"
-        + '<p class="hb-ptlastl">' + (g.length > 1 ? "قبلاً: " + g.slice(0, 3).map(function (v) { return esc(fd(v.date)) + (v.reason ? " (" + esc(v.reason) + ")" : ""); }).join(" · ") : "اولین مراجعه: " + esc(fd(r.date)) + (r.reason ? " (" + esc(r.reason) + ")" : "")) + "</p>"
+        + '<p class="hb-ptlastl">اولین مراجعه: ' + esc(fd(g[g.length - 1].date)) + (g.length > 1 ? " · " + toolFa(g.length) + " مراجعه (سوابق پایین صفحه)" : "") + "</p>"
         + '<p class="hb-smsst" data-hb-ptsmsst>' + smsLine(r.pkey) + "</p>"
         + '<div class="hb-adb hb-ptacts"><button type="button" class="btn small ghost" data-hb-ptidedit>✏️ ویرایش اطلاعات</button><button type="button" class="btn small ghost" data-hb-ptbook>🪪 صدور شناسنامه</button><button type="button" class="btn small ghost" data-hb-ptsms>📩 ارسال پیامک</button><button type="button" class="btn small ghost" data-hb-ptappt>🗓 ثبت نوبت</button></div><div class="hb-ptidf" data-hb-ptidf hidden>' + ptIdFields(r) + '<p class="hb-err" data-hb-pterr hidden></p><div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-ptidsave>ذخیرهٔ اطلاعات</button><button type="button" class="btn small ghost" data-hb-ptidcancel>انصراف</button></div></div></div>'
         + '<div class="hb-ptform hb-ptvform"><h4 class="hb-ptsec hb-ptsec2" data-hb-ptvt>پروندهٔ بیمار · مراجعهٔ امروز</h4>' + ptVisitFields() + '<p class="hb-err" data-hb-pterr2 hidden></p><div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-ptsavev>ثبت مراجعه</button><button type="button" class="btn small ghost" data-hb-ptvcancel hidden>انصراف از ویرایش</button></div></div>'
@@ -2184,7 +2185,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       var er = q("[data-hb-pterr]"), btn = q("[data-hb-ptsavenew]"), id = ptIdVals(), vv = ptVisitVals(); if (!id.name) { er.textContent = "نام پت را بنویسید."; er.hidden = false; ptF("name").focus(); return; }
       if (!vv.reason) { er.textContent = "دلیل مراجعه را بنویسید."; er.hidden = false; return; }
       er.hidden = true; btn.disabled = true; var smsBox = q("[data-hb-ptsms-cb]"), wantSms = !!(smsBox && smsBox.checked); var v = { name: id.name, species: id.species, breed: id.breed, owner: id.owner, phone: id.phone, date: vv.date, reason: vv.reason, note: vv.note, follow: vv.follow, pkey: "" };
-      api({ a: "patSave", t: tokGet(), id: "", v: v }).then(function (j) { btn.disabled = false; if (!j.ok) { er.textContent = errMsg(j.err); er.hidden = false; return; } ptFollowAppt(j.item, j.item.pkey, vv); ptItems.unshift(j.item); ptCur = j.item.pkey; ptMode = SECP ? "list" : "file"; ptEditV = null; toast("✅ بیمار ثبت شد · " + j.item.name + " · اولین مراجعه ثبت شد"); if (ptFromAp) { var fa = ptFromAp; ptFromAp = ""; api({ a: "apSet", t: tokGet(), id: fa, status: "done" }); apItems.forEach(function (x) { if (x.id === fa) x.status = "done"; }); } ptPre = null; ptShow(); if (wantSms) ptSendSms(j.item.pkey); });
+      api({ a: "patSave", t: tokGet(), id: "", v: v }).then(function (j) { btn.disabled = false; if (!j.ok) { er.textContent = errMsg(j.err); er.hidden = false; return; } ptFollowAppt(j.item, j.item.pkey, vv); ptItems.unshift(j.item); if (!SECP && vv.date === isoNow() && vv.note) setTimeout(function () { markVisited(j.item.pkey); }, 0); ptCur = j.item.pkey; ptMode = SECP ? "list" : "file"; ptEditV = null; toast("✅ بیمار ثبت شد · " + j.item.name + " · اولین مراجعه ثبت شد"); if (ptFromAp) { var fa = ptFromAp; ptFromAp = ""; api({ a: "apSet", t: tokGet(), id: fa, status: "done" }); apItems.forEach(function (x) { if (x.id === fa) x.status = "done"; }); } ptPre = null; ptShow(); if (wantSms) ptSendSms(j.item.pkey); });
       return;
     }
     if (t.closest("[data-hb-ptsavev]")) {
@@ -2194,7 +2195,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       api({ a: "patSave", t: tokGet(), id: ptEditV ? ptEditV.id : "", v: v2 }).then(function (j) {
         btn2.disabled = false; if (!j.ok) { er2.textContent = errMsg(j.err); er2.hidden = false; return; }
         if (!ptEditV || ptEditV.follow !== vv2.follow) ptFollowAppt(g, ptCur, vv2); if (ptEditV) ptItems = ptItems.map(function (x) { return x.id === j.item.id ? j.item : x; }); else ptItems.unshift(j.item);
-        ptItems.sort(function (x, y) { return x.date < y.date ? 1 : x.date > y.date ? -1 : 0; }); ptEditV = null; toast("✅ مراجعه ثبت شد"); ptShow();
+        ptItems.sort(function (x, y) { return x.date < y.date ? 1 : x.date > y.date ? -1 : 0; }); ptEditV = null; toast("✅ مراجعه ثبت شد"); ptShow(); if (!SECP && vv2.date === isoNow() && vv2.note) markVisited(ptCur);
       });
       return;
     }
@@ -2265,21 +2266,33 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function todayLoad() {
     var box = todayBox(); if (!box) return; box.innerHTML = '<p class="hb-qmsg">در حال بارگذاری…</p>';
     api({ a: "todayList", t: tokGet() }).then(function (j) { if (!j.ok) { box.innerHTML = '<p class="hb-qmsg">' + esc(errMsg(j.err)) + "</p>"; return; } todayItems = j.items || []; todayRender(); setTabCount("today", 0); });
-    api({ a: "apList", t: tokGet() }).then(function (j) { if (j.ok) { apItems = j.items || []; apToday = j.today || isoNow(); setTabCount("appt", apCountAll()); todayApStrip(); } });
+    api({ a: "apList", t: tokGet() }).then(function (j) { if (j.ok) { apItems = j.items || []; apToday = j.today || isoNow(); setTabCount("appt", apCountAll()); if (todayItems.length) todayRender(); else todayApStrip(); } });
+    if (!ptLoaded && !SECP) api({ a: "patList", t: tokGet() }).then(function (j) { if (j.ok) { ptItems = j.items || []; ptLoaded = true; if (todayBox()) todayRender(); } });
   }
   var TD_TAG = { "new": "🆕 ساخته شد امروز", visit: "🩺 مراجعهٔ امروز", opened: "👁 امروز باز شد" };
+  // ویزیت‌شدهٔ امروز: دکتر برایش امروز یافته/تشخیص نوشته، یا نوبت امروزش «آمد» خورده
+  function visitedToday(k) { var td = isoNow(); return ptItems.some(function (r) { return r.pkey === k && r.date === td && String(r.note || "").trim(); }) || apItems.some(function (r) { return r.pkey === k && r.date === (apToday || td) && r.status === "done"; }); }
+  function markVisited(k) {
+    var td = apToday || isoNow();
+    apItems.forEach(function (x) { if (x.pkey === k && x.date === td && x.status === "booked") { x.status = "done"; api({ a: "apSet", t: tokGet(), id: x.id, status: "done" }); } });
+    setTabCount("appt", apCountAll()); if (todayBox()) todayRender();
+  }
+  function todayCard(it, done) {
+    var open = it.kind === "pet" ? 'data-hb-qopen="' + esc(it.ref) + '"' : 'data-hb-tdpt="' + esc(it.ref) + '"';
+    return '<div class="hb-qrw hb-tdc' + (done ? " hb-tdv" : "") + '"><button type="button" class="hb-qr1" ' + open + "><b>" + (done ? "✅ " : "") + esc(it.name || "—") + (done ? ' <span class="hb-tdvb">ویزیت شد</span>' : "") + "</b><small>" + (it.kind === "pet" ? "📒 شناسنامه" : "🩺 بیمار") + " · " + esc(it.species || "") + (it.owner ? " · " + esc(it.owner) : "") + "</small><small>" + it.tags.map(function (g) { return TD_TAG[g] || g; }).join(" · ") + (it.time ? " · " + toolFa(it.time) : "") + "</small></button>" + (it.phone ? '<a class="hb-call hb-callq" dir="ltr" href="tel:' + esc(it.phone) + '">📞 ' + esc(it.phone) + "</a>" : "") + "</div>";
+  }
   function todayRender() {
     var box = todayBox(); if (!box) return; var iso = isoNow();
     box.innerHTML = '<div class="hb-tdhead"><b>امروز · ' + esc(wdOf(iso)) + " " + esc(jLabel(iso)) + '</b><span>' + toolFa(todayItems.length) + ' مورد</span><button type="button" class="btn small ghost" data-hb-tdref aria-label="تازه‌سازی">🔄</button></div><div data-hb-tdap></div>'
-      + (todayItems.length ? todayItems.map(function (it) {
-        var open = it.kind === "pet" ? 'data-hb-qopen="' + esc(it.ref) + '"' : 'data-hb-tdpt="' + esc(it.ref) + '"';
-        return '<div class="hb-qrw hb-tdc"><button type="button" class="hb-qr1" ' + open + "><b>" + esc(it.name || "—") + "</b><small>" + (it.kind === "pet" ? "📒 شناسنامه" : "🩺 بیمار") + " · " + esc(it.species || "") + (it.owner ? " · " + esc(it.owner) : "") + "</small><small>" + it.tags.map(function (g) { return TD_TAG[g] || g; }).join(" · ") + (it.time ? " · " + toolFa(it.time) : "") + "</small></button>" + (it.phone ? '<a class="hb-call hb-callq" dir="ltr" href="tel:' + esc(it.phone) + '">📞 ' + esc(it.phone) + "</a>" : "") + "</div>";
-      }).join("") : '<p class="hb-qmsg">امروز هنوز موردی نیست. از «ثبت بیمار جدید» یا «شناسنامه» شروع کنید.</p>');
+      + (todayItems.length ? (function () {
+        var wait = [], done = []; todayItems.forEach(function (it) { (it.kind === "patient" && visitedToday(it.ref) ? done : wait).push(it); });
+        return wait.map(function (it) { return todayCard(it, false); }).join("") + (done.length ? '<h4 class="hb-tdsec">✅ ویزیت‌شده‌های امروز (' + toolFa(done.length) + ")</h4>" + done.map(function (it) { return todayCard(it, true); }).join("") : "");
+      })() : '<p class="hb-qmsg">امروز هنوز موردی نیست. از «ثبت بیمار جدید» یا «شناسنامه» شروع کنید.</p>');
     todayApStrip();
   }
   function todayApStrip() {
-    var el = q("[data-hb-tdap]"); if (!el) return; var l = apItems.filter(function (r) { return r.date === apToday && r.status === "booked"; });
-    el.innerHTML = l.length ? '<div class="hb-ptdue hb-tdapb"><b>🗓 نوبت‌های امروز (' + toolFa(l.length) + ")</b>" + l.map(function (r) { return '<button type="button" class="hb-ptdr" data-hb-apgo><span>' + (r.time ? toolFa(r.time) + " · " : "") + esc(r.name) + (r.owner ? " · " + esc(r.owner) : "") + "</span></button>"; }).join("") + "</div>" : "";
+    var el = q("[data-hb-tdap]"); if (!el) return; var l = apItems.filter(function (r) { return r.date === apToday && r.status === "booked" && !(r.pkey && visitedToday(r.pkey)); });
+    el.innerHTML = l.length ? '<div class="hb-ptdue hb-tdapb"><b>⏳ در انتظار ویزیت (' + toolFa(l.length) + ")</b>" + l.map(function (r) { return '<button type="button" class="hb-ptdr" data-hb-apgo><span>' + (r.time ? toolFa(r.time) + " · " : "") + esc(r.name) + (r.owner ? " · " + esc(r.owner) : "") + "</span></button>"; }).join("") + "</div>" : "";
   }
   function ptJump(k) { if (SECP) return; ptPending = k; touchLog("patient", k); dview("pt"); if (ptLoaded && ptGroup(k).length) { ptPending = ""; ptCur = k; ptMode = "file"; ptEditV = null; ptShow(); } }
 

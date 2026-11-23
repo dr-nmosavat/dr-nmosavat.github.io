@@ -2093,7 +2093,6 @@ html.hb-dr .hb-sendrow + .hb-sendrow { margin-top: -6px; }
 body.hb-drpage .hb-drgate { text-align: center; max-width: 100%; box-sizing: border-box; padding-left: 12px; padding-right: 12px; }
 body.hb-drpage .hb-drgate p { margin-left: auto; margin-right: auto; max-width: 420px; word-wrap: break-word; overflow-wrap: break-word; }
 body.hb-drpage .hb-drgate .btn { display: inline-block; }
-html, body { max-width: 100%; overflow-x: hidden; }
 /* منشی: «مراجعین» وسط؛ کارت بیمار بدون ورود به پرونده */
 .hb-secpage .hb-nav1 { display: flex; justify-content: center; }
 .hb-secpage .hb-nav1 button { flex: 0 1 380px; }
@@ -2115,7 +2114,6 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .hb-secpage .hb-nav1 .hb-nav1-add { background: #1b7a4b; border-color: #1b7a4b; color: #fff; }
 @media (max-width: 560px) { .hb-secpage .hb-nav1 { flex-wrap: wrap; } .hb-secpage .hb-nav1 [data-hb-grp] { order: -1; flex-basis: 100%; margin-bottom: 8px; } }
 /* نوار «پنل کلینیک» ثابت هنگام اسکرول (دکتر و پذیرش) */
-html { overflow-x: hidden; } body { overflow-x: visible; }
 body.hb-drpage .hb-staffhdr { position: -webkit-sticky; position: sticky; top: 0; z-index: 60; }
 /* میز پذیرش: خوش‌آمد راست، عنوان وسط، خروج چپ */
 .hb-titlebar { align-items: center; }
@@ -2152,3 +2150,9 @@ body.hb-drpage .hb-staffhdr { position: -webkit-sticky; position: sticky; top: 0
 .hb-titlebar .hb-drbtn { justify-self: end; grid-column: 3; grid-row: 1; }
 @media (max-width: 560px) { .hb-drbar.hb-titlebar { grid-template-columns: 1fr 1fr; } .hb-titlebar .hb-tmid { grid-column: 1 / -1; grid-row: 2; margin-top: 6px; } .hb-titlebar .hb-drbtn { grid-column: 2; } }
 @media (max-width: 560px) { .hb-titlebar .hb-drbadge { white-space: nowrap; font-size: 12.5px; padding: 5px 10px; } }
+/* امروز: ویزیت‌شده‌ها */
+.hb-tdsec { margin: 14px 0 8px; padding-top: 10px; border-top: 1px dashed #c7d3e2; color: #1d6b3a; font-size: 14.5px; }
+.hb-tdv .hb-qr1 { background: #eef8f1 !important; border-color: #b7e1c4 !important; opacity: .9; }
+.hb-tdvb { display: inline-block; margin-inline-start: 6px; padding: 1px 8px; border-radius: 999px; background: #22a35a; color: #fff; font-size: 11.5px; font-weight: 700; vertical-align: middle; }
+/* نوار کارتابل/میز پذیرش هنگام اسکرول ثابت بماند (زیر نوار «پنل کلینیک») */
+.hb-drbar.hb-titlebar { position: -webkit-sticky; position: sticky; top: var(--hdrh, 64px); z-index: 55; box-shadow: 0 4px 10px rgba(20,40,80,.06); }
