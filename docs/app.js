@@ -1982,7 +1982,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   // ---- شمارندهٔ تب‌ها (دکتر) ----
   var tabBase = {};
   var tabCnt = {};
-  function grpBadges() { var G = { clients: ["today"], book: ["req"], more: ["adopt", "appt"] }; [].forEach.call(root.querySelectorAll("[data-hb-grp]"), function (gb) { var g = gb.getAttribute("data-hb-grp"), sum = 0; (G[g] || []).forEach(function (v) { sum += tabCnt[v] || 0; }); if (!gb.getAttribute("data-base")) gb.setAttribute("data-base", gb.textContent); gb.textContent = gb.getAttribute("data-base") + (sum ? " (" + toolFa(sum) + ")" : ""); gb.classList.toggle("has-new", sum > 0); }); }
+  function grpBadges() { var G = { clients: ["today", "appt"], book: ["req"], more: ["adopt"] }; [].forEach.call(root.querySelectorAll("[data-hb-grp]"), function (gb) { var g = gb.getAttribute("data-hb-grp"), sum = 0; (G[g] || []).forEach(function (v) { sum += tabCnt[v] || 0; }); if (!gb.getAttribute("data-base")) gb.setAttribute("data-base", gb.textContent); gb.textContent = gb.getAttribute("data-base") + (sum ? " (" + toolFa(sum) + ")" : ""); gb.classList.toggle("has-new", sum > 0); }); }
   function apCountAll() { var td = apToday || isoNow(); return apItems.filter(function (r) { return r.status === "booked" && r.date >= td; }).length; }
   function setTabCount(v, n) { tabCnt[v] = n; grpBadges(); var b = q('[data-hb-dtab="' + v + '"]'); if (!b) return; if (!tabBase[v]) tabBase[v] = b.textContent;
     if (v === "appt") { b.innerHTML = esc(tabBase[v]) + (n ? ' <span class="hb-apdot">' + toolFa(n) + "</span>" : ""); b.classList.remove("has-new"); return; } b.textContent = tabBase[v] + (n ? " (" + toolFa(n) + ")" : ""); b.classList.toggle("has-new", n > 0); }
