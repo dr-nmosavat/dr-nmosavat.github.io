@@ -67,6 +67,9 @@ var PET_COLS = ['code', 'key', 'name', 'en', 'owner', 'guardian', 'species', 'br
 var SMS_COLS = ['time', 'to', 'kind', 'text', 'status', 'response', 'raw'];
 var PT_COLS = ['id', 'pkey', 'created', 'updated', 'date', 'name', 'species', 'breed', 'owner', 'phone', 'reason', 'note', 'follow', 'code', 'deleted', 'fee', 'paid', 'pay'];
 var ACT_COLS = ['day', 'time', 'kind', 'ref', 'name'];
+var SV_COLS = ['id', 'name', 'price', 'active', 'sort', 'updated'];
+var INV_COLS = ['id', 'created', 'updated', 'date', 'pkey', 'vid', 'name', 'owner', 'phone', 'items', 'sub', 'disc', 'total', 'status', 'paid', 'method', 'paidAt', 'note'];
+var Q_COLS = ['id', 'created', 'updated', 'date', 'time', 'pkey', 'name', 'species', 'breed', 'owner', 'phone', 'status', 'src', 'note'];
 var AP_COLS = ['id', 'created', 'updated', 'date', 'time', 'name', 'species', 'breed', 'owner', 'phone', 'reason', 'note', 'status', 'pkey', 'deleted', 'rem'];
 var REC_COLS = ['id', 'code', 'type', 'date', 'name', 'brand', 'serial', 'place', 'extra', 'freq', 'how', 'dur', 'end', 'weight', 'next', 'closed', 'dr', 'created', 'updated', 'deleted', 'src'];
 
@@ -193,7 +196,7 @@ function roleOf_(t) {
   return sig16_('dr|' + m[1]) === m[2] ? 'dr' : '';
 }
 // کارهایی که منشی اجازه دارد (فقط نوبت، بیماران و امروز؛ نه شناسنامه و واگذاری)
-var SEC_OK = { lookup: 1, apRemind: 1, patList: 1, patSave: 1, patPatient: 1, patSms: 1, touch: 1, todayList: 1, apList: 1, apSave: 1, apSet: 1 };
+var SEC_OK = { svcList: 1, invList: 1, invPay: 1, qList: 1, qAdd: 1, qSet: 1, lookup: 1, apRemind: 1, patList: 1, patSave: 1, patPatient: 1, patSms: 1, touch: 1, todayList: 1, apList: 1, apSave: 1, apSet: 1 };
 function ownerOk_(code, key) {
   var pet = findPet_(code); return pet && !pet.deleted && key && pet.key === String(key) ? pet : null;
 }
@@ -242,6 +245,7 @@ function health_(b) {
   // ---- دکتر ----
   var role0 = roleOf_(b.t); if (!role0 || (role0 === 'sec' && !SEC_OK[a])) return { ok: false, err: 'auth' };
   if (role0 === 'sec' && a === 'patSave' && b.v) { b.v.note = ''; b.v.follow = ''; }   // منشی یادداشت درمان و پیگیری ثبت نمی‌کند
+  b.role = role0;
   var lock = LockService.getScriptLock(); lock.waitLock(15000);
   try {
     if (role0 === 'sec' && a === 'patList') { var pl = patList_(); pl.items.forEach(function (x) { x.note = ''; }); return pl; }
@@ -272,6 +276,14 @@ function health_(b) {
     if (a === 'apSet') return apSet_(b);
     if (a === 'apRemind') return apRemind_(b);
     if (a === 'lookup') return lookup_(b);
+    if (a === 'svcList') return svcList_();
+    if (a === 'svcSave') return svcSave_(b);
+    if (a === 'invSave') return invSave_(b);
+    if (a === 'invList') return invList_(b);
+    if (a === 'invPay') return invPay_(b);
+    if (a === 'qList') return qList_();
+    if (a === 'qAdd') return qAdd_(b, role0);
+    if (a === 'qSet') return qSet_(b);
   } finally { lock.releaseLock(); }
   return { ok: false, err: 'bad' };
 }
@@ -406,7 +418,7 @@ function doGet(e) {
   }
   if (p.action === 'spin') return json_(spin_(p));
   if (p.action === 'verify') return verifyPage_(p);
-  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v28-panel' });
+  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v29-panel' });
 }
 
 // ======================= چرخ هدیه =======================
@@ -803,6 +815,82 @@ function lookup_(b) {
   readAll_(hsheet_('Appts', AP_COLS), AP_COLS).forEach(function (r) { if (r.deleted !== '1' && hit(r)) add({ kind: 'appt', pkey: r.pkey, name: r.name, species: r.species, breed: r.breed || '', owner: r.owner, phone: r.phone, last: r.date }); });
   return { ok: true, items: out.slice(0, 12) };
 }
+// ======================= تعرفه‌ها، فاکتورها و صف امروز =======================
+var SV_SEED = [['ویزیت', 700000], ['واکسن هاری', 950000], ['واکسن سه‌گانه گربه', 2450000], ['واکسن پلی‌والان سگ', 2250000], ['ضدانگل', 250000], ['کیت تشخیصی', 850000], ['تزریق', 200000], ['دارو', 150000], ['خون‌گیری', 250000], ['آزمایش CBC', 850000], ['آزمایش CBT', 1800000]];
+function svSheet_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet(), isNew = !ss.getSheetByName('Services'), sh = hsheet_('Services', SV_COLS);
+  if (isNew) SV_SEED.forEach(function (x, i) { writeRow_(sh, SV_COLS, { id: 'S-' + rnd_(5).toUpperCase(), name: x[0], price: String(x[1]), active: '1', sort: String(i + 1), updated: nowIso_() }, 0); });
+  return sh;
+}
+function num_(v) { return Number(String(v === undefined || v === null ? '' : v).replace(/[۰-۹]/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'.indexOf(d); }).replace(/[^0-9]/g, '')) || 0; }
+function svcList_() {
+  var rows = readAll_(svSheet_(), SV_COLS).filter(function (r) { return r.name; });
+  rows.sort(function (x, y) { return num_(x.sort) - num_(y.sort); });
+  return { ok: true, items: rows.map(function (r) { return { id: r.id, name: r.name, price: num_(r.price), active: r.active !== '0' ? 1 : 0, sort: num_(r.sort) }; }) };
+}
+function svcSave_(b) {   // فقط دکتر: کل فهرست تعرفه‌ها
+  var sh = svSheet_(), rows = readAll_(sh, SV_COLS), byId = {}, seen = {}, list = (b.items || []).slice(0, 200);
+  rows.forEach(function (r) { byId[r.id] = r; });
+  list.forEach(function (it, i) {
+    var name = clip_(it.name, 60); if (!name) return;
+    var r = byId[it.id] || { id: 'S-' + rnd_(5).toUpperCase() }; seen[r.id] = 1;
+    r.name = name; r.price = String(num_(it.price)); r.active = it.active ? '1' : '0'; r.sort = String(i + 1); r.updated = nowIso_();
+    writeRow_(sh, SV_COLS, r, r._row || 0);
+  });
+  rows.forEach(function (r) { if (!seen[r.id] && r.active !== '0') { r.active = '0'; r.updated = nowIso_(); writeRow_(sh, SV_COLS, r, r._row); } });   // حذف = غیرفعال
+  return svcList_();
+}
+function invOut_(r) { var items = []; try { items = JSON.parse(r.items || '[]'); } catch (e) {} return { id: r.id, date: r.date, pkey: r.pkey, vid: r.vid, name: r.name, owner: r.owner, phone: r.phone, items: items, sub: num_(r.sub), disc: num_(r.disc), total: num_(r.total), status: r.status, paid: num_(r.paid), method: r.method, paidAt: r.paidAt, note: r.note }; }
+function invSave_(b) {   // فقط دکتر: صدور/ویرایش فاکتور یک مراجعه
+  var sh = hsheet_('Invoices', INV_COLS), rows = readAll_(sh, INV_COLS), v = b.v || {}, r = null, i;
+  if (v.id) for (i = 0; i < rows.length; i++) if (rows[i].id === String(v.id)) { r = rows[i]; break; }
+  if (!r && v.vid) for (i = 0; i < rows.length; i++) if (rows[i].vid === String(v.vid) && rows[i].status !== 'void') { r = rows[i]; break; }
+  if (!r) r = { id: 'F-' + rnd_(6).toUpperCase(), created: nowIso_(), paid: '0' };
+  var items = (v.items || []).slice(0, 40).map(function (x) { return { name: clip_(x.name, 60), qty: Math.max(1, Math.min(99, num_(x.qty) || 1)), price: num_(x.price) }; }).filter(function (x) { return x.name; });
+  var sub = items.reduce(function (t, x) { return t + x.qty * x.price; }, 0), disc = Math.min(sub, num_(v.disc));
+  r.date = date_(v.date) || today_(); r.pkey = /^PT-[A-Z0-9]{5,10}$/.test(String(v.pkey || '')) ? v.pkey : ''; r.vid = clip_(v.vid, 20);
+  r.name = clip_(v.name, 40); r.owner = clip_(v.owner, 40); r.phone = String(v.phone || '').replace(/[^0-9+]/g, '').slice(0, 16);
+  r.items = JSON.stringify(items); r.sub = String(sub); r.disc = String(disc); r.total = String(v.free ? 0 : sub - disc); r.note = clip_(v.note, 200);
+  var paid = num_(r.paid); r.status = v.free ? 'free' : (sub - disc <= 0 ? 'free' : paid >= sub - disc ? 'paid' : paid > 0 ? 'partial' : 'pending');
+  r.updated = nowIso_(); writeRow_(sh, INV_COLS, r, r._row || 0);
+  return { ok: true, item: invOut_(r) };
+}
+function invList_(b) {   // امروز + همهٔ پرداخت‌نشده‌ها؛ یا همهٔ فاکتورهای یک بیمار
+  var day = today_(), from = date_(b.from) || day, rows = readAll_(hsheet_('Invoices', INV_COLS), INV_COLS).filter(function (r) { return r.status !== 'void'; });
+  rows = b.pkey ? rows.filter(function (r) { return r.pkey === String(b.pkey); }) : rows.filter(function (r) { return r.date >= from || r.status === 'pending' || r.status === 'partial'; });
+  rows.sort(function (x, y) { return x.created < y.created ? 1 : -1; });
+  return { ok: true, today: day, items: rows.slice(0, 500).map(invOut_) };
+}
+function invPay_(b) {   // دکتر یا منشی: فقط دریافت وجه
+  var sh = hsheet_('Invoices', INV_COLS), rows = readAll_(sh, INV_COLS), i;
+  for (i = 0; i < rows.length; i++) if (rows[i].id === String(b.id || '')) {
+    var r = rows[i], total = num_(r.total), amt = num_(b.amount);
+    if (amt <= 0) return { ok: false, err: 'bad' };
+    r.paid = String(Math.min(total, num_(r.paid) + amt)); r.method = ['نقد', 'کارت', 'کارت‌به‌کارت'].indexOf(b.method) > -1 ? b.method : 'نقد';
+    r.status = num_(r.paid) >= total ? 'paid' : 'partial'; r.paidAt = nowIso_(); r.updated = nowIso_();
+    writeRow_(sh, INV_COLS, r, r._row); return { ok: true, item: invOut_(r) };
+  }
+  return { ok: false, err: 'notfound' };
+}
+function qOut_(r) { return { id: r.id, date: r.date, time: r.time, pkey: r.pkey, name: r.name, species: r.species, breed: r.breed, owner: r.owner, phone: r.phone, status: r.status || 'wait', src: r.src, note: r.note }; }
+function qList_() { var day = today_(); return { ok: true, today: day, items: readAll_(hsheet_('Queue', Q_COLS), Q_COLS).filter(function (r) { return r.date === day && r.status !== 'cancelled'; }).map(qOut_) }; }
+function qAdd_(b, role) {
+  var sh = hsheet_('Queue', Q_COLS), v = b.v || {}, day = today_(), pk = /^PT-[A-Z0-9]{5,10}$/.test(String(v.pkey || '')) ? v.pkey : '';
+  if (pk) { var ex = readAll_(sh, Q_COLS).filter(function (r) { return r.date === day && r.pkey === pk && r.status !== 'cancelled'; })[0]; if (ex) return { ok: true, item: qOut_(ex), dup: 1 }; }
+  var r = { id: 'Q-' + rnd_(6).toUpperCase(), created: nowIso_(), updated: nowIso_(), date: day, time: Utilities.formatDate(new Date(), CFG.tz, 'HH:mm'), pkey: pk, name: clip_(v.name, 40), species: clip_(v.species, 20), breed: clip_(v.breed, 40), owner: clip_(v.owner, 40), phone: String(v.phone || '').replace(/[^0-9+]/g, '').slice(0, 16), status: v.status === 'done' ? 'done' : 'wait', src: role === 'sec' ? 'پذیرش' : 'دکتر', note: clip_(v.note, 200) };
+  if (!r.name) return { ok: false, err: 'bad' };
+  writeRow_(sh, Q_COLS, r, 0); return { ok: true, item: qOut_(r) };
+}
+function qSet_(b) {
+  var sh = hsheet_('Queue', Q_COLS), rows = readAll_(sh, Q_COLS), i;
+  for (i = 0; i < rows.length; i++) if (rows[i].id === String(b.id || '')) { if (['wait', 'done', 'cancelled'].indexOf(b.status) < 0) return { ok: false, err: 'bad' }; rows[i].status = b.status; rows[i].updated = nowIso_(); writeRow_(sh, Q_COLS, rows[i], rows[i]._row); return { ok: true }; }
+  return { ok: false, err: 'notfound' };
+}
+function qMarkDone_(pt) {   // ویزیت دکتر امروز → در صف «ویزیت شد» (اگر نبود، ساخته می‌شود)
+  var sh = hsheet_('Queue', Q_COLS), day = today_(), rows = readAll_(sh, Q_COLS), hit = false;
+  rows.forEach(function (r) { if (r.date === day && r.pkey === pt.pkey && r.status === 'wait') { r.status = 'done'; r.updated = nowIso_(); writeRow_(sh, Q_COLS, r, r._row); hit = true; } else if (r.date === day && r.pkey === pt.pkey && r.status === 'done') hit = true; });
+  if (!hit) qAdd_({ v: { pkey: pt.pkey, name: pt.name, species: pt.species, breed: pt.breed, owner: pt.owner, phone: pt.phone, status: 'done', note: 'ویزیت دکتر' } }, 'dr');
+}
 function patList_() {
   var rows = readAll_(hsheet_('Patients', PT_COLS), PT_COLS).filter(function (r) { return r.deleted !== '1'; });
   rows.sort(function (x, y) { return x.date < y.date ? 1 : x.date > y.date ? -1 : (x.created < y.created ? 1 : -1); });
@@ -824,6 +912,7 @@ function patSave_(b) {
   if (v.paid !== undefined) r.paid = v.paid ? '1' : '';
   if (v.pay !== undefined) r.pay = clip_(v.pay, 20);
   r.updated = nowIso_(); writeRow_(sh, PT_COLS, r, r._row || 0);
+  if (b.role === 'dr' && r.note && r.date === today_()) { try { qMarkDone_(r); } catch (eq) {} }
   return { ok: true, item: patOut_(r) };
 }
 function patPatient_(b) {
@@ -867,6 +956,11 @@ var LOOK = {
   Patients: { color: '#0e7490', labels: ['شناسهٔ مراجعه', 'شناسهٔ بیمار', 'ثبت شد', 'ویرایش', 'تاریخ مراجعه', 'نام پت', 'گونه', 'نژاد', 'سرپرست', 'تلفن (محرمانه)', 'دلیل / تشخیص', 'یادداشت', 'تاریخ پیگیری', 'کد شناسنامه', 'حذف‌شده؟ (۱=بله)', 'هزینه (تومان)', 'پرداخت‌شده؟ (۱=بله)', 'روش پرداخت'],
     widths: [110, 100, 150, 150, 100, 110, 80, 110, 130, 130, 200, 260, 100, 110, 90, 110, 110, 110], clip: [12], gray: [2, 3, 4, 14], del: 15 },
   Activity: { color: '#475569', labels: ['روز', 'ساعت', 'نوع', 'شناسه', 'نام'], widths: [100, 80, 80, 120, 140], gray: [1, 2, 3] },
+  Services: { color: '#7c3aed', labels: ['شناسه', 'خدمت', 'قیمت (تومان)', 'فعال؟ (۱=بله)', 'ترتیب', 'ویرایش'], widths: [100, 220, 140, 100, 70, 150], gray: [1, 6] },
+  Invoices: { color: '#be123c', labels: ['شناسهٔ فاکتور', 'ثبت شد', 'ویرایش', 'تاریخ', 'شناسهٔ بیمار', 'شناسهٔ مراجعه', 'نام پت', 'سرپرست', 'تلفن', 'ردیف‌ها (JSON)', 'جمع', 'تخفیف', 'مبلغ نهایی', 'وضعیت', 'پرداخت‌شده', 'روش پرداخت', 'زمان پرداخت', 'توضیح'],
+    widths: [110, 150, 150, 100, 100, 100, 110, 120, 120, 260, 100, 90, 110, 100, 110, 110, 150, 200], clip: [10], gray: [2, 3, 5, 6] },
+  Queue: { color: '#a16207', labels: ['شناسه', 'ثبت شد', 'ویرایش', 'تاریخ', 'ساعت ورود', 'شناسهٔ بیمار', 'نام پت', 'گونه', 'نژاد', 'سرپرست', 'تلفن', 'وضعیت', 'منبع', 'توضیح'],
+    widths: [100, 150, 150, 100, 80, 100, 110, 80, 100, 120, 120, 100, 90, 200], gray: [2, 3, 6] },
   Appts: { color: '#0e7490', labels: ['شناسهٔ نوبت', 'ثبت شد', 'ویرایش', 'تاریخ نوبت', 'ساعت', 'نام پت', 'گونه', 'نژاد', 'سرپرست', 'تلفن (محرمانه)', 'دلیل', 'یادداشت', 'وضعیت', 'شناسهٔ بیمار', 'حذف‌شده؟ (۱=بله)', 'یادآور پیامکی (۱=بله)'],
     widths: [110, 150, 150, 100, 70, 110, 80, 110, 130, 130, 180, 240, 100, 100, 90, 90], clip: [12], gray: [2, 3, 14], del: 15 },
   SMS: { color: '#b45309', labels: ['زمان', 'شماره', 'نوع', 'متن', 'نتیجه', 'توضیح', 'جزئیات فنی'], widths: [150, 120, 100, 320, 100, 300, 320], clip: [4, 7], gray: [1, 7] },
@@ -921,9 +1015,9 @@ function testSms() {
 }
 function formatSheets() {
   var ss = SpreadsheetApp.getActiveSpreadsheet(), done = [];
-  try { hsheet_('Patients', PT_COLS); hsheet_('SMS', SMS_COLS); hsheet_('Activity', ACT_COLS); hsheet_('Appts', AP_COLS); } catch (ee) { lastLookError_ = 'ensure: ' + String(ee); }   // ساخت تب‌های جدید حتی قبل از اولین استفاده
+  try { hsheet_('Patients', PT_COLS); hsheet_('SMS', SMS_COLS); hsheet_('Activity', ACT_COLS); hsheet_('Appts', AP_COLS); svSheet_(); hsheet_('Invoices', INV_COLS); hsheet_('Queue', Q_COLS); } catch (ee) { lastLookError_ = 'ensure: ' + String(ee); }   // ساخت تب‌های جدید حتی قبل از اولین استفاده
   try { migrate_(ss); } catch (em) { lastLookError_ = 'migrate: ' + String(em); }
-  [['Pets', PET_COLS], ['SMS', SMS_COLS], ['Patients', PT_COLS], ['Activity', ACT_COLS], ['Appts', AP_COLS], ['Records', REC_COLS], ['Adoptions', AD_COLS], ['PetReqs', PR_COLS]].forEach(function (x) { try { convDates_(x[0], x[1]); } catch (ec) { lastLookError_ = 'dates: ' + String(ec); } });
+  [['Pets', PET_COLS], ['SMS', SMS_COLS], ['Patients', PT_COLS], ['Activity', ACT_COLS], ['Appts', AP_COLS], ['Invoices', INV_COLS], ['Queue', Q_COLS], ['Records', REC_COLS], ['Adoptions', AD_COLS], ['PetReqs', PR_COLS]].forEach(function (x) { try { convDates_(x[0], x[1]); } catch (ec) { lastLookError_ = 'dates: ' + String(ec); } });
   Object.keys(LOOK).forEach(function (name) {
     var sh = ss.getSheetByName(name);
     if (sh) { look_(sh, LOOK[name]); done.push(name); }

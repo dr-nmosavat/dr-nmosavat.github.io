@@ -2261,3 +2261,34 @@ body.hb-drpage { background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22h
 .hb-tdtag { display: inline-block; margin-inline-start: 6px; padding: 1px 8px; border-radius: 999px; background: #e6eef9; color: #1f5aa6; border: 1px solid #b9d3f7; font-size: 11.5px; font-weight: 700; vertical-align: middle; }
 .hb-tdsecw { color: #8a5a00; border-top: 0; padding-top: 0; margin-top: 4px; }
 .hb-tdoth { margin-top: 12px; } .hb-tdoth summary { cursor: pointer; color: #5b6b80; font-size: 13.5px; padding: 6px 0; }
+/* ===== صورتحساب، فاکتور، تعرفه‌ها ===== */
+html.hb-dr [data-dview="svc"] .hb-svcbox { display: block; }
+html.hb-dr [data-dview]:not([data-dview="svc"]) .hb-svcbox, .hb-svcbox:empty { display: none !important; }
+html.hb-dr [data-dview="svc"] [data-hb-searchbox], html.hb-dr [data-dview="svc"] [data-hb-verifybox], html.hb-dr [data-dview="svc"] [data-hb-petform], html.hb-dr [data-dview="svc"] [data-hb-main] { display: none !important; }
+.hb-bl { margin: 8px 0; }
+.hb-blr { display: flex; align-items: center; background: #fff; border: 1px solid #d7e0ec; border-radius: 10px; padding: 6px 8px; margin: 5px 0; cursor: pointer; }
+.hb-blr.on { border-color: #1b7a4b; background: #f2fbf5; }
+.hb-blr input[type=checkbox] { width: 20px; height: 20px; margin: 0 0 0 8px; flex: 0 0 auto; }
+.hb-bln { flex: 1 1 auto; font-weight: 600; font-size: 14px; }
+.hb-blq { width: 52px !important; min-height: 36px; margin: 0 6px; text-align: center; padding: 0 4px; }
+.hb-blp { width: 110px !important; min-height: 36px; text-align: left; padding: 0 6px; }
+.hb-bltot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; background: #eef4fb; border-radius: 10px; padding: 10px 12px; margin: 10px 0; font-size: 14px; }
+.hb-bltot b { font-size: 16px; color: #1f3b63; }
+.hb-ivb { display: inline-block; margin-inline-start: 6px; padding: 1px 8px; border-radius: 999px; background: #eef2f8; color: #4a5f7d; font-size: 11.5px; font-weight: 700; vertical-align: middle; }
+.hb-ivb.hb-ivok { background: #e2f4ea; color: #12684a; } .hb-ivb.hb-ivpend { background: #c62828; color: #fff; }
+.hb-tdpay .hb-qr1 { border-color: #e57373 !important; background: #fff1f1 !important; -webkit-animation: hbpulse 1.6s ease-in-out infinite; animation: hbpulse 1.6s ease-in-out infinite; }
+@-webkit-keyframes hbpulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(198,40,40,.35); } 50% { box-shadow: 0 0 0 6px rgba(198,40,40,0); } }
+@keyframes hbpulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(198,40,40,.35); } 50% { box-shadow: 0 0 0 6px rgba(198,40,40,0); } }
+.hb-tdsecp { color: #c62828; border-top: 0; }
+.hb-inv { background: #fff; border: 2px solid #1f5aa6; border-radius: 14px; padding: 12px; margin: 0 0 12px; }
+.hb-invh { display: flex; align-items: center; flex-wrap: wrap; } .hb-invh b { font-size: 16px; } .hb-invh small { margin: 0 8px; color: #5b6b80; } .hb-invh .btn { margin-inline-start: auto; }
+.hb-invt { width: 100%; border-collapse: collapse; margin: 10px 0 6px; font-size: 14px; }
+.hb-invt th { text-align: right; color: #5b6b80; font-weight: 600; border-bottom: 1px solid #d7e0ec; padding: 6px 4px; } .hb-invt td { border-bottom: 1px dashed #e3e9f2; padding: 6px 4px; } .hb-invt td:last-child, .hb-invt th:last-child { text-align: left; }
+.hb-invl { display: flex; justify-content: space-between; margin: 4px 0; font-size: 14px; } .hb-invtot { font-size: 17px; font-weight: 800; color: #1f3b63; border-top: 2px solid #1f5aa6; padding-top: 6px; }
+.hb-invpay { margin-top: 10px; } .hb-invpay .seg { margin-bottom: 8px; } .hb-invpay .btn { width: 100%; }
+.hb-invok { text-align: center; color: #12684a; font-weight: 700; margin: 8px 0; }
+.hb-rep { display: flex; flex-direction: column; background: #f4f7fb; border: 1px solid #d7e0ec; border-radius: 12px; padding: 10px 12px; margin-top: 12px; font-size: 13.5px; } .hb-rep b { margin-bottom: 4px; }
+.hb-debt { color: #c62828; font-weight: 700; margin: 2px 0 8px; }
+.hb-svr { display: flex; align-items: center; margin: 6px 0; } .hb-svr input[type=checkbox] { width: 20px; height: 20px; flex: 0 0 auto; margin-left: 8px; }
+.hb-svr input[type=text] { min-height: 40px; margin: 0 4px; } .hb-svr input[data-hb-svn] { flex: 1 1 auto; min-width: 0; } .hb-svr input[data-hb-svp] { width: 130px; flex: 0 0 auto; text-align: left; }
+@media (max-width: 560px) { .hb-blp { width: 92px !important; } .hb-svr input[data-hb-svp] { width: 100px; } }
