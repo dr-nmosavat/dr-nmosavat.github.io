@@ -2200,3 +2200,12 @@ body.hb-drpage .hb-staffhdr { position: -webkit-sticky; position: sticky; top: 0
   .hb-drnav .hb-nav1 button { font-size: 13px; padding: 0 4px; }
 }
 @media (max-width: 560px) { .hb-navpanel .hb-nav2 button { white-space: nowrap; font-size: 12.5px; padding: 0 6px; } }
+/* گوشی: شماره به شکل دکمهٔ کوچک 📞 کنار کارت (نه یک ردیف کامل)؛ زبانهٔ کوتاه‌تر */
+@media (max-width: 560px) {
+  .hb-qrw:not(.hb-qrws) { flex-direction: row !important; align-items: stretch; }
+  .hb-qrw:not(.hb-qrws) .hb-qr1 { flex: 1 1 auto; min-width: 0; }
+  .hb-qrw:not(.hb-qrws) .hb-callq { flex: 0 0 48px; width: 48px; padding: 0 !important; margin: 0 6px 0 0 !important; justify-content: center; align-items: center; font-size: 0 !important; overflow: hidden; }
+  .hb-qrw:not(.hb-qrws) .hb-callq::before { content: "📞"; font-size: 20px; }
+  .hb-drnav .hb-nav1 button, .hb-drnav .hb-nav1 button.on { min-height: 42px; }
+  .hb-secpage .hb-drnav .hb-nav1 button { flex: 0 1 220px; }
+}
