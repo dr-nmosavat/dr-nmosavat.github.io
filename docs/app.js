@@ -2148,12 +2148,12 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   // صف امروز (حضور همین الان) جدا از نوبت؛ فعلاً در همان شیت نوبت‌ها با برچسب «[صف]» در یادداشت
   var QM = "[صف]";
   var QSHEET = false, qItems = [], invItems = [], svcItems = [], svcLoaded = false;
-  function allQ() { return QSHEET ? qItems.map(function (r) { return { id: r.id, date: r.date, time: r.time, pkey: r.pkey, name: r.name, species: r.species, breed: r.breed, owner: r.owner, phone: r.phone, status: r.status === "done" ? "done" : "booked", note: QM, _q: 1 }; }) : apItems.filter(isQueue); }
+  function allQ() { var leg = apItems.filter(isQueue); if (!QSHEET) return leg; var nq = qItems.map(function (r) { return { id: r.id, date: r.date, time: r.time, pkey: r.pkey, name: r.name, species: r.species, breed: r.breed, owner: r.owner, phone: r.phone, status: r.status === "done" ? "done" : "booked", note: QM, _q: 1 }; }); return nq.concat(leg.filter(function (x) { return !(x.pkey && nq.some(function (y) { return y.pkey === x.pkey && y.date === x.date; })); })); }   // صف جدید + ردیف‌های قدیمی «[صف]» (روز تعویض اسکریپت)
   function qLoad(cb) { api({ a: "qList", t: tokGet() }).then(function (j) { if (j.ok) { QSHEET = true; qItems = j.items || []; } if (cb) cb(); }); }
   function invLoad(cb) { api({ a: "invList", t: tokGet() }).then(function (j) { if (j.ok) invItems = j.items || []; if (cb) cb(); }); }
   function svcLoad(cb) { if (svcLoaded) { if (cb) cb(); return; } api({ a: "svcList", t: tokGet() }).then(function (j) { if (j.ok) { svcItems = j.items || []; svcLoaded = true; } if (cb) cb(j.ok); }); }
   function isQueue(r) { return /^(\[صف\]|ارسال از پذیرش)/.test(String(r && r.note || "")); }
-  function ptInToday(k) { var td = apToday || isoNow(); return !!k && apItems.concat(QSHEET ? allQ() : []).some(function (x) { return x.pkey === k && x.date === td && x.status === "booked"; }); }
+  function ptInToday(k) { var td = apToday || isoNow(); return !!k && apItems.filter(function (x) { return !isQueue(x); }).concat(allQ()).some(function (x) { return x.pkey === k && x.date === td && x.status === "booked"; }); }
   // منشی: افزودن بیمار به «نوبت‌های امروز» دکتر (یک نوبتِ امروز با ساعت همین الان)
   function ptToday(o, btn) {
     if (ptInToday(o.pkey)) return toast("«" + o.name + "» از قبل در لیست امروز است.");
@@ -2298,7 +2298,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   }
   var TD_TAG = { "new": "🆕 ساخته شد امروز", visit: "🩺 مراجعهٔ امروز", opened: "👁 امروز باز شد" };
   // ویزیت‌شدهٔ امروز: دکتر برایش امروز یافته/تشخیص نوشته، یا نوبت امروزش «آمد» خورده
-  function visitedToday(k) { var td = isoNow(); return ptItems.some(function (r) { return r.pkey === k && r.date === td && String(r.note || "").trim(); }) || apItems.concat(QSHEET ? allQ() : []).some(function (r) { return r.pkey === k && r.date === (apToday || td) && r.status === "done"; }); }
+  function visitedToday(k) { var td = isoNow(); return ptItems.some(function (r) { return r.pkey === k && r.date === td && String(r.note || "").trim(); }) || apItems.filter(function (x) { return !isQueue(x); }).concat(allQ()).some(function (r) { return r.pkey === k && r.date === (apToday || td) && r.status === "done"; }); }
   function markVisited(k) {
     var td = apToday || isoNow();
     apItems.forEach(function (x) { if (x.pkey === k && x.date === td && x.status === "booked") { x.status = "done"; api({ a: "apSet", t: tokGet(), id: x.id, status: "done" }); } });
@@ -2550,7 +2550,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   // آمد/نیامد خودکار: اگر آن روز مراجعه یا ویزیتی برایش ثبت شده → آمد
   function cameOn(r) {
     if (r.status === "done") return true; var k = r.pkey, ph = phN(r.phone || ""), same = function (x) { return k ? x.pkey === k : ph && phN(x.phone || "") === ph; };
-    return ptItems.some(function (x) { return x.date === r.date && same(x); }) || apItems.concat(QSHEET ? allQ() : []).some(function (x) { return isQueue(x) && x.date === r.date && x.status === "done" && same(x); });
+    return ptItems.some(function (x) { return x.date === r.date && same(x); }) || apItems.filter(function (x) { return !isQueue(x); }).concat(allQ()).some(function (x) { return isQueue(x) && x.date === r.date && x.status === "done" && same(x); });
   }
   function apOpen(r) { return r.status === "booked" && r.date >= (apToday || isoNow()) && !cameOn(r); }
   function apStatus(r) { return r.status === "cancelled" ? "❌ لغو شد" : cameOn(r) ? "✅ آمد" : r.date < (apToday || isoNow()) ? "🚫 نیامد" : "⏳ در انتظار"; }
