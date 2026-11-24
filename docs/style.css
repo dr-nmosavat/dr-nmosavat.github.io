@@ -2326,3 +2326,17 @@ body.hb-drpage .hb-staffhdr { margin-bottom: 12px; }
 .hb-drbar.hb-titlebar { margin-bottom: 22px; }
 .hb-drnav .hb-nav1 { margin-top: 4px; }
 .hb-aptop1 .hb-aprow { flex-wrap: nowrap; } .hb-aptop1 .hb-aprow > .fld { flex: 1 1 0; min-width: 0; }
+/* ===== فرم ثبت نوبت/بیمار: ظاهر نهایی ===== */
+.hb-ft { font-size: 20px; color: #145c38; margin: 4px 0 12px; padding-bottom: 8px; border-bottom: 2px solid #b7e1c4; }
+.hb-ft2 { color: #1f5aa6; border-bottom-color: #b9d3f7; }
+.hb-apform .seg { display: flex !important; flex-wrap: nowrap !important; } .hb-ptform .seg { display: flex; flex-wrap: nowrap; }
+.hb-apform .seg button, .hb-ptform [data-seg="hb-ptsp"] button { flex: 1 1 0; min-width: 0; min-height: 38px; padding: 0 4px; font-size: 14px; }
+/* روز و ساعت: کادر پررنگ‌تر، دو خط، متن وسط */
+.hb-aptop1 { background: #dbe9fb; border: 2px solid #5b8fd6; border-radius: 16px; padding: 10px; margin: 0 0 14px; }
+.hb-aptop1 .fld { margin: 0 0 8px; } .hb-aptop1 .fld:last-child { margin-bottom: 0; }
+.hb-aptop1 select { width: 100%; min-height: 48px; font-size: 16px; font-weight: 700; color: #123a6b; background: #fff; border: 1.5px solid #5b8fd6; text-align: center; text-align-last: center; -webkit-text-align-last: center; }
+.hb-aptop1 .hb-aprow { display: block; margin: 0; }
+/* نژاد و دلیل: متن انتخاب‌شده وسط */
+.hb-apform select[data-hb-brsel], .hb-ptform select[data-hb-brsel], .hb-apform select[data-ap="reason"] { text-align: center; text-align-last: center; -webkit-text-align-last: center; font-weight: 600; }
+/* دکمه‌ی فعال بالای صفحه */
+.hb-navpanel .hb-nav3 button.on { background: #0e4f2e; border-color: #0e4f2e; box-shadow: 0 0 0 3px #fff, 0 0 0 5px #1b7a4b; }
