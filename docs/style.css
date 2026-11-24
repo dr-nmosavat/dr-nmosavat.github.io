@@ -2308,3 +2308,21 @@ html.hb-dr [data-dview="rep"] [data-hb-searchbox], html.hb-dr [data-dview="rep"]
 .hb-scday.on { background: #e2f4ea; border-color: #22a35a; color: #12684a; }
 /* امروز: حذف از صف */
 .hb-qdel { flex: 0 0 34px; width: 34px; margin: 0 6px 0 0; border: 1px solid #e4b4b4; background: #fff; color: #b3382c; border-radius: 10px; font: inherit; font-size: 15px; cursor: pointer; }
+/* ===== فرم‌ها: کادرهای فشرده و عنوان داخل کادر ===== */
+.hb-ctr { text-align: center; }
+.hb-apform .fld, .hb-ptform .fld { margin-bottom: 8px; }
+.hb-apform input[type=text], .hb-apform input[type=tel], .hb-apform select, .hb-ptform input[type=text], .hb-ptform input[type=tel], .hb-ptform select { min-height: 44px; font-size: 15px; padding-top: 0; padding-bottom: 0; }
+.hb-apform .seg button, .hb-ptform .seg button { min-height: 40px; font-size: 14px; }
+.hb-aptop1 { padding: 6px; margin-bottom: 10px; } .hb-aptop1 .hb-aprow { margin: 0 -3px; } .hb-aptop1 .hb-aprow > .fld { flex: 1 1 140px; margin: 0 3px 4px; } .hb-aptop1 select { min-height: 42px; font-size: 14.5px; }
+/* کارت نوبت */
+.hb-aprb { margin-inline-start: 6px; width: 32px; height: 32px; border-radius: 50%; border: 1px solid #b9d3f7; background: #fff; font-size: 15px; line-height: 1; cursor: pointer; padding: 0; }
+.hb-aprb.on { background: #e2f4ea; border-color: #22a35a; }
+.hb-apb2 { flex: 1 1 0; min-width: 0; min-height: 38px; border-radius: 12px; font: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer; margin: 3px; }
+.hb-apb-ed { background: #e6eef9; border: 1px solid #9fbbe0; color: #1f5aa6; } .hb-apb-cn { background: #fdecec; border: 1px solid #e4b4b4; color: #b3382c; }
+.hb-apacts { display: flex !important; }
+@media (max-width: 560px) { .hb-apacts { display: flex !important; grid-template-columns: none; } .hb-apacts .btn, .hb-apacts .hb-apb2 { flex: 1 1 0 !important; width: auto !important; } }
+/* فاصله‌ی بالای صفحه */
+body.hb-drpage .hb-staffhdr { margin-bottom: 12px; }
+.hb-drbar.hb-titlebar { margin-bottom: 22px; }
+.hb-drnav .hb-nav1 { margin-top: 4px; }
+.hb-aptop1 .hb-aprow { flex-wrap: nowrap; } .hb-aptop1 .hb-aprow > .fld { flex: 1 1 0; min-width: 0; }
