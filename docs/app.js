@@ -2654,7 +2654,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     var t = e.target, b; if (!t.closest || !t.closest("[data-hb-svcbox]")) return;
     if (t.closest("[data-hb-svadd]")) { svcRead(); svcEdit.push({ id: "", name: "", price: 0, active: 1 }); svcShow(); var ins = svcBox().querySelectorAll("[data-hb-svn]"); if (ins.length) ins[ins.length - 1].focus(); return; }
     if ((b = t.closest("[data-hb-svd]"))) { svcRead(); svcEdit.splice(+b.getAttribute("data-hb-svd"), 1); svcShow(); return; }
-    if ((b = t.closest("[data-hb-svsave]"))) { svcRead(); b.disabled = true; api({ a: "svcSave", t: tokGet(), defPct: svcDef, items: svcEdit.filter(function (x) { return x.name; }) }).then(function (j) { b.disabled = false; if (!j.ok) return toast("⚠️ " + errMsg(j.err), 7000); svcItems = j.items; svcLoaded = true; svcEdit = svcItems.map(function (x) { return { id: x.id, name: x.name, price: x.price, active: x.active }; }); svcShow(); toast("✅ تعرفه‌ها ذخیره شد"); }); }
+    if ((b = t.closest("[data-hb-svsave]"))) { svcRead(); b.disabled = true; api({ a: "svcSave", t: tokGet(), defPct: svcDef, items: svcEdit.filter(function (x) { return x.name; }) }).then(function (j) { b.disabled = false; if (!j.ok) return toast("⚠️ " + errMsg(j.err), 7000); svcItems = j.items; svcLoaded = true; if (j.defPct != null) svcDef = j.defPct; svcEdit = svcItems.map(function (x) { return { id: x.id, name: x.name, price: x.price, active: x.active, cost: x.cost || 0, pct: x.pct == null ? "" : x.pct }; }); svcShow(); toast("✅ تعرفه‌ها ذخیره شد"); }); }
   });
   function todayCard(it, done) {
     var open = it.kind === "pet" ? 'data-hb-qopen="' + esc(it.ref) + '"' : it.kind === "appt" && !it.ref ? "data-hb-apgo" : 'data-hb-tdpt="' + esc(it.ref) + '"';
