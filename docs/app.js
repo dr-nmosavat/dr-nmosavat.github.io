@@ -2367,7 +2367,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (!SECP) ptItems.forEach(function (r) { if (r.date === td && String(r.note || "").trim()) ent(r.pkey, r); });
     var other = todayItems.filter(function (it) { if (it.kind === "patient" && map[it.ref]) { var e = map[it.ref]; e.phone = e.phone || it.phone; e.species = e.species || it.species; e.owner = e.owner || it.owner; return false; } return true; });
     var wait = [], done = [];
-    list.forEach(function (e) { ((e.pkey && visitedToday(e.pkey)) || (e.q && e.q.status === "done") || (e.ap && e.ap.status === "done") ? done : wait).push(e); });
+    list.forEach(function (e) { ((e.pkey && (visitedToday(e.pkey) || invOf(e.pkey))) || (e.q && e.q.status === "done") || (e.ap && e.ap.status === "done") ? done : wait).push(e); });
     var tk = function (e) { return (e.ap && e.ap.time) || (e.q && e.q.time) || "99"; };
     wait.sort(function (a, b) { return tk(a) < tk(b) ? -1 : tk(a) > tk(b) ? 1 : 0; });
     return { wait: wait, done: done, other: other };
