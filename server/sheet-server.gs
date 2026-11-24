@@ -429,7 +429,7 @@ function doGet(e) {
   }
   if (p.action === 'spin') return json_(spin_(p));
   if (p.action === 'verify') return verifyPage_(p);
-  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v31-panel' });
+  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v32-share' });
 }
 
 // ======================= چرخ هدیه =======================
