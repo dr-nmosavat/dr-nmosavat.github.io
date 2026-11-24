@@ -2372,3 +2372,4 @@ body.hb-drpage .hb-staffhdr { margin-bottom: 12px; }
 .hb-newowns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; } .hb-newown { background: #e2f4ea; border-color: #b6dccf; color: #12684a; }
 .hb-emptywarn { margin: 10px 0 0; padding: 8px 10px; background: #fff4e0; border: 1px solid #f0cf94; border-radius: 10px; color: #8a5a00; font-size: 13.5px; line-height: 1.7; }
 .hb-lbl { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+.hb-apalert { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin: 0 0 12px; padding: 10px 12px; border-radius: 14px; background: #fff4e0; border: 1px solid #f0cf94; color: #6f4a00; } .hb-apalert > div { display: flex; gap: 8px; }
