@@ -1124,6 +1124,11 @@ function verifyPet_(b) {
 }
 
 // ======================= منوی شیت =======================
+function fnoBackfillNow() {
+  var sh = hsheet_('Patients', PT_COLS), rows = readAll_(sh, PT_COLS);
+  try { fnoBackfill_(sh, rows); } catch (e) { SpreadsheetApp.getUi().alert('خطا: ' + e); return; }
+  SpreadsheetApp.getUi().alert('✅ به پرونده‌های بدون شماره، شماره داده شد (NM13701 به بعد).');
+}
 function onOpen() {
   try {
     SpreadsheetApp.getUi().createMenu('🐾 سایت دکتر')
@@ -1137,6 +1142,7 @@ function onOpen() {
       .addItem('🌐 باز کردن صفحهٔ دکتر در سایت', 'openDoctorPage')
       .addItem('🔑 نمایش رمز ورود دکتر', 'showDrPass')
       .addSeparator()
+      .addItem('🔢 شماره‌دادن به پرونده‌های قبلی', 'fnoBackfillNow')
       .addItem('🎨 زیباسازی جدول‌ها', 'formatSheets')
       .addItem('💾 گرفتن پشتیبان', 'backupNow')
       .addItem('🔔 آزمایش اطلاع‌رسانی', 'testNotify')

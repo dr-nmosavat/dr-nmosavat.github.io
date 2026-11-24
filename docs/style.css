@@ -2354,3 +2354,13 @@ body.hb-drpage .hb-staffhdr { margin-bottom: 12px; }
 .hb-blp { width: 88px !important; min-height: 34px; font-size: 13.5px; padding: 0 4px; letter-spacing: -.2px; }
 .hb-blr input[type=checkbox] { width: 18px; height: 18px; margin-left: 6px; }
 @media (max-width: 560px) { .hb-blq { width: 38px !important; } .hb-blp { width: 80px !important; font-size: 13px; } .hb-bln { font-size: 13px; } }
+/* نوار بالای صفحه: خوش‌آمد، عنوان، ساعت، خروج */
+.hb-staffhdr .hb-drbar { margin: 6px 0 0; padding: 6px 10px; flex-wrap: wrap; }
+.hb-staffhdr .hb-drbar .hb-ttl { font-weight: 700; font-size: 15px; color: #1f3b63; }
+.hb-staffhdr .hb-drbar .hb-tmid { display: flex; flex-direction: column; align-items: center; }
+.hb-staffhdr .hb-drbar .hb-clock { font-size: 12px; color: var(--muted); }
+.hb-staffhdr .hb-drbar .hb-drbadge { font-size: 12.5px; padding: 4px 10px; }
+.hb-staffhdr .hb-drbar .hb-drbtn { min-height: 34px; padding: 4px 14px; font-size: 13.5px; }
+@media (max-width: 560px) { .hb-staffhdr .hb-drbar .hb-tmid { order: 0; flex-basis: auto; margin-top: 0; } }
+.hb-ptcost { margin: 4px 0; font-weight: 700; color: #1f3b63; }
+.hb-repmode { display: flex; gap: 8px; margin-bottom: 10px; } .hb-repf { display: block; width: 100%; text-align: start; margin: 4px 0; }

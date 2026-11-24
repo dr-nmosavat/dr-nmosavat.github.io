@@ -1107,7 +1107,8 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function breedEn0(s) { var n = normFa(s); if (!n) return ""; for (var i = 0; i < BRE.length; i++) if (n.indexOf(normFa(BRE[i][0])) > -1) return BRE[i][1]; return ""; }
   var SPE = { "سگ": "🐶", "گربه": "🐱", "پرنده": "🐦", "دیگر": "🐾" };
   var curType = "واکسن", curTab = 0, xTouched = false, editId = null, showAll = false, asc = false, JD = {};
-  function q(s) { return root.querySelector(s); }
+  function q(s) { return root.querySelector(s) || (/drbar|drbadge|drbtn|clock/.test(s) ? document.querySelector(s) : null); }
+  document.addEventListener("click", function (e) { var hb = e.target.closest && e.target.closest(".hb-staffhdr [data-hb-drbtn]"); if (hb) { var gb = root.querySelector("[data-hb-drgate] [data-hb-drbtn]"); if (gb) gb.click(); } });
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
   // حریم خصوصی: صفحهٔ دکتر فقط در sessionStorage (تا بستن تب) نگه می‌دارد؛ در صفحهٔ عمومی، پت‌های «نمایش موقت» هم فقط تا بستن تب می‌مانند
   function readStore(st, key) { try { var d = JSON.parse(st.getItem(key) || "null"); if (d && d.pets && d.recs) return d; } catch (e) {} return null; }
@@ -2138,7 +2139,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       box.innerHTML = '<button type="button" class="btn small ghost hb-ptbk" data-hb-ptback>→ بازگشت به فهرست</button>'
         + '<div class="hb-ptfile" data-hb-ptfile><h4 class="hb-ptsec">اطلاعات پت و سرپرست</h4><div class="hb-ptinfo"><b class="hb-ptn1">' + esc(r.name) + "</b>" + (r.fno ? '<span class="hb-fno">پروندهٔ ' + esc(r.fno) + "</span>" : "") + "<span>" + esc(r.species) + (r.owner ? " · سرپرست: " + esc(r.owner) : "") + "</span>" + (r.phone ? '<a class="hb-call" dir="ltr" href="tel:' + esc(r.phone) + '">📞 ' + esc(r.phone) + "</a>" : "<small>شمارهٔ تماس ثبت نشده</small>") + "</div>"
         + '<p class="hb-ptlastl">اولین مراجعه: ' + esc(fd(g[g.length - 1].date)) + (g.length > 1 ? " · " + toolFa(g.length) + " مراجعه (سوابق پایین صفحه)" : "") + "</p>"
-        + '<p class="hb-smsst" data-hb-ptsmsst>' + smsLine(r.pkey) + "</p>" + (function () { var dbt = invItems.filter(function (x) { return x.pkey === r.pkey && (x.status === "pending" || x.status === "partial"); }).reduce(function (t0, x) { return t0 + x.total - x.paid; }, 0); return dbt ? '<p class="hb-debt">💳 بدهی: ' + money(dbt) + "</p>" : ""; })()
+        + '<p class="hb-smsst" data-hb-ptsmsst>' + smsLine(r.pkey) + "</p>" + (function () { var dbt = invItems.filter(function (x) { return x.pkey === r.pkey && (x.status === "pending" || x.status === "partial"); }).reduce(function (t0, x) { return t0 + x.total - x.paid; }, 0); var tot0 = invItems.filter(function (x) { return x.pkey === r.pkey && x.status !== "void"; }), sm = tot0.reduce(function (t0, x) { return t0 + x.total; }, 0); return (sm ? '<p class="hb-ptcost">💰 جمع هزینه‌ها: ' + money(sm) + " · " + toolFa(tot0.length) + " فاکتور</p>" : "") + (dbt ? '<p class="hb-debt">💳 بدهی: ' + money(dbt) + "</p>" : ""); })()
         + '<div class="hb-adb hb-ptacts"><button type="button" class="btn small ghost" data-hb-ptidedit>✏️ ویرایش اطلاعات</button><button type="button" class="btn small ghost" data-hb-ptbook>🪪 صدور شناسنامه</button><button type="button" class="btn small ghost" data-hb-ptsms>📩 ارسال پیامک</button><button type="button" class="btn small ghost" data-hb-ptappt>🗓 ثبت نوبت</button></div><div class="hb-ptidf" data-hb-ptidf hidden>' + ptIdFields(r) + '<p class="hb-err" data-hb-pterr hidden></p><div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-ptidsave>ذخیرهٔ اطلاعات</button><button type="button" class="btn small ghost" data-hb-ptidcancel>انصراف</button></div></div></div>'
         + '<div class="hb-ptform hb-ptvform"><h4 class="hb-ptsec hb-ptsec2" data-hb-ptvt>پروندهٔ بیمار · مراجعهٔ امروز</h4>' + ptVisitFields() + '<p class="hb-err" data-hb-pterr2 hidden></p><div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-ptsavev>ثبت مراجعه</button><button type="button" class="btn small ghost" data-hb-ptvcancel hidden>انصراف از ویرایش</button></div></div>'
         + '<h4 class="hb-pth2">سوابق مراجعه (' + toolFa(g.length) + ")</h4>" + g.map(function (v) { var np = noteSplit(v.note || ""); return '<div class="hb-ptv"><div class="hb-ptvh"><div class="hb-ptvt"><b>' + esc(fd(v.date)) + "</b>" + (v.reason ? " · " + esc(v.reason) : "") + (v.follow ? ' <small class="hb-ptfu">پیگیری: ' + esc(fd(v.follow)) + "</small>" : "") + '</div><div class="hb-ptvb"><button type="button" class="btn small ghost" data-hb-ptview="' + esc(v.id) + '">👁 دیدن</button><button type="button" class="btn small ghost" data-hb-ptedit="' + esc(v.id) + '">✏️ ویرایش</button><button type="button" class="btn small ghost" data-hb-ptbill="' + esc(v.id) + '">💳 ' + (invItems.some(function (x) { return x.vid === v.id && x.status !== "void"; }) ? "فاکتور" : "صورتحساب") + '</button><button type="button" class="btn small ghost hb-danger" data-hb-ptdel="' + esc(v.id) + '">🗑 حذف</button></div></div>'
@@ -2209,7 +2210,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (t.closest("[data-hb-ptidcancel]")) { q("[data-hb-ptidf]").hidden = true; return; }
     if (t.closest("[data-hb-ptvcancel]")) { ptEditV = null; return ptShow(); }
     if ((b = t.closest("[data-hb-ptvt]"))) { var vf2 = b.closest(".hb-ptvform"), aw = b.querySelector(".hb-arw"); if (vf2) { vf2.classList.toggle("hb-coll"); if (aw) aw.textContent = vf2.classList.contains("hb-coll") ? "▾" : "▴"; } return; }
-    if ((b = t.closest("[data-hb-ptbill]"))) { var bv = ptItems.filter(function (x) { return x.id === b.getAttribute("data-hb-ptbill"); })[0]; if (bv) { if (!invItems.length) invLoad(function () { billOpen(bv); }); else billOpen(bv); } return; }
+    if ((b = t.closest("[data-hb-ptbill]"))) { var bv = ptItems.filter(function (x) { return x.id === b.getAttribute("data-hb-ptbill"); })[0]; if (bv) { var exi = invItems.filter(function (x) { return x.vid === bv.id && x.status !== "void"; })[0]; if (exi) { invOpenId = exi.id; var bx = ptBox(); if (!q("[data-hb-invpanel]")) bx.insertAdjacentHTML("afterbegin", '<div data-hb-invpanel></div>'); invPanel(); return; } if (!invItems.length) invLoad(function () { billOpen(bv); }); else billOpen(bv); } return; }
     if ((b = t.closest("[data-hb-ptview]"))) { var vd = q('[data-hb-ptvd="' + b.getAttribute("data-hb-ptview") + '"]'); if (vd) { vd.hidden = !vd.hidden; b.textContent = vd.hidden ? "👁 دیدن" : "🔼 بستن"; } return; }
     if ((b = t.closest("[data-hb-ptedit]"))) { ptEditV = ptItems.filter(function (x) { return x.id === b.getAttribute("data-hb-ptedit"); })[0] || null; ptShow(); try { q("[data-hb-ptvt]").scrollIntoView({ behavior: "smooth", block: "center" }); } catch (x) {} return; }
     if ((b = t.closest("[data-hb-ptdel]"))) { if (!confirm("این مراجعه حذف شود؟")) return; api({ a: "patDel", t: tokGet(), id: b.getAttribute("data-hb-ptdel") }).then(function (j) { if (!j.ok) return alert(errMsg(j.err)); ptItems = ptItems.filter(function (x) { return x.id !== b.getAttribute("data-hb-ptdel"); }); ptShow(); }); return; }
@@ -2434,7 +2435,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function billRepUI(i) { var e0 = ptBox().querySelector("[data-hb-berr]"); if (e0) e0.hidden = true; var el = ptBox().querySelector('[data-hb-brep="' + i + '"]'), r = billRows[i]; if (!el || !r) return; el.classList.toggle("ok", !!r.rep); el.classList.remove("bad"); el.querySelector(".hb-brv").textContent = r.rep ? repLabel(r.rep) : "⚠️ انتخاب نشده (الزامی)"; }
   function billShow(disc, note) {
     var box = ptBox(), v = billV; billQ = ""; billAll = false;
-    box.innerHTML = '<div class="hb-ptform hb-bill"><h3 class="hb-pth">💳 صورتحساب «' + esc(v.name) + '»</h3><input type="search" class="hb-bsearch" data-hb-bsearch autocomplete="off" placeholder="🔎 جستجوی خدمت (مثلاً: واکسن)"><div class="hb-bl" data-hb-blist></div>'
+    box.innerHTML = '<button type="button" class="btn small ghost hb-ptbk" data-hb-blback>→ برگشت</button><div class="hb-ptform hb-bill"><h3 class="hb-pth">💳 صورتحساب «' + esc(v.name) + '»</h3><input type="search" class="hb-bsearch" data-hb-bsearch autocomplete="off" placeholder="🔎 جستجوی خدمت (مثلاً: واکسن)"><div class="hb-bl" data-hb-blist></div>'
       + '<div class="fld hb-blrow"><label>تخفیف (تومان)</label><input type="text" inputmode="numeric" dir="ltr" data-hb-bdisc value="' + (disc || "") + '"></div><div class="fld"><label>توضیح <small>(اختیاری)</small></label><input type="text" maxlength="200" data-hb-bnote value="' + esc(note || "") + '"></div>'
       + '<label class="hb-cons hb-bltax"><input type="checkbox" data-hb-btax' + (billTax ? " checked" : "") + '> مالیات بر ارزش افزوده ۱۰٪ (بعد از تخفیف)</label>'
       + '<div class="hb-bltot" data-hb-btot></div><p class="hb-err" data-hb-berr hidden></p><div class="hb-btns hb-center"><button type="button" class="btn primary" data-hb-bsend>📤 ارسال به پذیرش</button><button type="button" class="btn ghost" data-hb-bfree>بدون هزینه</button><button type="button" class="btn small ghost" data-hb-blater>⏭ بعداً</button></div></div>';
@@ -2472,13 +2473,14 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (t.closest("[data-hb-bsend]")) return billSave(false);
     if (t.closest("[data-hb-bfree]")) { var why = prompt("دلیل بدون هزینه (مثلاً: پیگیری رایگان):", "پیگیری رایگان"); if (why === null) return; return billSave(true, why); }
     if (t.closest("[data-hb-blater]")) { billV = null; ptToToday(); }
+    if (t.closest("[data-hb-blback]")) { billV = null; ptMode = "file"; ptShow(); return; }
   });
   // فاکتور و دریافت وجه (پذیرش و دکتر)
   var invOpenId = "";
   function invPanel() {
     var v = invItems.filter(function (x) { return x.id === invOpenId; })[0], el = q("[data-hb-invpanel]"); if (!el) return; if (!v) { el.innerHTML = ""; return; }
     var rem = v.total - v.paid;
-    el.innerHTML = '<div class="hb-inv"><div class="hb-invh"><b>🧾 فاکتور «' + esc(v.name) + '»</b><small>' + esc(fd(v.date)) + (v.owner ? " · " + esc(v.owner) : "") + '</small><button type="button" class="btn small ghost" data-hb-invclose>✕</button></div><table class="hb-invt"><tr><th>خدمت</th><th>تعداد</th><th>مبلغ</th></tr>'
+    el.innerHTML = '<div class="hb-inv"><div class="hb-invh"><b>🧾 فاکتور «' + esc(v.name) + '»</b><small>' + esc(fd(v.date)) + (v.owner ? " · " + esc(v.owner) : "") + '</small><button type="button" class="btn small ghost" data-hb-invclose>→ برگشت</button></div><table class="hb-invt"><tr><th>خدمت</th><th>تعداد</th><th>مبلغ</th></tr>'
       + v.items.map(function (r) { return "<tr><td>" + esc(r.name) + (r.rep ? '<small class="hb-invrp">تکرار: ' + esc(repLabel(r.rep)) + "</small>" : "") + "</td><td>" + toolFa(r.qty) + "</td><td>" + money(r.qty * r.price) + "</td></tr>"; }).join("")
       + "</table>" + (v.disc ? '<p class="hb-invl"><span>تخفیف</span><span>− ' + money(v.disc) + "</span></p>" : "") + (v.tax ? '<p class="hb-invl"><span>مالیات ۱۰٪</span><span>' + money(v.tax) + "</span></p>" : "") + '<p class="hb-invl hb-invtot"><span>مبلغ کل</span><span>' + money(v.total) + "</span></p>" + (v.paid ? '<p class="hb-invl"><span>پرداخت‌شده</span><span>' + money(v.paid) + "</span></p>" : "") + (v.note ? '<p class="hb-mut">' + esc(v.note) + "</p>" : "")
       + (v.status === "paid" ? '<p class="hb-invok">✅ تسویه شد' + (v.method ? " · " + esc(v.method) : "") + "</p>" : v.status === "free" ? '<p class="hb-invok">بدون هزینه</p>' : '<div class="hb-invpay"><div class="seg" data-seg="hb-pm">' + ["نقد", "کارت", "کارت‌به‌کارت"].map(function (m, i) { return '<button type="button"' + (i === 1 ? ' class="on"' : "") + ' data-v="' + m + '">' + m + "</button>"; }).join("") + '</div><div class="fld"><label>مبلغ دریافتی</label><input type="text" inputmode="numeric" dir="ltr" data-hb-invamt value="' + rem + '"></div><button type="button" class="btn primary" data-hb-invpay>💰 دریافت شد · ' + money(rem) + "</button></div>")
@@ -2553,13 +2555,40 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     }
   });
   // گزارش ماهانه (فقط دکتر)
-  var repM = "";
+  var repM = "", repMode = "m", repPk = "";
+  function repFileInit() {
+    var w = repBox().querySelector("[data-hb-repfile]");
+    w.innerHTML = '<h3 class="hb-pth">🗂 گزارش هر پرونده</h3><input type="search" class="hb-bsearch" data-hb-repq autocomplete="off" placeholder="🔎 شمارهٔ پرونده، نام پت یا سرپرست (مثلاً 13701)"><div data-hb-repres></div><div data-hb-repout></div>';
+    var go = function () { if (repPk) repFileShow(); };
+    if (ptItems.length) { repFileList(""); go(); } else { api({ a: "patList", t: tokGet() }).then(function (j) { if (j.ok) ptItems = j.items || []; repFileList(""); go(); }); }
+  }
+  function repFileList(qs) {
+    var box = repBox().querySelector("[data-hb-repres]"); if (!box) return; qs = (qs || "").trim().toLowerCase().replace(/^nm/, ""); var seen = {}, l = [];
+    ptItems.forEach(function (r) { if (!r.pkey || seen[r.pkey]) return; var hay = ((r.fno || "") + " " + (r.name || "") + " " + (r.owner || "") + " " + (r.phone || "")).toLowerCase().replace(/nm/g, ""); if (qs && hay.indexOf(qs) < 0) return; seen[r.pkey] = 1; l.push(r); });
+    box.innerHTML = qs || !repPk ? (l.slice(0, 8).map(function (r) { return '<button type="button" class="hb-qr1 hb-repf" data-hb-reppick="' + esc(r.pkey) + '"><b>' + esc(r.name) + "</b> " + (r.fno ? '<span class="hb-fno">' + esc(r.fno) + "</span> " : "") + "<small>" + esc(r.owner || "") + "</small></button>"; }).join("") || '<p class="hb-qmsg">موردی پیدا نشد.</p>') : "";
+  }
+  function repFileShow() {
+    var out = repBox().querySelector("[data-hb-repout]"), g = ptGroup(repPk), r = g[0] || {}; out.innerHTML = '<p class="hb-qmsg">در حال بارگذاری…</p>';
+    api({ a: "invList", t: tokGet() }).then(function (j) {
+      if (!j.ok) { out.innerHTML = '<p class="hb-qmsg">' + esc(errMsg(j.err)) + "</p>"; return; }
+      var l = (j.items || []).filter(function (v) { return v.pkey === repPk && v.status !== "void"; }), tot = 0, paid = 0;
+      l.forEach(function (v) { tot += v.total; paid += v.paid; });
+      var vis = {}; g.forEach(function (v) { vis[v.date] = 1; });
+      out.innerHTML = '<div class="hb-rep"><span><b>' + esc(r.name || "") + "</b>" + (r.fno ? " · پروندهٔ " + esc(r.fno) : "") + (r.owner ? " · " + esc(r.owner) : "") + "</span><span>تعداد مراجعه: " + toolFa(g.length) + "</span><span>جمع هزینه‌ها: <b>" + money(tot) + "</b></span><span>پرداخت‌شده: " + money(paid) + "</span><span>مانده (بدهی): " + money(tot - paid) + "</span></div>"
+        + '<h4 class="hb-pth2">تاریخ مراجعه‌ها</h4><table class="hb-invt"><tr><th>تاریخ</th><th>علت</th><th>هزینه</th></tr>' + g.map(function (v) { var f = l.filter(function (x) { return x.vid === v.id; }), s = f.reduce(function (t, x) { return t + x.total; }, 0); return "<tr><td>" + esc(fd(v.date)) + "</td><td>" + esc(v.reason || "") + "</td><td>" + (f.length ? money(s) : "—") + "</td></tr>"; }).join("") + "</table>";
+    });
+  }
+  document.addEventListener("click", function (e) { var t = e.target, b; if (!t.closest) return;
+    if ((b = t.closest("[data-hb-repmode]"))) { repMode = b.getAttribute("data-hb-repmode"); repEnter(); return; }
+    if ((b = t.closest("[data-hb-reppick]"))) { repPk = b.getAttribute("data-hb-reppick"); repBox().querySelector("[data-hb-repres]").innerHTML = ""; repFileShow(); }
+  });
+  document.addEventListener("input", function (e) { if (e.target && e.target.hasAttribute && e.target.hasAttribute("data-hb-repq")) { repPk = ""; repFileList(e.target.value); var o = repBox().querySelector("[data-hb-repout]"); if (o) o.innerHTML = ""; } });
   function repBox() { return q("[data-hb-repbox]"); }
   function repMonths() { var t = jToday(), y = +t[0], m = +t[1], out = []; while (y > 1405 || (y === 1405 && m >= 7)) { out.push([y, m]); m--; if (m < 1) { m = 12; y--; } } return out.length ? out : [[1405, 7]]; }   // گزارش از مهر ۱۴۰۵ به بعد
   function repEnter() {
     var bx = repBox(); if (!bx) return; var ms = repMonths(); if (!repM) repM = ms[0].join("-");
-    bx.innerHTML = '<div class="hb-ptform"><h3 class="hb-pth">📊 گزارش ماهانه</h3><div class="fld"><select data-hb-repm>' + ms.map(function (x) { var k = x.join("-"); return '<option value="' + k + '"' + (k === repM ? " selected" : "") + ">" + MON[x[1] - 1] + " " + toolFa(x[0]) + "</option>"; }).join("") + '</select></div><div data-hb-repout><p class="hb-qmsg">در حال بارگذاری…</p></div></div>';
-    repLoad();
+    bx.innerHTML = '<div class="hb-ptform"><div class="seg hb-repmode"><button type="button" class="btn small ' + (repMode === "m" ? "primary" : "ghost") + '" data-hb-repmode="m">📊 ماهانه</button><button type="button" class="btn small ' + (repMode === "f" ? "primary" : "ghost") + '" data-hb-repmode="f">🗂 هر پرونده</button></div>' + (repMode === "f" ? '<div data-hb-repfile></div></div>' : '<h3 class="hb-pth">📊 گزارش ماهانه</h3><div class="fld"><select data-hb-repm>' + ms.map(function (x) { var k = x.join("-"); return '<option value="' + k + '"' + (k === repM ? " selected" : "") + ">" + MON[x[1] - 1] + " " + toolFa(x[0]) + "</option>"; }).join("") + '</select></div><div data-hb-repout><p class="hb-qmsg">در حال بارگذاری…</p></div></div>');
+    if (repMode === "f") return repFileInit(); repLoad();
   }
   function repLoad() {
     var p0 = repM.split("-"), y = +p0[0], m = +p0[1], from = j2g(y, m, 1), to = m === 12 ? j2g(y + 1, 1, 1) : j2g(y, m + 1, 1), out = repBox().querySelector("[data-hb-repout]");
