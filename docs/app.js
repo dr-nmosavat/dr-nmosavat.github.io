@@ -1262,7 +1262,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function render() {
     var pets = q("[data-hb-pets]"), main = q("[data-hb-main]"), pf = q("[data-hb-petform]");
     var noAcct = q("[data-hb-noacct]"), gate = q("[data-hb-drgate]");
-    var dbar = q("[data-hb-drbar]"); if (dbar) dbar.hidden = DRPAGE && !isDr();
+    var dbar = q("[data-hb-drbar]"); if (dbar) dbar.hidden = false;   // نوار بالا همیشه دیده شود (دکمهٔ ورود/خروج)
     if (DRPAGE && srvOn() && !isDr()) { pets.innerHTML = ""; main.hidden = true; pf.hidden = true; if (noAcct) noAcct.hidden = true; if (gate) gate.hidden = false; document.documentElement.classList.remove("hb-has-pet"); return; }
     if (!db.pets.length) { var guest = srvOn() && !isDr(); pets.innerHTML = ""; main.hidden = true; pf.hidden = guest; if (noAcct) noAcct.hidden = !(guest && !DRPAGE); if (gate) gate.hidden = !(guest && DRPAGE); document.documentElement.classList.remove("hb-has-pet"); return; }
     if (noAcct) noAcct.hidden = true; if (gate) gate.hidden = true;
