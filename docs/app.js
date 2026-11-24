@@ -2466,7 +2466,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   // گزارش ماهانه (فقط دکتر)
   var repM = "";
   function repBox() { return q("[data-hb-repbox]"); }
-  function repMonths() { var t = jToday(), y = +t[0], m = +t[1], out = []; for (var k = 0; k < 12; k++) { out.push([y, m]); m--; if (m < 1) { m = 12; y--; } } return out; }
+  function repMonths() { var t = jToday(), y = +t[0], m = +t[1], out = []; while (y > 1405 || (y === 1405 && m >= 7)) { out.push([y, m]); m--; if (m < 1) { m = 12; y--; } } return out.length ? out : [[1405, 7]]; }   // گزارش از مهر ۱۴۰۵ به بعد
   function repEnter() {
     var bx = repBox(); if (!bx) return; var ms = repMonths(); if (!repM) repM = ms[0].join("-");
     bx.innerHTML = '<div class="hb-ptform"><h3 class="hb-pth">📊 گزارش ماهانه</h3><div class="fld"><select data-hb-repm>' + ms.map(function (x) { var k = x.join("-"); return '<option value="' + k + '"' + (k === repM ? " selected" : "") + ">" + MON[x[1] - 1] + " " + toolFa(x[0]) + "</option>"; }).join("") + '</select></div><div data-hb-repout><p class="hb-qmsg">در حال بارگذاری…</p></div></div>';
