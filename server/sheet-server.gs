@@ -204,8 +204,8 @@ function roleOf_(t) {
 }
 // کارهایی که منشی اجازه دارد (فقط نوبت، بیماران و امروز؛ نه شناسنامه و واگذاری)
 // مدیر: همه‌چیز را می‌بیند (حتی یادداشت پزشکی)؛ تعرفه و باطل کردن فاکتور مجاز؛ ثبت/تغییر پرونده، نوبت و صف نه
-var MGR_NO = { savePet: 1, saveRec: 1, delRec: 1, rotate: 1, deletePet: 1, useCode: 1, patSave: 1, patDel: 1, patPatient: 1, patSms: 1, petRemind: 1, petReqSet: 1, adoptSet: 1, apSave: 1, apSet: 1, apRemind: 1, qAdd: 1, qSet: 1, invSave: 1, invPay: 1, touch: 1 };
-var SEC_OK = { svcList: 1, invList: 1, invPay: 1, qList: 1, qAdd: 1, qSet: 1, lookup: 1, apRemind: 1, patList: 1, patSave: 1, patPatient: 1, patSms: 1, touch: 1, todayList: 1, apList: 1, apSave: 1, apSet: 1 };
+var MGR_NO = { savePet: 1, saveRec: 1, delRec: 1, rotate: 1, deletePet: 1, useCode: 1, patSave: 1, patDel: 1, patPatient: 1, patSms: 1, petRemind: 1, petReqSet: 1, adoptSet: 1, apSave: 1, apSet: 1, apRemind: 1, qAdd: 1, qSet: 1, invSave: 1, invPay: 1, invDisc: 1, touch: 1 };
+var SEC_OK = { svcList: 1, invList: 1, invPay: 1, invDisc: 1, qList: 1, qAdd: 1, qSet: 1, lookup: 1, apRemind: 1, patList: 1, patSave: 1, patPatient: 1, patSms: 1, touch: 1, todayList: 1, apList: 1, apSave: 1, apSet: 1 };
 function ownerOk_(code, key) {
   var pet = findPet_(code); return pet && !pet.deleted && key && pet.key === String(key) ? pet : null;
 }
@@ -290,6 +290,7 @@ function health_(b) {
     if (a === 'invSave') return invSave_(b);
     if (a === 'invList') return invList_(b);
     if (a === 'invPay') return invPay_(b);
+    if (a === 'invDisc') return invDisc_(b);
     if (a === 'invVoid') return invVoid_(b);
     if (a === 'repList') return repList_(b);
     if (a === 'qList') return qList_();
@@ -429,7 +430,7 @@ function doGet(e) {
   }
   if (p.action === 'spin') return json_(spin_(p));
   if (p.action === 'verify') return verifyPage_(p);
-  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v33-pet' });
+  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v34-disc' });
 }
 
 // ======================= چرخ هدیه =======================
@@ -900,6 +901,19 @@ function invPay_(b) {   // دکتر یا منشی: فقط دریافت وجه
     if (amt <= 0) return { ok: false, err: 'bad' };
     r.paid = String(Math.min(total, num_(r.paid) + amt)); r.method = ['نقد', 'کارت', 'کارت‌به‌کارت'].indexOf(b.method) > -1 ? b.method : 'نقد';
     r.status = num_(r.paid) >= total ? 'paid' : 'partial'; r.paidAt = nowIso_(); r.updated = nowIso_();
+    writeRow_(sh, INV_COLS, r, r._row); return { ok: true, item: invOut_(r) };
+  }
+  return { ok: false, err: 'notfound' };
+}
+function invDisc_(b) {   // دکتر یا منشی: تعیین/تغییر تخفیف یک فاکتور پرداخت‌نشده (کل تخفیف، تومان)
+  var sh = hsheet_('Invoices', INV_COLS), rows = readAll_(sh, INV_COLS), i;
+  for (i = 0; i < rows.length; i++) if (rows[i].id === String(b.id || '')) {
+    var r = rows[i]; if (r.status !== 'pending' && r.status !== 'partial') return { ok: false, err: 'bad' };
+    var sub = num_(r.sub), disc = Math.max(0, Math.min(sub, num_(b.disc))), tax = num_(r.tax) > 0 ? Math.round((sub - disc) * 0.1) : 0, tot = sub - disc + tax;
+    if (tot < num_(r.paid)) return { ok: false, err: 'bad' };
+    r.disc = String(disc); r.tax = String(tax); r.total = String(tot);
+    if (num_(r.paid) >= tot) r.status = 'paid';
+    r.note = clip_((r.note ? r.note + ' · ' : '') + 'تخفیف ' + (b.role === 'sec' ? 'پذیرش' : 'دکتر') + ': ' + disc, 200); r.updated = nowIso_();
     writeRow_(sh, INV_COLS, r, r._row); return { ok: true, item: invOut_(r) };
   }
   return { ok: false, err: 'notfound' };
