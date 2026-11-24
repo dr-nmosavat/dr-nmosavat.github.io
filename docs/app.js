@@ -2114,9 +2114,10 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     setTimeout(function () { [["ap", apBox()], ["pt", ptBox()]].forEach(function (x) { var inp = x[1] && x[1].querySelector('[data-' + x[0] + '="breed"]'); if (inp && x[1].querySelector('[data-hb-brsel="' + x[0] + '"]')) { inp.value = ""; brFill(x[1], x[0]); } }); }, 0);
   });
   function ptIdFields(r, lk) {
-    return '<div class="fld"><input data-pt="owner" type="text" maxlength="40" placeholder="👤 نام سرپرست" value="' + esc(r && r.owner || "") + '"></div>'
-      + '<div class="fld"><input data-pt="name"' + (lk ? ' data-hb-lk="pt" autocomplete="off"' : "") + ' type="text" maxlength="40" placeholder="' + (lk ? "🔎 نام پت (جستجو در سوابق)" : "نام پت") + '" value="' + esc(r && r.name || "") + '">' + (lk ? '<div class="hb-lkres" data-hb-lkres="pt"></div>' : "") + "</div>"
-      + '<div class="fld"><input data-pt="phone"' + (lk ? ' data-hb-lk="pt"' : "") + ' type="tel" inputmode="tel" dir="ltr" maxlength="16" placeholder="📞 شمارهٔ تماس (۰۹۱۲…)" autocomplete="off" value="' + esc(r && r.phone || "") + '"></div>'
+    var bx = lk ? '<div class="hb-lkres"></div>' : "";
+    return '<div class="fld"><input data-pt="owner"' + (lk ? ' data-hb-lk="pt" autocomplete="off"' : "") + ' type="text" maxlength="40" placeholder="👤 نام سرپرست' + (lk ? " (جستجو در سوابق)" : "") + '" value="' + esc(r && r.owner || "") + '">' + bx + "</div>"
+      + '<div class="fld"><input data-pt="name"' + (lk ? ' data-hb-lk="pt" autocomplete="off"' : "") + ' type="text" maxlength="40" placeholder="' + (lk ? "🔎 نام پت (جستجو در سوابق)" : "نام پت") + '" value="' + esc(r && r.name || "") + '">' + bx + "</div>"
+      + '<div class="fld"><input data-pt="phone"' + (lk ? ' data-hb-lk="pt"' : "") + ' type="tel" inputmode="tel" dir="ltr" maxlength="16" placeholder="📞 شمارهٔ تماس (۰۹۱۲…)" autocomplete="off" value="' + esc(r && r.phone || "") + '">' + bx + "</div>"
       + '<div class="fld">' + ptSpecies(r && r.species) + "</div>"
       + breedFld("pt", r && r.breed);
   }
@@ -2244,12 +2245,14 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     apItems.forEach(function (r) { if (lkHit(r, Q)) add({ kind: "appt", pkey: r.pkey, name: r.name, species: r.species, breed: r.breed || "", owner: r.owner, phone: r.phone }); });
     return out;
   }
+  var lkEl = null;
+  function lkBox(ctx) { var b = lkEl && lkEl.parentNode && lkEl.parentNode.querySelector(".hb-lkres"); return b || q('[data-hb-lkres="' + ctx + '"]'); }
   function lkShow(ctx, items) {
-    var box = q('[data-hb-lkres="' + ctx + '"]'); if (!box) return; lkRes[ctx] = items = items.slice(0, 12); items.forEach(function (it) { if (/^9\d{9}$/.test(String(it.phone || ""))) it.phone = "0" + it.phone; });
+    var box = lkBox(ctx); if (!box) return; lkRes[ctx] = items = items.slice(0, 12); items.forEach(function (it) { if (/^9\d{9}$/.test(String(it.phone || ""))) it.phone = "0" + it.phone; });
     box.innerHTML = items.length ? '<div class="hb-lkt">قبلاً آمده؟ برای پرکردن فرم لمس کنید:</div>' + items.map(function (it, k) { return '<button type="button" class="hb-lkb" data-hb-lkpick="' + ctx + '" data-i="' + k + '"><b>' + esc(it.name) + '</b><small>' + esc(it.species || "") + (it.breed ? " · " + esc(it.breed) : "") + (it.owner ? " · " + esc(it.owner) : "") + (it.phone ? ' · <span dir="ltr">' + esc(it.phone) + "</span>" : "") + " · " + (it.kind === "pet" ? "شناسنامه‌دار" : it.kind === "patient" ? "پرونده دارد" : "نوبت قبلی") + '</small></button>'; }).join("") : '<small class="hb-lkn">در سوابق نبود؛ فرم را پر کنید.</small>';
   }
   function lkRun(ctx, el) {
-    var Q = lkQuery(el), box = q('[data-hb-lkres="' + ctx + '"]'); if (!box) return; box.innerHTML = '<small class="hb-lkn">در حال جستجو در سوابق…</small>';
+    lkEl = el; var Q = lkQuery(el), box = lkBox(ctx); if (!box) return; box.innerHTML = '<small class="hb-lkn">در حال جستجو در سوابق…</small>';
     var stale = function () { var Q2 = lkQuery(el); return Q2.q !== Q.q; };
     api({ a: "lookup", t: tokGet(), q: Q.q }).then(function (j) {
       if (stale()) return;
@@ -2261,7 +2264,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   }
   document.addEventListener("input", function (e) {
     var el = e.target, ctx = el && el.getAttribute && el.getAttribute("data-hb-lk"); if (!ctx) return;
-    clearTimeout(lkT); var Q = lkQuery(el), box = q('[data-hb-lkres="' + ctx + '"]');
+    clearTimeout(lkT); lkEl = el; var Q = lkQuery(el), box = lkBox(ctx);
     if (!Q.ok) { if (box) box.innerHTML = ""; if (ctx === "ap" && Q.ph) { apLink = "";  } return; }
     lkT = setTimeout(function () { lkRun(ctx, el); }, 450);
   });
@@ -2275,7 +2278,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (it.species) setSeg("hb-ptsp", it.species);
     brFill(ctx === "ap" ? apBox() : ptBox(), ctx);
     if (ctx === "ap") { apLink = it.pkey || ""; }
-    q('[data-hb-lkres="' + ctx + '"]').innerHTML = '<small class="hb-lkn">✅ اطلاعات «' + esc(it.name) + '» وارد شد.</small>';
+    [].forEach.call(root.querySelectorAll(".hb-lkres"), function (x) { x.innerHTML = ""; }); var okb = lkBox(ctx); if (okb) okb.innerHTML = '<small class="hb-lkn">✅ اطلاعات «' + esc(it.name) + '» وارد شد.</small>';
   });
   document.addEventListener("click", function (e) { var a = e.target.closest && e.target.closest("[data-hb-vdshow]"); if (!a) return; e.preventDefault(); var w = a.closest(".hb-ptform") || document; var d = w.querySelector("[data-hb-vdate]"); if (d) d.hidden = false; a.parentNode.hidden = true; });
   // ---- پنل کلینیک: ردیابی، ساعت، امروز، نوبت‌دهی ----
@@ -2597,9 +2600,9 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       apSel = { date: v.date || (apFilter === "tomorrow" ? isoPlus(apToday || isoNow(), 1) : (apToday || isoNow())), time: v.time || "" }; apLink = v.pkey || "";
       box.innerHTML = '<div class="hb-ptform hb-apform"><h3 class="hb-pth hb-ctr hb-ft">' + (e ? "✏️ ویرایش نوبت" : "🗓 ثبت نوبت") + '</h3>'
         + '<div class="hb-aptop hb-aptop1"><div class="fld"><select data-hb-apdays aria-label="روز نوبت"></select></div><div class="fld" data-hb-apother hidden><div class="jd" data-pjd="apd"></div></div><div class="fld"><select data-hb-apslots aria-label="ساعت"></select></div></div>'
-        + '<div class="fld"><input data-ap="owner" type="text" maxlength="40" placeholder="👤 نام سرپرست" value="' + esc(v.owner || "") + '"></div>'
-        + '<div class="fld"><input data-ap="name" data-hb-lk="ap" type="text" autocomplete="off" maxlength="40" placeholder="🔎 نام پت (جستجو در سوابق)" value="' + esc(v.name || "") + '"><div class="hb-lkres" data-hb-lkres="ap"></div></div>'
-        + '<div class="fld"><input data-ap="phone" data-hb-lk="ap" type="tel" inputmode="tel" dir="ltr" maxlength="16" placeholder="📞 شمارهٔ تماس (۰۹۱۲…)" autocomplete="off" value="' + esc(v.phone || "") + '"></div>'
+        + '<div class="fld"><input data-ap="owner" data-hb-lk="ap" type="text" autocomplete="off" maxlength="40" placeholder="👤 نام سرپرست (جستجو در سوابق)" value="' + esc(v.owner || "") + '"><div class="hb-lkres"></div></div>'
+        + '<div class="fld"><input data-ap="name" data-hb-lk="ap" type="text" autocomplete="off" maxlength="40" placeholder="🔎 نام پت (جستجو در سوابق)" value="' + esc(v.name || "") + '"><div class="hb-lkres"></div></div>'
+        + '<div class="fld"><input data-ap="phone" data-hb-lk="ap" type="tel" inputmode="tel" dir="ltr" maxlength="16" placeholder="📞 شمارهٔ تماس (۰۹۱۲…)" autocomplete="off" value="' + esc(v.phone || "") + '"><div class="hb-lkres"></div></div>'
         + '<div class="fld">' + ptSpecies(v.species) + '</div>'
         + breedFld("ap", v.breed)
         + '<div class="fld">' + apReasonSel(v.reason) + '</div>'
