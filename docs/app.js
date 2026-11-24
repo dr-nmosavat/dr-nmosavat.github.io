@@ -2616,7 +2616,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       return;
     }
     var td = apToday || isoNow(), tm = isoPlus(td, 1);
-    var l = apItems.filter(function (r) { return !isQueue(r) && apFilter === "today" ? r.date === td : apFilter === "tomorrow" ? r.date === tm : apFilter === "upcoming" ? r.date > td : r.date < td; });
+    var l = apItems.filter(function (r) { if (isQueue(r)) return false; return apFilter === "today" ? r.date === td : apFilter === "tomorrow" ? r.date === tm : apFilter === "upcoming" ? r.date > td : r.date < td; });
     l.sort(function (a, b) { var k = (a.date + a.time) < (b.date + b.time) ? -1 : 1; return apFilter === "past" ? -k : k; });
     var FL = [["today", "امروز"], ["tomorrow", "فردا"], ["upcoming", "آینده"], ["past", "گذشته"]];
     box.innerHTML = '<div class="hb-pttool"><button type="button" class="btn small ghost" data-hb-apref aria-label="تازه‌سازی">🔄</button></div><div class="seg hb-adf" data-hb-apseg>' + FL.map(function (f) { var nb = f[0] === "past" ? 0 : apItems.filter(function (r) { return r.status === "booked" && !isQueue(r) && !cameOn(r) && (f[0] === "today" ? r.date === td : f[0] === "tomorrow" ? r.date === tm : r.date > td); }).length; return '<button type="button"' + (apFilter === f[0] ? ' class="on"' : "") + ' data-hb-apf="' + f[0] + '">' + f[1] + (nb ? ' <span class="hb-apdot">' + toolFa(nb) + "</span>" : "") + "</button>"; }).join("") + '</div><div class="hb-adlist">'
