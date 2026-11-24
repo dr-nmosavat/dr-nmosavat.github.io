@@ -2340,3 +2340,17 @@ body.hb-drpage .hb-staffhdr { margin-bottom: 12px; }
 .hb-apform select[data-hb-brsel], .hb-ptform select[data-hb-brsel], .hb-apform select[data-ap="reason"] { text-align: center; text-align-last: center; -webkit-text-align-last: center; font-weight: 600; }
 /* دکمه‌ی فعال بالای صفحه */
 .hb-navpanel .hb-nav3 button.on { background: #0e4f2e; border-color: #0e4f2e; box-shadow: 0 0 0 3px #fff, 0 0 0 5px #1b7a4b; }
+/* ===== شمارهٔ پرونده، مالیات، تاریخ تکرار ===== */
+.hb-fno { display: inline-block; margin-inline-start: 8px; padding: 1px 10px; border-radius: 999px; background: #e6eef9; color: #1f5aa6; font-size: 12.5px; font-weight: 700; direction: ltr; unicode-bidi: embed; }
+.hb-bltax { margin: 8px 0 0; }
+.hb-blrep { background: #fff8e1; border: 1.5px solid #f0d28a; border-radius: 12px; padding: 8px 10px; margin: -2px 0 8px; }
+.hb-blrep.ok { background: #eef8f1; border-color: #b7e1c4; } .hb-blrep.bad { border-color: #c62828; background: #fff1f1; }
+.hb-brh { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 6px; } .hb-brh b { font-size: 13.5px; } .hb-brv { font-size: 13px; font-weight: 700; color: #8a5a00; } .hb-blrep.ok .hb-brv { color: #12684a; }
+.hb-brq { display: flex; margin: 0 -3px 6px; } .hb-brq button { flex: 1 1 0; margin: 0 3px; min-height: 36px; border-radius: 10px; border: 1px solid #1f5aa6; background: #fff; color: #1f5aa6; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+.hb-invrp { display: block; font-size: 11.5px; color: #1f5aa6; margin-top: 2px; }
+/* جدول صورتحساب: باریک‌تر */
+.hb-blr { padding: 5px 6px; } .hb-bln { font-size: 13.5px; line-height: 1.4; min-width: 0; }
+.hb-blq { width: 42px !important; min-height: 34px; margin: 0 4px; font-size: 14px; padding: 0 2px; }
+.hb-blp { width: 88px !important; min-height: 34px; font-size: 13.5px; padding: 0 4px; letter-spacing: -.2px; }
+.hb-blr input[type=checkbox] { width: 18px; height: 18px; margin-left: 6px; }
+@media (max-width: 560px) { .hb-blq { width: 38px !important; } .hb-blp { width: 80px !important; font-size: 13px; } .hb-bln { font-size: 13px; } }

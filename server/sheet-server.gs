@@ -65,10 +65,11 @@ var H = {
 };
 var PET_COLS = ['code', 'key', 'name', 'en', 'owner', 'guardian', 'species', 'breed', 'breedEn', 'birth', 'plan', 'consent', 'created', 'updated', 'deleted', 'auth', 'sex', 'neut', 'phone', 'smsok'];
 var SMS_COLS = ['time', 'to', 'kind', 'text', 'status', 'response', 'raw'];
-var PT_COLS = ['id', 'pkey', 'created', 'updated', 'date', 'name', 'species', 'breed', 'owner', 'phone', 'reason', 'note', 'follow', 'code', 'deleted', 'fee', 'paid', 'pay'];
+var PT_COLS = ['id', 'pkey', 'created', 'updated', 'date', 'name', 'species', 'breed', 'owner', 'phone', 'reason', 'note', 'follow', 'code', 'deleted', 'fee', 'paid', 'pay', 'fno'];
 var ACT_COLS = ['day', 'time', 'kind', 'ref', 'name'];
 var SV_COLS = ['id', 'name', 'price', 'active', 'sort', 'updated'];
-var INV_COLS = ['id', 'created', 'updated', 'date', 'pkey', 'vid', 'name', 'owner', 'phone', 'items', 'sub', 'disc', 'total', 'status', 'paid', 'method', 'paidAt', 'note'];
+var INV_COLS = ['id', 'created', 'updated', 'date', 'pkey', 'vid', 'name', 'owner', 'phone', 'items', 'sub', 'disc', 'total', 'status', 'paid', 'method', 'paidAt', 'note', 'tax'];
+var REP_COLS = ['id', 'created', 'updated', 'date', 'pkey', 'fno', 'name', 'owner', 'phone', 'service', 'invoice', 'status', 'note', 'deleted'];
 var Q_COLS = ['id', 'created', 'updated', 'date', 'time', 'pkey', 'name', 'species', 'breed', 'owner', 'phone', 'status', 'src', 'note'];
 var AP_COLS = ['id', 'created', 'updated', 'date', 'time', 'name', 'species', 'breed', 'owner', 'phone', 'reason', 'note', 'status', 'pkey', 'deleted', 'rem'];
 var REC_COLS = ['id', 'code', 'type', 'date', 'name', 'brand', 'serial', 'place', 'extra', 'freq', 'how', 'dur', 'end', 'weight', 'next', 'closed', 'dr', 'created', 'updated', 'deleted', 'src'];
@@ -80,7 +81,10 @@ function hsheet_(name, cols) {
     sh.getRange(1, 1, sh.getMaxRows(), cols.length).setNumberFormat('@');   // متن ساده: تاریخ‌ها خودکار تبدیل نشوند
     if (LOOK[name]) look_(sh, LOOK[name]);
     if (MIG[name]) PropertiesService.getScriptProperties().setProperty(MIG[name].key, '1');
-  } else if (MIG[name] && !MIGDONE[name]) migCols_(sh, name);
+  } else {
+    if (MIG[name] && !MIGDONE[name]) migCols_(sh, name);
+    var lc = sh.getLastColumn(); if (lc < cols.length && lc > 0) sh.getRange(1, lc + 1, 1, cols.length - lc).setValues([cols.slice(lc)]);   // ستون‌های تازه: سرستون موقت تا «مرتب‌کردن ظاهر»
+  }
   return sh;
 }
 // جابه‌جایی یک‌باره: ستون «نژاد» از آخر جدول به بعد از «گونه».
@@ -97,8 +101,8 @@ function migCols_(sh, name) {
     if (props.getProperty(m.key)) { MIGDONE[name] = 1; return; }
     var cols = name === 'Patients' ? PT_COLS : AP_COLS, old = m.old, n = sh.getLastRow(), isPh = function (x) { return /^0?9\d{9}$/.test(String(x).replace(/\D/g, '')); };
     if (n > 1) {
-      if (sh.getMaxColumns() < old.length) sh.insertColumnsAfter(sh.getMaxColumns(), old.length - sh.getMaxColumns());
-      var v = sh.getRange(2, 1, n - 1, old.length).getDisplayValues();
+      var W = Math.max(old.length, cols.length); if (sh.getMaxColumns() < W) sh.insertColumnsAfter(sh.getMaxColumns(), W - sh.getMaxColumns());
+      var v = sh.getRange(2, 1, n - 1, W).getDisplayValues();
       var oldPh = old.indexOf('phone'), newPh = cols.indexOf('phone'), a = 0, b = 0;
       v.forEach(function (row) { if (isPh(row[oldPh])) a++; if (isPh(row[newPh])) b++; });
       if (a > 0) {   // ردیف‌هایی با ترتیب قدیم پیدا شد → بازنویسی (هر ردیف جداگانه تشخیص داده می‌شود)
@@ -108,7 +112,7 @@ function migCols_(sh, name) {
           var po = isPh(row[oldPh]), pn = isPh(row[newPh]), isOld = po && !pn ? true : pn && !po ? false : a >= b;
           return cols.map(function (c, ci) { var k = isOld ? old.indexOf(c) : ci, x = k < 0 ? '' : String(row[k]); if (c === 'phone' && /^9\d{9}$/.test(x)) x = '0' + x; return x; });
         });
-        var rg = sh.getRange(2, 1, n - 1, old.length); rg.setNumberFormat('@'); rg.setValues(out);
+        var rg = sh.getRange(2, 1, n - 1, W); rg.setNumberFormat('@'); rg.setValues(out.map(function (row) { while (row.length < W) row.push(''); return row; }));
       }
     }
     if (LOOK[name]) sh.getRange(1, 1, 1, LOOK[name].labels.length).setValues([LOOK[name].labels]);
@@ -285,6 +289,7 @@ function health_(b) {
     if (a === 'invList') return invList_(b);
     if (a === 'invPay') return invPay_(b);
     if (a === 'invVoid') return invVoid_(b);
+    if (a === 'repList') return repList_(b);
     if (a === 'qList') return qList_();
     if (a === 'qAdd') return qAdd_(b, role0);
     if (a === 'qSet') return qSet_(b);
@@ -422,7 +427,7 @@ function doGet(e) {
   }
   if (p.action === 'spin') return json_(spin_(p));
   if (p.action === 'verify') return verifyPage_(p);
-  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v30-panel' });
+  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v31-panel' });
 }
 
 // ======================= چرخ هدیه =======================
@@ -796,7 +801,7 @@ function petRemind_(b) {
   return o.sent ? { ok: true, sent: o.sent, failed: o.failed } : { ok: false, err: 'fail', msg: o.errs[0] || '' };
 }
 // ---- دفتر «بیماران من» (فقط دکتر؛ هر ردیف = یک مراجعه) ----
-function patOut_(r) { return { breed: r.breed || '', id: r.id, pkey: r.pkey, date: r.date, name: r.name, species: r.species, owner: r.owner, phone: r.phone, reason: r.reason, note: r.note, follow: r.follow, code: r.code, fee: r.fee || '', paid: r.paid === '1', pay: r.pay || '' }; }
+function patOut_(r) { return { fno: r.fno || '', breed: r.breed || '', id: r.id, pkey: r.pkey, date: r.date, name: r.name, species: r.species, owner: r.owner, phone: r.phone, reason: r.reason, note: r.note, follow: r.follow, code: r.code, fee: r.fee || '', paid: r.paid === '1', pay: r.pay || '' }; }
 // آخرین پیامک موفق برای هر پرونده/نوبت (از شیت SMS)، تا روی همهٔ دستگاه‌ها دیده شود
 function smsAtMap_(prefix) {
   var m = {}, re = new RegExp('^' + prefix + ':([^:]+)');
@@ -809,12 +814,12 @@ function phN_(v) { var d = String(v || '').replace(/\D/g, ''); if (/^98\d{10}$/.
 function lookup_(b) {
   var raw = String(b.q || '').replace(/[۰-۹]/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'.indexOf(d); }), byPhone = /^[\s+\d-]+$/.test(raw), qd = phN_(raw), qn = norm_(raw);
   if (byPhone ? qd.length < 3 : qn.length < 2) return { ok: true, items: [] };
-  function hit(o) { return byPhone ? phN_(o.phone).indexOf(qd) > -1 : norm_([o.name, o.en, o.owner, o.guardian].join(' ')).indexOf(qn) > -1; }
+  function hit(o) { return byPhone ? (phN_(o.phone).indexOf(qd) > -1 || (qd.length >= 4 && String(o.fno || '').replace(/\D/g, '').indexOf(qd) > -1)) : norm_([o.name, o.en, o.owner, o.guardian, o.fno].join(' ')).indexOf(qn) > -1; }
   var out = [], seen = {};
   function add(o) { var k = phN_(o.phone) + '|' + norm_(o.name); if (seen[k]) return; seen[k] = 1; out.push(o); }
   var pts = readAll_(hsheet_('Patients', PT_COLS), PT_COLS).filter(function (r) { return r.deleted !== '1' && hit(r); });
   pts.sort(function (x, y) { return x.date < y.date ? 1 : -1; });
-  pts.forEach(function (r) { add({ kind: 'patient', pkey: r.pkey, name: r.name, species: r.species, breed: r.breed || '', owner: r.owner, phone: r.phone, last: r.date }); });
+  pts.forEach(function (r) { add({ kind: 'patient', fno: r.fno || '', pkey: r.pkey, name: r.name, species: r.species, breed: r.breed || '', owner: r.owner, phone: r.phone, last: r.date }); });
   readAll_(hsheet_('Pets', PET_COLS), PET_COLS).forEach(function (p) { if (p.deleted !== '1' && hit(p)) add({ kind: 'pet', code: p.code, name: p.name, species: p.species, breed: p.breed || '', owner: p.owner || p.guardian, phone: p.phone }); });
   readAll_(hsheet_('Appts', AP_COLS), AP_COLS).forEach(function (r) { if (r.deleted !== '1' && hit(r)) add({ kind: 'appt', pkey: r.pkey, name: r.name, species: r.species, breed: r.breed || '', owner: r.owner, phone: r.phone, last: r.date }); });
   return { ok: true, items: out.slice(0, 12) };
@@ -844,20 +849,33 @@ function svcSave_(b) {   // فقط دکتر: کل فهرست تعرفه‌ها
   rows.forEach(function (r) { if (!seen[r.id] && r.active !== '0') { r.active = '0'; r.updated = nowIso_(); writeRow_(sh, SV_COLS, r, r._row); } });   // حذف = غیرفعال
   return svcList_();
 }
-function invOut_(r) { var items = []; try { items = JSON.parse(r.items || '[]'); } catch (e) {} return { id: r.id, date: r.date, pkey: r.pkey, vid: r.vid, name: r.name, owner: r.owner, phone: r.phone, items: items, sub: num_(r.sub), disc: num_(r.disc), total: num_(r.total), status: r.status, paid: num_(r.paid), method: r.method, paidAt: r.paidAt, note: r.note }; }
+function invOut_(r) { var items = []; try { items = JSON.parse(r.items || '[]'); } catch (e) {} return { id: r.id, date: r.date, pkey: r.pkey, vid: r.vid, name: r.name, owner: r.owner, phone: r.phone, items: items, sub: num_(r.sub), disc: num_(r.disc), total: num_(r.total), status: r.status, paid: num_(r.paid), method: r.method, paidAt: r.paidAt, note: r.note, tax: num_(r.tax) }; }
 function invSave_(b) {   // فقط دکتر: صدور/ویرایش فاکتور یک مراجعه
   var sh = hsheet_('Invoices', INV_COLS), rows = readAll_(sh, INV_COLS), v = b.v || {}, r = null, i;
   if (v.id) for (i = 0; i < rows.length; i++) if (rows[i].id === String(v.id)) { r = rows[i]; break; }
   if (!r && v.vid) for (i = 0; i < rows.length; i++) if (rows[i].vid === String(v.vid) && rows[i].status !== 'void') { r = rows[i]; break; }
   if (!r) r = { id: 'F-' + rnd_(6).toUpperCase(), created: nowIso_(), paid: '0' };
-  var items = (v.items || []).slice(0, 40).map(function (x) { return { name: clip_(x.name, 60), qty: Math.max(1, Math.min(99, num_(x.qty) || 1)), price: num_(x.price) }; }).filter(function (x) { return x.name; });
+  var items = (v.items || []).slice(0, 40).map(function (x) { var o = { name: clip_(x.name, 60), qty: Math.max(1, Math.min(99, num_(x.qty) || 1)), price: num_(x.price) }; if (date_(x.rep)) o.rep = date_(x.rep); return o; }).filter(function (x) { return x.name; });
   var sub = items.reduce(function (t, x) { return t + x.qty * x.price; }, 0), disc = Math.min(sub, num_(v.disc));
   r.date = date_(v.date) || today_(); r.pkey = /^PT-[A-Z0-9]{5,10}$/.test(String(v.pkey || '')) ? v.pkey : ''; r.vid = clip_(v.vid, 20);
   r.name = clip_(v.name, 40); r.owner = clip_(v.owner, 40); r.phone = String(v.phone || '').replace(/[^0-9+]/g, '').slice(0, 16);
-  r.items = JSON.stringify(items); r.sub = String(sub); r.disc = String(disc); r.total = String(v.free ? 0 : sub - disc); r.note = clip_(v.note, 200);
-  var paid = num_(r.paid); r.status = v.free ? 'free' : (sub - disc <= 0 ? 'free' : paid >= sub - disc ? 'paid' : paid > 0 ? 'partial' : 'pending');
+  var tax = v.tax && !v.free ? Math.round((sub - disc) * 0.1) : 0, tot = v.free ? 0 : sub - disc + tax;
+  r.items = JSON.stringify(items); r.sub = String(sub); r.disc = String(disc); r.tax = String(tax); r.total = String(tot); r.note = clip_(v.note, 200);
+  var paid = num_(r.paid); r.status = v.free ? 'free' : (tot <= 0 ? 'free' : paid >= tot ? 'paid' : paid > 0 ? 'partial' : 'pending');
   r.updated = nowIso_(); writeRow_(sh, INV_COLS, r, r._row || 0);
+  try { repSync_(r, items); } catch (er) {}
   return { ok: true, item: invOut_(r) };
+}
+// بایگانی تاریخ‌های تکرار (واکسن/ضدانگل) برای پیامک یادآور بعدی
+function repSync_(inv, items) {
+  var sh = hsheet_('Repeats', REP_COLS), rows = readAll_(sh, REP_COLS), fno = inv.pkey ? fnoOf_(inv.pkey) : '';
+  rows.forEach(function (x) { if (x.invoice === inv.id && x.deleted !== '1') { x.deleted = '1'; x.updated = nowIso_(); writeRow_(sh, REP_COLS, x, x._row); } });
+  (items || []).forEach(function (x) { if (!x.rep) return; writeRow_(sh, REP_COLS, { id: 'R-' + rnd_(6).toUpperCase(), created: nowIso_(), updated: nowIso_(), date: x.rep, pkey: inv.pkey, fno: fno, name: inv.name, owner: inv.owner, phone: inv.phone, service: x.name, invoice: inv.id, status: 'wait', note: '', deleted: '' }, 0); });
+}
+function repList_(b) {   // دکتر/مدیر: تاریخ‌های تکرار ثبت‌شده (پایهٔ پیامک یادآور بعدی)
+  var rows = readAll_(hsheet_('Repeats', REP_COLS), REP_COLS).filter(function (r) { return r.deleted !== '1' && r.status === 'wait'; });
+  rows.sort(function (x, y) { return x.date < y.date ? -1 : 1; });
+  return { ok: true, items: rows.slice(0, 500).map(function (r) { return { id: r.id, date: r.date, pkey: r.pkey, fno: r.fno, name: r.name, owner: r.owner, phone: r.phone, service: r.service, invoice: r.invoice, status: r.status }; }) };
 }
 function invList_(b) {   // امروز + همهٔ پرداخت‌نشده‌ها؛ یا همهٔ فاکتورهای یک بیمار
   var day = today_(), from = date_(b.from) || day, rows = readAll_(hsheet_('Invoices', INV_COLS), INV_COLS).filter(function (r) { return r.status !== 'void'; });
@@ -880,7 +898,7 @@ function invVoid_(b) {   // فقط دکتر (در SEC_OK نیست): باطل ک�
   var sh = hsheet_('Invoices', INV_COLS), rows = readAll_(sh, INV_COLS), i;
   for (i = 0; i < rows.length; i++) if (rows[i].id === String(b.id || '')) {
     var r = rows[i]; r.status = 'void'; r.note = clip_((r.note ? r.note + ' · ' : '') + 'باطل شد: ' + clip_(b.why, 120) + (num_(r.paid) ? ' (پرداختی: ' + num_(r.paid) + ' تومان)' : ''), 400); r.updated = nowIso_();
-    writeRow_(sh, INV_COLS, r, r._row); return { ok: true, item: invOut_(r) };
+    writeRow_(sh, INV_COLS, r, r._row); try { repSync_(r, []); } catch (er) {} return { ok: true, item: invOut_(r) };
   }
   return { ok: false, err: 'notfound' };
 }
@@ -903,8 +921,24 @@ function qMarkDone_(pt) {   // ویزیت دکتر امروز → در صف «و
   rows.forEach(function (r) { if (r.date === day && r.pkey === pt.pkey && r.status === 'wait') { r.status = 'done'; r.updated = nowIso_(); writeRow_(sh, Q_COLS, r, r._row); hit = true; } else if (r.date === day && r.pkey === pt.pkey && r.status === 'done') hit = true; });
   if (!hit) qAdd_({ v: { pkey: pt.pkey, name: pt.name, species: pt.species, breed: pt.breed, owner: pt.owner, phone: pt.phone, status: 'done', note: 'ویزیت دکتر' } }, 'dr');
 }
+// ---- شمارهٔ پرونده: NM13701، NM13702، … (یک شمارهٔ ثابت برای هر بیمار؛ هرگز تکرار یا بازاستفاده نمی‌شود) ----
+var FNO_PREFIX = 'NM', FNO_FIRST = 13701;
+function fnoNum_(f) { var m = /^NM(\d+)$/.exec(String(f || '')); return m ? Number(m[1]) : 0; }
+function fnoNext_(rows) { var mx = FNO_FIRST - 1; rows.forEach(function (r) { var n = fnoNum_(r.fno); if (n > mx) mx = n; }); return FNO_PREFIX + (mx + 1); }
+function fnoOf_(pkey) { var rows = readAll_(hsheet_('Patients', PT_COLS), PT_COLS); for (var i = 0; i < rows.length; i++) if (rows[i].pkey === pkey && rows[i].fno) return rows[i].fno; return ''; }
+function fnoBackfill_(sh, rows) {   // به پرونده‌های قبلی (بدون شماره) به ترتیب تاریخ اولین مراجعه شماره می‌دهد
+  var need = {}, first = {}, order = [];
+  rows.forEach(function (r) { if (r.deleted === '1') return; if (!r.fno) need[r.pkey] = 1; var k = r.created || r.date || ''; if (!(r.pkey in first) || k < first[r.pkey]) first[r.pkey] = k; });
+  Object.keys(need).forEach(function (pk) { if (!rows.some(function (r) { return r.pkey === pk && r.fno; })) order.push(pk); });
+  if (!order.length) return false;
+  order.sort(function (a, b) { return first[a] < first[b] ? -1 : first[a] > first[b] ? 1 : 0; });
+  var mx = FNO_FIRST - 1; rows.forEach(function (r) { var n = fnoNum_(r.fno); if (n > mx) mx = n; });
+  order.forEach(function (pk) { mx++; rows.forEach(function (r) { if (r.pkey === pk && !r.fno) { r.fno = FNO_PREFIX + mx; writeRow_(sh, PT_COLS, r, r._row); } }); });
+  return true;
+}
 function patList_() {
-  var rows = readAll_(hsheet_('Patients', PT_COLS), PT_COLS).filter(function (r) { return r.deleted !== '1'; });
+  var shP = hsheet_('Patients', PT_COLS), all0 = readAll_(shP, PT_COLS); try { fnoBackfill_(shP, all0); } catch (eb) {}
+  var rows = all0.filter(function (r) { return r.deleted !== '1'; });
   rows.sort(function (x, y) { return x.date < y.date ? 1 : x.date > y.date ? -1 : (x.created < y.created ? 1 : -1); });
   var sm = smsAtMap_('patient'), items = rows.slice(0, 1500).map(patOut_); items.forEach(function (x) { x.smsAt = sm[x.pkey] || ''; });
   return { ok: true, items: items };
@@ -916,6 +950,7 @@ function patSave_(b) {
   if (b.id && !r) return { ok: false, err: 'notfound' };
   if (!r) r = { id: 'V-' + rnd_(7).toUpperCase(), created: nowIso_(), deleted: '' };
   r.pkey = /^PT-[A-Z0-9]{5,10}$/.test(String(v.pkey || '')) ? v.pkey : (r.pkey || 'PT-' + rnd_(6).toUpperCase());
+  if (!r.fno) { var ex0 = rows.filter(function (x) { return x.pkey === r.pkey && x.fno; })[0]; r.fno = ex0 ? ex0.fno : fnoNext_(rows); }   // شمارهٔ پرونده: برای بیمار تازه یکی بعدی، برای قدیمی همان قبلی
   r.name = name; r.species = ['سگ', 'گربه', 'پرنده', 'دیگر'].indexOf(v.species) > -1 ? v.species : 'دیگر';
   r.owner = clip_(v.owner, 40); r.phone = String(v.phone || '').replace(/[^0-9+]/g, '').slice(0, 16); r.breed = clip_(v.breed, 40);
   r.date = date_(v.date) || Utilities.formatDate(new Date(), CFG.tz, 'yyyy-MM-dd');
@@ -965,12 +1000,14 @@ var LOOK = {
   Spins: { color: '#d97706', labels: ['زمان', 'کد', 'جایزه', 'انقضا', 'دستگاه', 'استفاده شد؟', 'زمان استفاده'], widths: [150, 120, 190, 110, 130, 100, 150], clip: [5] },
   Pets: { color: '#1f5aa6', labels: ['شمارهٔ شناسنامه (کد پت)', 'کلید لینک (محرمانه)', 'نام', 'نام انگلیسی', 'سرپرست', 'سرپرست دوم (قدیمی)', 'گونه', 'نژاد', 'نژاد (انگلیسی)', 'تاریخ تولد', 'برنامهٔ واکسن (داده)', 'رضایت (۱=بله)', 'ساخته شد', 'ویرایش', 'حذف‌شده؟ (۱=بله)', 'کد اصالت', 'جنسیت', 'وضعیت عقیم‌سازی', 'تلفن سرپرست (محرمانه، فقط آرشیو)', 'رضایت پیامک یادآوری (۱=بله)'],
     widths: [130, 140, 110, 110, 130, 110, 80, 110, 120, 100, 120, 90, 150, 150, 90, 100, 90, 130, 150, 120], clip: [2, 11], gray: [2, 11], green: [1, 16], del: 15 },
-  Patients: { color: '#0e7490', labels: ['شناسهٔ مراجعه', 'شناسهٔ بیمار', 'ثبت شد', 'ویرایش', 'تاریخ مراجعه', 'نام پت', 'گونه', 'نژاد', 'سرپرست', 'تلفن (محرمانه)', 'دلیل / تشخیص', 'یادداشت', 'تاریخ پیگیری', 'کد شناسنامه', 'حذف‌شده؟ (۱=بله)', 'هزینه (تومان)', 'پرداخت‌شده؟ (۱=بله)', 'روش پرداخت'],
-    widths: [110, 100, 150, 150, 100, 110, 80, 110, 130, 130, 200, 260, 100, 110, 90, 110, 110, 110], clip: [12], gray: [2, 3, 4, 14], del: 15 },
+  Patients: { color: '#0e7490', labels: ['شناسهٔ مراجعه', 'شناسهٔ بیمار', 'ثبت شد', 'ویرایش', 'تاریخ مراجعه', 'نام پت', 'گونه', 'نژاد', 'سرپرست', 'تلفن (محرمانه)', 'دلیل / تشخیص', 'یادداشت', 'تاریخ پیگیری', 'کد شناسنامه', 'حذف‌شده؟ (۱=بله)', 'هزینه (تومان)', 'پرداخت‌شده؟ (۱=بله)', 'روش پرداخت', 'شمارهٔ پرونده'],
+    widths: [110, 100, 150, 150, 100, 110, 80, 110, 130, 130, 200, 260, 100, 110, 90, 110, 110, 110, 120], clip: [12], gray: [2, 3, 4, 14], del: 15 },
   Activity: { color: '#475569', labels: ['روز', 'ساعت', 'نوع', 'شناسه', 'نام'], widths: [100, 80, 80, 120, 140], gray: [1, 2, 3] },
   Services: { color: '#7c3aed', labels: ['شناسه', 'خدمت', 'قیمت (تومان)', 'فعال؟ (۱=بله)', 'ترتیب', 'ویرایش'], widths: [100, 220, 140, 100, 70, 150], gray: [1, 6] },
-  Invoices: { color: '#be123c', labels: ['شناسهٔ فاکتور', 'ثبت شد', 'ویرایش', 'تاریخ', 'شناسهٔ بیمار', 'شناسهٔ مراجعه', 'نام پت', 'سرپرست', 'تلفن', 'ردیف‌ها (JSON)', 'جمع', 'تخفیف', 'مبلغ نهایی', 'وضعیت', 'پرداخت‌شده', 'روش پرداخت', 'زمان پرداخت', 'توضیح'],
-    widths: [110, 150, 150, 100, 100, 100, 110, 120, 120, 260, 100, 90, 110, 100, 110, 110, 150, 200], clip: [10], gray: [2, 3, 5, 6] },
+  Invoices: { color: '#be123c', labels: ['شناسهٔ فاکتور', 'ثبت شد', 'ویرایش', 'تاریخ', 'شناسهٔ بیمار', 'شناسهٔ مراجعه', 'نام پت', 'سرپرست', 'تلفن', 'ردیف‌ها (JSON)', 'جمع', 'تخفیف', 'مبلغ نهایی', 'وضعیت', 'پرداخت‌شده', 'روش پرداخت', 'زمان پرداخت', 'توضیح', 'مالیات (تومان)'],
+    widths: [110, 150, 150, 100, 100, 100, 110, 120, 120, 260, 100, 90, 110, 100, 110, 110, 150, 200, 110], clip: [10], gray: [2, 3, 5, 6] },
+  Repeats: { color: '#0f766e', labels: ['شناسه', 'ثبت شد', 'ویرایش', 'تاریخ تکرار', 'شناسهٔ بیمار', 'شمارهٔ پرونده', 'نام پت', 'سرپرست', 'تلفن', 'خدمت', 'فاکتور', 'وضعیت (wait=منتظر یادآور)', 'توضیح', 'حذف‌شده؟ (۱=بله)'],
+    widths: [100, 150, 150, 110, 100, 110, 110, 120, 120, 160, 110, 130, 160, 90], gray: [2, 3, 5, 11], del: 14 },
   Queue: { color: '#a16207', labels: ['شناسه', 'ثبت شد', 'ویرایش', 'تاریخ', 'ساعت ورود', 'شناسهٔ بیمار', 'نام پت', 'گونه', 'نژاد', 'سرپرست', 'تلفن', 'وضعیت', 'منبع', 'توضیح'],
     widths: [100, 150, 150, 100, 80, 100, 110, 80, 100, 120, 120, 100, 90, 200], gray: [2, 3, 6] },
   Appts: { color: '#0e7490', labels: ['شناسهٔ نوبت', 'ثبت شد', 'ویرایش', 'تاریخ نوبت', 'ساعت', 'نام پت', 'گونه', 'نژاد', 'سرپرست', 'تلفن (محرمانه)', 'دلیل', 'یادداشت', 'وضعیت', 'شناسهٔ بیمار', 'حذف‌شده؟ (۱=بله)', 'یادآور پیامکی (۱=بله)'],
@@ -1027,9 +1064,9 @@ function testSms() {
 }
 function formatSheets() {
   var ss = SpreadsheetApp.getActiveSpreadsheet(), done = [];
-  try { hsheet_('Patients', PT_COLS); hsheet_('SMS', SMS_COLS); hsheet_('Activity', ACT_COLS); hsheet_('Appts', AP_COLS); svSheet_(); hsheet_('Invoices', INV_COLS); hsheet_('Queue', Q_COLS); } catch (ee) { lastLookError_ = 'ensure: ' + String(ee); }   // ساخت تب‌های جدید حتی قبل از اولین استفاده
+  try { hsheet_('Patients', PT_COLS); hsheet_('SMS', SMS_COLS); hsheet_('Activity', ACT_COLS); hsheet_('Appts', AP_COLS); svSheet_(); hsheet_('Invoices', INV_COLS); hsheet_('Queue', Q_COLS); hsheet_('Repeats', REP_COLS); } catch (ee) { lastLookError_ = 'ensure: ' + String(ee); }   // ساخت تب‌های جدید حتی قبل از اولین استفاده
   try { migrate_(ss); } catch (em) { lastLookError_ = 'migrate: ' + String(em); }
-  [['Pets', PET_COLS], ['SMS', SMS_COLS], ['Patients', PT_COLS], ['Activity', ACT_COLS], ['Appts', AP_COLS], ['Invoices', INV_COLS], ['Queue', Q_COLS], ['Records', REC_COLS], ['Adoptions', AD_COLS], ['PetReqs', PR_COLS]].forEach(function (x) { try { convDates_(x[0], x[1]); } catch (ec) { lastLookError_ = 'dates: ' + String(ec); } });
+  [['Pets', PET_COLS], ['SMS', SMS_COLS], ['Patients', PT_COLS], ['Activity', ACT_COLS], ['Appts', AP_COLS], ['Invoices', INV_COLS], ['Queue', Q_COLS], ['Repeats', REP_COLS], ['Records', REC_COLS], ['Adoptions', AD_COLS], ['PetReqs', PR_COLS]].forEach(function (x) { try { convDates_(x[0], x[1]); } catch (ec) { lastLookError_ = 'dates: ' + String(ec); } });
   Object.keys(LOOK).forEach(function (name) {
     var sh = ss.getSheetByName(name);
     if (sh) { look_(sh, LOOK[name]); done.push(name); }
