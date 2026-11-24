@@ -2364,3 +2364,4 @@ body.hb-drpage .hb-staffhdr { margin-bottom: 12px; }
 @media (max-width: 560px) { .hb-staffhdr .hb-drbar .hb-tmid { order: 0; flex-basis: auto; margin-top: 0; } }
 .hb-ptcost { margin: 4px 0; font-weight: 700; color: #1f3b63; }
 .hb-repmode { display: flex; gap: 8px; margin-bottom: 10px; } .hb-repf { display: block; width: 100%; text-align: start; margin: 4px 0; }
+.hb-svr { flex-wrap: wrap; } .hb-svx { display: inline-flex; align-items: center; gap: 4px; font-size: 12.5px; color: var(--muted); } .hb-svx input { width: 96px; min-height: 34px; }

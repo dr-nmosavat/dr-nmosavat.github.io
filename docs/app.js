@@ -2157,11 +2157,11 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   // دکمهٔ ثبت فعال بالای صفحه مشخص شود
   function mkAct(w) { [].forEach.call(root.querySelectorAll("[data-hb-apnewtop],[data-hb-ptnewtop]"), function (b) { b.classList.toggle("on", w === "ap" ? b.hasAttribute("data-hb-apnewtop") : w === "pt" ? b.hasAttribute("data-hb-ptnewtop") : false); }); }
   var QM = "[صف]";
-  var QSHEET = false, qItems = [], invItems = [], svcItems = [], svcLoaded = false;
+  var svcDef = 50, QSHEET = false, qItems = [], invItems = [], svcItems = [], svcLoaded = false;
   function allQ() { var leg = apItems.filter(isQueue); if (!QSHEET) return leg; var nq = qItems.map(function (r) { return { id: r.id, date: r.date, time: r.time, pkey: r.pkey, name: r.name, species: r.species, breed: r.breed, owner: r.owner, phone: r.phone, status: r.status === "done" ? "done" : "booked", note: QM, _q: 1 }; }); return nq.concat(leg.filter(function (x) { return !(x.pkey && nq.some(function (y) { return y.pkey === x.pkey && y.date === x.date; })); })); }   // صف جدید + ردیف‌های قدیمی «[صف]» (روز تعویض اسکریپت)
   function qLoad(cb) { api({ a: "qList", t: tokGet() }).then(function (j) { if (j.ok) { QSHEET = true; qItems = j.items || []; } if (cb) cb(); }); }
   function invLoad(cb) { api({ a: "invList", t: tokGet() }).then(function (j) { if (j.ok) invItems = j.items || []; if (cb) cb(); }); }
-  function svcLoad(cb) { if (svcLoaded) { if (cb) cb(); return; } api({ a: "svcList", t: tokGet() }).then(function (j) { if (j.ok) { svcItems = j.items || []; svcLoaded = true; } if (cb) cb(j.ok); }); }
+  function svcLoad(cb) { if (svcLoaded) { if (cb) cb(); return; } api({ a: "svcList", t: tokGet() }).then(function (j) { if (j.ok) { svcItems = j.items || []; svcLoaded = true; if (j.defPct != null) svcDef = j.defPct; } if (cb) cb(j.ok); }); }
   function isQueue(r) { return /^(\[صف\]|ارسال از پذیرش)/.test(String(r && r.note || "")) || /ارسال از پذیرش/.test(String(r && r.note || "")) || (String(r && r.reason || "") === "در انتظار ویزیت" && !r.smsAt); }
   function ptInToday(k) { var td = apToday || isoNow(); return !!k && apItems.filter(function (x) { return !isQueue(x); }).concat(allQ()).some(function (x) { return x.pkey === k && x.date === td && x.status === "booked"; }); }
   // منشی: افزودن بیمار به «نوبت‌های امروز» دکتر (یک نوبتِ امروز با ساعت همین الان)
@@ -2555,6 +2555,12 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     }
   });
   // گزارش ماهانه (فقط دکتر)
+  function drShare(l) {
+    var g = 0, c = 0, sh = 0, dsc = 0, n = 0;
+    l.forEach(function (v) { if (v.status === "free") return; n++; dsc += v.disc || 0; (v.items || []).forEach(function (x) { var gr = x.qty * x.price, co = x.qty * (x.cost || 0), pc = x.pct == null ? svcDef : x.pct; g += gr; c += co; sh += (gr - co) * pc / 100; }); });
+    if (!n) return "";
+    var net = g - c; return '<h4 class="hb-pth2">👩‍⚕️ کارکرد دکتر</h4><div class="hb-rep"><span>جمع فروش خدمات: ' + money(g) + "</span><span>− جمع مصرفی (هزینهٔ خرید): " + money(c) + "</span><span>= خالص: " + money(net) + "</span><span>سهم دکتر: <b>" + money(Math.round(sh)) + "</b></span><span>سهم کلینیک: " + money(Math.round(net - sh - dsc)) + (dsc ? " (بعد از کسر تخفیف‌ها: " + money(dsc) + ")" : "") + "</span><small>مالیات در این محاسبه نیست؛ فاکتورهای «بدون هزینه» حساب نمی‌شوند.</small></div>";
+  }
   var repM = "", repMode = "m", repPk = "";
   function repFileInit() {
     var w = repBox().querySelector("[data-hb-repfile]");
@@ -2598,7 +2604,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       var tot = 0, paid = 0, disc = 0, free = 0, by = {}, sv = {};
       l.forEach(function (v) { tot += v.total; paid += v.paid; disc += v.disc; if (v.status === "free") free++; if (v.paid) by[v.method || "نقد"] = (by[v.method || "نقد"] || 0) + v.paid; (v.items || []).forEach(function (x) { var o = sv[x.name] || (sv[x.name] = { n: 0, s: 0 }); o.n += x.qty; o.s += x.qty * x.price; }); });
       var top = Object.keys(sv).sort(function (a, b) { return sv[b].s - sv[a].s; });
-      out.innerHTML = !l.length ? '<p class="hb-qmsg">در این ماه فاکتوری ثبت نشده است.</p>' : '<div class="hb-rep"><span>تعداد فاکتور: ' + toolFa(l.length) + (free ? " (بدون هزینه: " + toolFa(free) + ")" : "") + "</span><span>جمع فاکتورها: <b>" + money(tot) + "</b></span><span>دریافت‌شده: " + money(paid) + "</span>" + Object.keys(by).map(function (k) { return "<span>· " + esc(k) + ": " + money(by[k]) + "</span>"; }).join("") + "<span>مانده (بدهی): " + money(tot - paid) + "</span>" + (disc ? "<span>جمع تخفیف‌ها: " + money(disc) + "</span>" : "") + "</div>"
+      out.innerHTML = !l.length ? '<p class="hb-qmsg">در این ماه فاکتوری ثبت نشده است.</p>' : '<div class="hb-rep"><span>تعداد فاکتور: ' + toolFa(l.length) + (free ? " (بدون هزینه: " + toolFa(free) + ")" : "") + "</span><span>جمع فاکتورها: <b>" + money(tot) + "</b></span><span>دریافت‌شده: " + money(paid) + "</span>" + Object.keys(by).map(function (k) { return "<span>· " + esc(k) + ": " + money(by[k]) + "</span>"; }).join("") + "<span>مانده (بدهی): " + money(tot - paid) + "</span>" + (disc ? "<span>جمع تخفیف‌ها: " + money(disc) + "</span>" : "") + "</div>" + drShare(l)
         + '<h4 class="hb-pth2">خدمات (بیشترین درآمد)</h4><table class="hb-invt"><tr><th>خدمت</th><th>تعداد</th><th>مبلغ</th></tr>' + top.map(function (k) { return "<tr><td>" + esc(k) + "</td><td>" + toolFa(sv[k].n) + "</td><td>" + money(sv[k].s) + "</td></tr>"; }).join("") + "</table>";
     });
   }
@@ -2606,18 +2612,18 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   // تعرفه‌ها (فقط دکتر)
   var svcEdit = [];
   function svcBox() { return q("[data-hb-svcbox]"); }
-  function svcEnter() { var bx = svcBox(); if (!bx) return; bx.innerHTML = '<p class="hb-qmsg">در حال بارگذاری…</p>'; svcLoaded = false; svcLoad(function (ok) { if (!ok) { bx.innerHTML = '<p class="hb-qmsg">برای تعرفه‌ها اسکریپت جدید (v29) لازم است.</p>'; return; } svcEdit = svcItems.map(function (x) { return { id: x.id, name: x.name, price: x.price, active: x.active }; }); svcShow(); }); }
+  function svcEnter() { var bx = svcBox(); if (!bx) return; bx.innerHTML = '<p class="hb-qmsg">در حال بارگذاری…</p>'; svcLoaded = false; svcLoad(function (ok) { if (!ok) { bx.innerHTML = '<p class="hb-qmsg">برای تعرفه‌ها اسکریپت جدید (v29) لازم است.</p>'; return; } svcEdit = svcItems.map(function (x) { return { id: x.id, name: x.name, price: x.price, active: x.active, cost: x.cost || 0, pct: x.pct == null ? "" : x.pct }; }); svcShow(); }); }
   function svcShow() {
-    var bx = svcBox(); bx.innerHTML = '<div class="hb-ptform hb-svc"><h3 class="hb-pth">💰 تعرفهٔ خدمات</h3><p class="hb-mut">قیمت‌ها به تومان. تیک «فعال» را بردارید تا در صورتحساب نیاید.</p>'
-      + svcEdit.map(function (x, i) { return '<div class="hb-svr"><input type="checkbox" data-hb-sva="' + i + '"' + (x.active ? " checked" : "") + ' title="فعال"><input type="text" data-hb-svn="' + i + '" value="' + esc(x.name) + '" maxlength="60"><input type="text" inputmode="numeric" dir="ltr" data-hb-svp="' + i + '" value="' + x.price + '"><button type="button" class="btn small ghost hb-danger" data-hb-svd="' + i + '" aria-label="حذف">🗑</button></div>'; }).join("")
+    var bx = svcBox(); bx.innerHTML = '<div class="hb-ptform hb-svc"><h3 class="hb-pth">💰 تعرفهٔ خدمات</h3><p class="hb-mut">قیمت‌ها به تومان. تیک «فعال» را بردارید تا در صورتحساب نیاید. «مصرفی» = هزینهٔ خرید هر واحد (مثلاً قیمت واکسن)؛ «٪ دکتر» = درصد سهم دکتر از (قیمت − مصرفی)؛ خالی = پیش‌فرض.</p><div class="fld hb-blrow"><label>درصد پیش‌فرض سهم دکتر</label><input type="text" inputmode="numeric" dir="ltr" data-hb-svdef value="' + svcDef + '"></div>'
+      + svcEdit.map(function (x, i) { return '<div class="hb-svr"><input type="checkbox" data-hb-sva="' + i + '"' + (x.active ? " checked" : "") + ' title="فعال"><input type="text" data-hb-svn="' + i + '" value="' + esc(x.name) + '" maxlength="60"><input type="text" inputmode="numeric" dir="ltr" data-hb-svp="' + i + '" value="' + x.price + '"><button type="button" class="btn small ghost hb-danger" data-hb-svd="' + i + '" aria-label="حذف">🗑</button><label class="hb-svx">مصرفی <input type="text" inputmode="numeric" dir="ltr" data-hb-svc="' + i + '" value="' + (x.cost || "") + '" placeholder="۰"></label><label class="hb-svx">٪ دکتر <input type="text" inputmode="numeric" dir="ltr" data-hb-svq="' + i + '" value="' + (x.pct === "" || x.pct == null ? "" : x.pct) + '" placeholder="' + svcDef + '"></label></div>'; }).join("")
       + '<div class="hb-btns hb-center"><button type="button" class="btn small ghost" data-hb-svadd>＋ خدمت جدید</button><button type="button" class="btn primary" data-hb-svsave>ذخیرهٔ تعرفه‌ها</button></div></div>';
   }
-  function svcRead() { var bx = svcBox(); svcEdit.forEach(function (x, i) { var n = bx.querySelector('[data-hb-svn="' + i + '"]'); if (!n) return; x.name = n.value.trim(); x.price = numIn(bx.querySelector('[data-hb-svp="' + i + '"]').value); x.active = bx.querySelector('[data-hb-sva="' + i + '"]').checked ? 1 : 0; }); }
+  function svcRead() { var bx = svcBox(); svcEdit.forEach(function (x, i) { var n = bx.querySelector('[data-hb-svn="' + i + '"]'); if (!n) return; x.name = n.value.trim(); x.price = numIn(bx.querySelector('[data-hb-svp="' + i + '"]').value); x.active = bx.querySelector('[data-hb-sva="' + i + '"]').checked ? 1 : 0; x.cost = numIn(bx.querySelector('[data-hb-svc="' + i + '"]').value); var pq = bx.querySelector('[data-hb-svq="' + i + '"]').value.trim(); x.pct = pq === "" ? "" : Math.min(100, numIn(pq)); }); var df = bx.querySelector("[data-hb-svdef]"); if (df && df.value.trim() !== "") svcDef = Math.min(100, numIn(df.value)); }
   document.addEventListener("click", function (e) {
     var t = e.target, b; if (!t.closest || !t.closest("[data-hb-svcbox]")) return;
     if (t.closest("[data-hb-svadd]")) { svcRead(); svcEdit.push({ id: "", name: "", price: 0, active: 1 }); svcShow(); var ins = svcBox().querySelectorAll("[data-hb-svn]"); if (ins.length) ins[ins.length - 1].focus(); return; }
     if ((b = t.closest("[data-hb-svd]"))) { svcRead(); svcEdit.splice(+b.getAttribute("data-hb-svd"), 1); svcShow(); return; }
-    if ((b = t.closest("[data-hb-svsave]"))) { svcRead(); b.disabled = true; api({ a: "svcSave", t: tokGet(), items: svcEdit.filter(function (x) { return x.name; }) }).then(function (j) { b.disabled = false; if (!j.ok) return toast("⚠️ " + errMsg(j.err), 7000); svcItems = j.items; svcLoaded = true; svcEdit = svcItems.map(function (x) { return { id: x.id, name: x.name, price: x.price, active: x.active }; }); svcShow(); toast("✅ تعرفه‌ها ذخیره شد"); }); }
+    if ((b = t.closest("[data-hb-svsave]"))) { svcRead(); b.disabled = true; api({ a: "svcSave", t: tokGet(), defPct: svcDef, items: svcEdit.filter(function (x) { return x.name; }) }).then(function (j) { b.disabled = false; if (!j.ok) return toast("⚠️ " + errMsg(j.err), 7000); svcItems = j.items; svcLoaded = true; svcEdit = svcItems.map(function (x) { return { id: x.id, name: x.name, price: x.price, active: x.active }; }); svcShow(); toast("✅ تعرفه‌ها ذخیره شد"); }); }
   });
   function todayCard(it, done) {
     var open = it.kind === "pet" ? 'data-hb-qopen="' + esc(it.ref) + '"' : it.kind === "appt" && !it.ref ? "data-hb-apgo" : 'data-hb-tdpt="' + esc(it.ref) + '"';

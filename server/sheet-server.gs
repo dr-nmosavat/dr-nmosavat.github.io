@@ -67,7 +67,9 @@ var PET_COLS = ['code', 'key', 'name', 'en', 'owner', 'guardian', 'species', 'br
 var SMS_COLS = ['time', 'to', 'kind', 'text', 'status', 'response', 'raw'];
 var PT_COLS = ['id', 'pkey', 'created', 'updated', 'date', 'name', 'species', 'breed', 'owner', 'phone', 'reason', 'note', 'follow', 'code', 'deleted', 'fee', 'paid', 'pay', 'fno'];
 var ACT_COLS = ['day', 'time', 'kind', 'ref', 'name'];
-var SV_COLS = ['id', 'name', 'price', 'active', 'sort', 'updated'];
+var SV_COLS = ['id', 'name', 'price', 'active', 'sort', 'updated', 'cost', 'pct'];   // cost = هزینهٔ مصرفی (خرید) هر واحد؛ pct = درصد سهم دکتر (خالی = پیش‌فرض)
+var CUR_ROLE_ = '';
+function defPct_() { var n = Number(prop_('DR_PCT')); return isFinite(n) && prop_('DR_PCT') !== null && prop_('DR_PCT') !== '' ? Math.max(0, Math.min(100, n)) : 50; }
 var INV_COLS = ['id', 'created', 'updated', 'date', 'pkey', 'vid', 'name', 'owner', 'phone', 'items', 'sub', 'disc', 'total', 'status', 'paid', 'method', 'paidAt', 'note', 'tax'];
 var REP_COLS = ['id', 'created', 'updated', 'date', 'pkey', 'fno', 'name', 'owner', 'phone', 'service', 'invoice', 'status', 'note', 'deleted'];
 var Q_COLS = ['id', 'created', 'updated', 'date', 'time', 'pkey', 'name', 'species', 'breed', 'owner', 'phone', 'status', 'src', 'note'];
@@ -252,7 +254,7 @@ function health_(b) {
   // ---- دکتر ----
   var role0 = roleOf_(b.t); if (!role0 || (role0 === 'sec' && !SEC_OK[a]) || (role0 === 'mgr' && MGR_NO[a])) return { ok: false, err: 'auth' };
   if (role0 === 'sec' && a === 'patSave' && b.v) { b.v.note = ''; b.v.follow = ''; }   // منشی یادداشت درمان و پیگیری ثبت نمی‌کند
-  b.role = role0;
+  b.role = role0; CUR_ROLE_ = role0;
   var lock = LockService.getScriptLock(); lock.waitLock(15000);
   try {
     if (role0 === 'sec' && a === 'patList') { var pl = patList_(); pl.items.forEach(function (x) { x.note = ''; }); return pl; }
@@ -835,27 +837,35 @@ function num_(v) { return Number(String(v === undefined || v === null ? '' : v).
 function svcList_() {
   var rows = readAll_(svSheet_(), SV_COLS).filter(function (r) { return r.name; });
   rows.sort(function (x, y) { return num_(x.sort) - num_(y.sort); });
-  return { ok: true, items: rows.map(function (r) { return { id: r.id, name: r.name, price: num_(r.price), active: r.active !== '0' ? 1 : 0, sort: num_(r.sort) }; }) };
+  return { ok: true, items: rows.map(function (r) { var o = { id: r.id, name: r.name, price: num_(r.price), active: r.active !== '0' ? 1 : 0, sort: num_(r.sort) }; if (CUR_ROLE_ !== 'sec') { o.cost = num_(r.cost); o.pct = r.pct === '' || r.pct == null ? '' : num_(r.pct); } return o; }), defPct: CUR_ROLE_ === 'sec' ? undefined : defPct_() };
 }
 function svcSave_(b) {   // فقط دکتر: کل فهرست تعرفه‌ها
+  if (b.defPct != null && b.defPct !== '') PropertiesService.getScriptProperties().setProperty('DR_PCT', String(Math.max(0, Math.min(100, num_(b.defPct)))));
   var sh = svSheet_(), rows = readAll_(sh, SV_COLS), byId = {}, seen = {}, list = (b.items || []).slice(0, 200);
   rows.forEach(function (r) { byId[r.id] = r; });
   list.forEach(function (it, i) {
     var name = clip_(it.name, 60); if (!name) return;
     var r = byId[it.id] || { id: 'S-' + rnd_(5).toUpperCase() }; seen[r.id] = 1;
+    r.cost = String(Math.max(0, num_(it.cost))); r.pct = (it.pct === '' || it.pct == null) ? '' : String(Math.max(0, Math.min(100, num_(it.pct))));
     r.name = name; r.price = String(num_(it.price)); r.active = it.active ? '1' : '0'; r.sort = String(i + 1); r.updated = nowIso_();
     writeRow_(sh, SV_COLS, r, r._row || 0);
   });
   rows.forEach(function (r) { if (!seen[r.id] && r.active !== '0') { r.active = '0'; r.updated = nowIso_(); writeRow_(sh, SV_COLS, r, r._row); } });   // حذف = غیرفعال
   return svcList_();
 }
-function invOut_(r) { var items = []; try { items = JSON.parse(r.items || '[]'); } catch (e) {} return { id: r.id, date: r.date, pkey: r.pkey, vid: r.vid, name: r.name, owner: r.owner, phone: r.phone, items: items, sub: num_(r.sub), disc: num_(r.disc), total: num_(r.total), status: r.status, paid: num_(r.paid), method: r.method, paidAt: r.paidAt, note: r.note, tax: num_(r.tax) }; }
+function invOut_(r) { var items = []; try { items = JSON.parse(r.items || '[]'); } catch (e) {} if (CUR_ROLE_ === 'sec') items = items.map(function (x) { var o = {}; for (var k in x) if (k !== 'cost' && k !== 'pct') o[k] = x[k]; return o; });
+  return { id: r.id, date: r.date, pkey: r.pkey, vid: r.vid, name: r.name, owner: r.owner, phone: r.phone, items: items, sub: num_(r.sub), disc: num_(r.disc), total: num_(r.total), status: r.status, paid: num_(r.paid), method: r.method, paidAt: r.paidAt, note: r.note, tax: num_(r.tax) }; }
 function invSave_(b) {   // فقط دکتر: صدور/ویرایش فاکتور یک مراجعه
   var sh = hsheet_('Invoices', INV_COLS), rows = readAll_(sh, INV_COLS), v = b.v || {}, r = null, i;
   if (v.id) for (i = 0; i < rows.length; i++) if (rows[i].id === String(v.id)) { r = rows[i]; break; }
   if (!r && v.vid) for (i = 0; i < rows.length; i++) if (rows[i].vid === String(v.vid) && rows[i].status !== 'void') { r = rows[i]; break; }
   if (!r) r = { id: 'F-' + rnd_(6).toUpperCase(), created: nowIso_(), paid: '0' };
   var items = (v.items || []).slice(0, 40).map(function (x) { var o = { name: clip_(x.name, 60), qty: Math.max(1, Math.min(99, num_(x.qty) || 1)), price: num_(x.price) }; if (date_(x.rep)) o.rep = date_(x.rep); return o; }).filter(function (x) { return x.name; });
+  var svMap = {}; readAll_(svSheet_(), SV_COLS).forEach(function (q) { if (q.name) svMap[q.name] = q; });
+  var oldMap = {}; try { JSON.parse(r.items || '[]').forEach(function (q) { oldMap[q.name] = q; }); } catch (e) {}
+  items.forEach(function (o) { var old = oldMap[o.name], sv = svMap[o.name];
+    if (old && old.cost != null && old.price === o.price) { o.cost = old.cost; o.pct = old.pct; return; }   // سهم قبلی ثابت می‌ماند
+    o.cost = sv ? num_(sv.cost) : 0; o.pct = sv && sv.pct !== '' && sv.pct != null ? num_(sv.pct) : defPct_(); });
   var sub = items.reduce(function (t, x) { return t + x.qty * x.price; }, 0), disc = Math.min(sub, num_(v.disc));
   r.date = date_(v.date) || today_(); r.pkey = /^PT-[A-Z0-9]{5,10}$/.test(String(v.pkey || '')) ? v.pkey : ''; r.vid = clip_(v.vid, 20);
   r.name = clip_(v.name, 40); r.owner = clip_(v.owner, 40); r.phone = String(v.phone || '').replace(/[^0-9+]/g, '').slice(0, 16);
