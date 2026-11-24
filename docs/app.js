@@ -2167,10 +2167,10 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function ptToday(o, btn) {
     if (ptInToday(o.pkey)) return toast("«" + o.name + "» از قبل در لیست امروز است.");
     var d = new Date(), hm = ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2); if (btn) btn.disabled = true;
-    if (QSHEET) { api({ a: "qAdd", t: tokGet(), v: { pkey: o.pkey || "", name: o.name, species: o.species, breed: o.breed || "", owner: o.owner, phone: o.phone } }).then(function (j) { if (btn) btn.disabled = false; if (!j.ok) return toast("⚠️ " + errMsg(j.err), 7000); if (!j.dup) qItems.push(j.item); toast(j.dup ? "«" + o.name + "» از قبل در لیست امروز است." : "✅ «" + o.name + "» به لیست امروز دکتر اضافه شد"); if (ptBox() && ptMode === "list") ptRenderList(); if (todayBox()) todayRender(); }); return; }
+    if (QSHEET) { api({ a: "qAdd", t: tokGet(), v: { pkey: o.pkey || "", name: o.name, species: o.species, breed: o.breed || "", owner: o.owner, phone: o.phone } }).then(function (j) { if (btn) btn.disabled = false; if (!j.ok) return toast("⚠️ " + errMsg(j.err), 7000); if (!j.dup) qItems.push(j.item); tdQ = ""; tdRes = []; toast(j.dup ? "«" + o.name + "» از قبل در لیست امروز است." : "✅ «" + o.name + "» به لیست امروز دکتر اضافه شد"); if (ptBox() && ptMode === "list") ptRenderList(); if (todayBox()) todayRender(); }); return; }
     api({ a: "apSave", t: tokGet(), id: "", v: { date: apToday || isoNow(), time: hm, name: o.name, species: o.species, breed: o.breed || "", owner: o.owner, phone: o.phone, reason: "در انتظار ویزیت", note: QM + " ارسال از پذیرش", pkey: o.pkey || "", rem: 0 } }).then(function (j) {
       if (btn) btn.disabled = false; if (!j.ok) return toast("⚠️ " + errMsg(j.err), 7000);
-      apItems.push(j.item);
+      apItems.push(j.item); tdQ = ""; tdRes = [];
       toast("✅ «" + o.name + "» به لیست امروز دکتر اضافه شد"); if (ptBox() && ptMode === "list") ptRenderList(); if (todayBox()) todayRender();
     });
   }
@@ -2357,6 +2357,21 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (e.ap) { jobs.push(api({ a: "apSet", t: tokGet(), id: e.ap.id, status: "cancelled" })); apItems.forEach(function (x) { if (x.id === e.ap.id) x.status = "cancelled"; }); }
     todayRender(); Promise.all(jobs).then(function (rs) { var bad = rs.filter(function (j) { return !j.ok; })[0]; toast(bad ? "⚠️ " + errMsg(bad.err) : "✅ «" + e.name + "» از لیست امروز حذف شد", bad ? 7000 : 4000); if (bad) todayLoad(); });
   });
+  // تازه‌سازی خودکار و بی‌صدای «امروز» هر ۳۰ ثانیه (وقتی صفحه باز و روی «امروز» است)
+  var tdBusy = false;
+  function todaySilent() {
+    if (tdBusy || document.hidden || !todayBox() || !(isDr() && srvOn()) || root.getAttribute("data-dview") !== "today") return;
+    var ae = document.activeElement; if (ae && todayBox().contains(ae) && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return;
+    tdBusy = true;
+    var jobs = [api({ a: "qList", t: tokGet() }), api({ a: "invList", t: tokGet() }), api({ a: "apList", t: tokGet() }), SECP ? null : api({ a: "patList", t: tokGet() }), SECP ? null : api({ a: "todayList", t: tokGet() })];
+    Promise.all(jobs.map(function (x) { return x || Promise.resolve(null); })).then(function (r) {
+      tdBusy = false; if (!r[0] || !r[0].ok) return;
+      QSHEET = true; qItems = r[0].items || []; if (r[1] && r[1].ok) invItems = r[1].items || []; if (r[2] && r[2].ok) { apItems = r[2].items || []; apToday = r[2].today || apToday; } if (r[3] && r[3].ok) { ptItems = r[3].items || []; ptLoaded = true; } if (r[4] && r[4].ok) todayItems = r[4].items || [];
+      var a2 = document.activeElement; if (root.getAttribute("data-dview") !== "today" || (a2 && todayBox() && todayBox().contains(a2) && /^(INPUT|TEXTAREA|SELECT)$/.test(a2.tagName))) return;
+      todayRender(); setTabCount("appt", apCountAll());
+    });
+  }
+  setInterval(todaySilent, 30000); document.addEventListener("visibilitychange", function () { if (!document.hidden) todaySilent(); });
   // ===== صورتحساب و فاکتور =====
   function money(n) { return toolFa(String(Math.round(Number(n) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")) + " تومان"; }
   function numIn(v) { return Number(faDigits(String(v || "")).replace(/[^0-9]/g, "")) || 0; }
