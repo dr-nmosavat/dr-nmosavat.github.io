@@ -2529,3 +2529,4 @@ html.hb-billmode .hb-blbar .btn.ghost { background: #fff; color: #1f3b63; border
   html.hb-billmode .hb-blbar2 > .btn:nth-child(1) { grid-area: free; min-height: 42px; width: auto; padding: 4px 16px; } html.hb-billmode .hb-blbar2 > .btn:nth-child(2) { grid-area: later; min-height: 42px; width: auto; padding: 4px 16px; }
   html.hb-billmode .hb-blr { padding: 2px 12px !important; } html.hb-billmode .hb-blmain { min-height: 34px; }
 }
+.hb-emptywarn.bad { border-color: #c62828; background: #fff1f1; color: #8a1c1c; } html.hb-billmode .hb-emptywarn { margin: 8px 0 0; }
