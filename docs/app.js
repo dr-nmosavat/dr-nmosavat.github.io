@@ -2529,8 +2529,12 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     return billRows.map(function (r, i) { return { i: i, c: cnt[r.name] || 0 }; }).sort(function (a, b) { return b.c - a.c || a.i - b.i; }).slice(0, 6).map(function (x) { return x.i; });
   }
   function svcIcon(n) {
-    n = String(n || ""); if (/pcr|ژن|ژنتیک/i.test(n)) return "🧬"; if (/خون.?گیری/.test(n)) return "🩸"; if (/آزمایش|cbc|cbt|سونوگرافی|رادیو|اشعه/i.test(n)) return "🔬";
-    if (/کیت|تشخیص/.test(n)) return "🌡️"; if (/واکسن|تزریق|سرم/.test(n)) return "💉"; if (/ضد.?انگل|دارو|قرص|شربت|پماد/.test(n)) return "💊"; if (/ویزیت|معاینه|چکاپ|مشاوره/.test(n)) return "🩺"; return "";
+    n = String(n || ""); var ic = "";
+    if (/pcr|ژن|ژنتیک/i.test(n)) ic = "🧬"; else if (/خون.?گیری/.test(n)) ic = "🩸"; else if (/رادیو|اشعه|سونوگرافی|ایکس.?ری|x.?ray/i.test(n)) ic = "🩻";
+    else if (/آزمایش|cbc|cbt|ادرار|مدفوع/i.test(n)) ic = "🧪"; else if (/میکروسکوپ|اسمیر|کشت|سیتولوژی|پوست.?تراشی/.test(n)) ic = "🔬";
+    else if (/کیت|تشخیص/.test(n)) ic = "🌡️"; else if (/پانسمان|بخیه|زخم|باند|چسب/.test(n)) ic = "🩹"; else if (/واکسن|تزریق|سرم/.test(n)) ic = "💉";
+    else if (/ضد.?انگل|دارو|قرص|شربت|پماد|قطره/.test(n)) ic = "💊"; else if (/ویزیت|معاینه|چکاپ|مشاوره/.test(n)) ic = "🩺";
+    var sp = /سگ/.test(n) ? "🐶" : /گربه/.test(n) ? "🐱" : ""; return ic + sp;
   }
   function billList() {
     var el = ptBox().querySelector("[data-hb-blist]"); if (!el) return; var qn = billQ.toLowerCase(), top = billTop(), idx = [];
