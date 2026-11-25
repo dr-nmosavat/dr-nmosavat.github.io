@@ -2388,3 +2388,7 @@ body.hb-drpage .hb-staffhdr { margin-bottom: 12px; }
 .hb-sxrow { display: flex; align-items: center; gap: 12px; } .hb-sxrow .seg { width: auto; flex: 0 0 auto; } .hb-sxrow .seg button { min-width: 0; padding: 4px 14px; min-height: 34px; font-size: 14px; }
 .hb-neut { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; } .hb-neut input { width: 20px; height: 20px; }
 .hb-agerow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; } .hb-agerow .hb-lbl { margin: 0; } .hb-agerow input { width: 72px; min-height: 38px; text-align: center; }
+.hb-smscb { display: flex !important; flex-wrap: wrap; align-items: center; gap: 4px 8px; text-align: start; line-height: 1.7; font-size: 14px; }
+.hb-smscb input { flex: 0 0 auto; width: 20px; height: 20px; margin: 0; }
+.hb-smscb small { flex: 1 0 100%; padding-inline-start: 28px; color: var(--muted); font-size: 12.5px; line-height: 1.6; }
+.hb-agerow { flex-wrap: nowrap; gap: 6px; font-size: 13.5px; } .hb-agerow .hb-lbl { white-space: nowrap; font-size: 13px; } .hb-agerow input { width: 54px; padding: 4px; } .hb-agerow span { white-space: nowrap; color: var(--muted); }
