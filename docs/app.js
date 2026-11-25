@@ -2497,7 +2497,8 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   }
   function oldDebts() {
     var td = isoNow(), l = invItems.filter(function (v) { return v.date < td && (v.status === "pending" || v.status === "partial"); }); if (!l.length) return "";
-    return '<details class="hb-tdoth"><summary>💳 بدهی‌های روزهای قبل (' + toolFa(l.length) + ")</summary>" + l.map(function (v) { return '<div class="hb-tdr"><div class="hb-tdri"><b>' + esc(v.name) + "</b><small>" + esc(fd(v.date)) + " · مانده: " + money(v.total - v.paid) + '</small></div><button type="button" class="btn small primary" data-hb-invopen="' + esc(v.id) + '">💳 دریافت</button></div>'; }).join("") + "</details>";
+    var dsum = l.reduce(function (t, v) { return t + v.total - v.paid; }, 0);
+    return '<details class="hb-tdoth"><summary><span>💳 بدهی روزهای قبل (' + toolFa(l.length) + " مورد)</span><b>" + money(dsum) + ' <i class="hb-arw">▾</i></b></summary>' + l.map(function (v) { return '<div class="hb-tdr"><div class="hb-tdri"><b>' + esc(v.name) + "</b><small>" + esc(fd(v.date)) + " · مانده: " + money(v.total - v.paid) + '</small></div><button type="button" class="btn small primary" data-hb-invopen="' + esc(v.id) + '">💳 دریافت</button></div>'; }).join("") + "</details>";
   }
   function dayReport() {
     if (SECP) return ""; var td = isoNow(), l = invItems.filter(function (v) { return v.date === td && v.status !== "void"; }); if (!l.length) return "";
@@ -2807,10 +2808,10 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       + (function () {
         var g = todayEntries(), w = g.wait, dn0 = g.done, ot = g.other; setTimeout(function () { setTabCount("today", w.length); }, 0);
         var pay = dn0.filter(function (e) { var v = invOf(e.pkey); return v && (v.status === "pending" || v.status === "partial"); }), dn = dn0.filter(function (e) { return pay.indexOf(e) < 0; });
-        if (!w.length && !dn0.length && !ot.length) return '<p class="hb-qmsg">' + (SECP ? "هنوز کسی در صف امروز نیست. بیمار را جستجو کنید و «📅 به امروز» بزنید." : "هنوز کسی در صف امروز نیست.") + "</p>";
-        return (w.length ? '<h4 class="hb-tdsec hb-tdsecw">⏳ در انتظار ویزیت (' + toolFa(w.length) + ")</h4>" + w.map(function (e) { return qCard(e, false); }).join("") : '<p class="hb-qmsg">کسی در انتظار ویزیت نیست.</p>')
+        if (!w.length && !dn0.length && !ot.length) return oldDebts() + '<p class="hb-qmsg">' + (SECP ? "هنوز کسی در صف امروز نیست. بیمار را جستجو کنید و «📅 به امروز» بزنید." : "هنوز کسی در صف امروز نیست.") + "</p>";
+        return oldDebts() + (w.length ? '<h4 class="hb-tdsec hb-tdsecw">⏳ در انتظار ویزیت (' + toolFa(w.length) + ")</h4>" + w.map(function (e) { return qCard(e, false); }).join("") : '<p class="hb-qmsg">کسی در انتظار ویزیت نیست.</p>')
           + (pay.length ? '<h4 class="hb-tdsec hb-tdsecp">💳 در انتظار پرداخت (' + toolFa(pay.length) + ")</h4>" + pay.map(function (e) { return qCard(e, true); }).join("") : "")
-          + (dn.length ? '<h4 class="hb-tdsec">✅ ویزیت‌شده‌های امروز (' + toolFa(dn.length) + ")</h4>" + dn.map(function (e) { return qCard(e, true); }).join("") : "") + unbilled() + oldDebts() + dayReport()
+          + (dn.length ? '<h4 class="hb-tdsec">✅ ویزیت‌شده‌های امروز (' + toolFa(dn.length) + ")</h4>" + dn.map(function (e) { return qCard(e, true); }).join("") : "") + unbilled() + dayReport()
           + (!SECP && ot.length ? '<details class="hb-tdoth"><summary>👁 سایر فعالیت‌های امروز (' + toolFa(ot.length) + ")</summary>" + ot.map(function (it) { return todayCard(it, false); }).join("") + "</details>" : "");
       })();
     var sp0 = q("[data-hb-tdap]"); if (sp0) sp0.innerHTML = "";

@@ -2530,3 +2530,9 @@ html.hb-billmode .hb-blbar .btn.ghost { background: #fff; color: #1f3b63; border
   html.hb-billmode .hb-blr { padding: 2px 12px !important; } html.hb-billmode .hb-blmain { min-height: 34px; }
 }
 .hb-emptywarn.bad { border-color: #c62828; background: #fff1f1; color: #8a1c1c; } html.hb-billmode .hb-emptywarn { margin: 8px 0 0; }
+/* بدهی روزهای قبل: دکمهٔ قرمز */
+.hb-tdoth { margin: 4px 0 12px; border: 2px solid #b71c1c; border-radius: 14px; background: #fff5f5; overflow: hidden; }
+.hb-tdoth summary { list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 8px; cursor: pointer; padding: 12px 14px; min-height: 48px; background: #c62828; color: #fff !important; font-size: 15px; font-weight: 800; }
+.hb-tdoth summary::-webkit-details-marker { display: none; } .hb-tdoth summary::marker { content: ""; }
+.hb-tdoth summary b { font-size: 14.5px; white-space: nowrap; } .hb-tdoth summary .hb-arw { font-style: normal; margin-inline-start: 4px; }
+.hb-tdoth[open] summary .hb-arw { display: inline-block; transform: rotate(180deg); } .hb-tdoth > :not(summary) { margin-left: 10px; margin-right: 10px; } .hb-tdoth > .hb-tdr:first-of-type { margin-top: 10px; } .hb-tdoth > .hb-tdr:last-child { margin-bottom: 10px; }
