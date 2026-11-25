@@ -2542,3 +2542,4 @@ html.hb-billmode .hb-blbar .btn.ghost { background: #fff; color: #1f3b63; border
 .hb-tdoth summary > span { flex: 1 1 auto; } .hb-debtpill { font-style: normal; background: #d32f2f; color: #fff; border-radius: 999px; padding: 3px 10px; font-size: 12.5px; font-weight: 800; white-space: nowrap; }
 .hb-tdoth summary .hb-arw { color: #7a1f1f; } .hb-tdoth[open] summary { border-bottom: 1px solid #f0d0d0; }
 .hb-sic { font-style: normal; margin-inline-end: 4px; font-size: 1.05em; }
+.hb-sic2 { flex: 0 0 auto; min-width: 36px; text-align: center; font-size: 22px; line-height: 1; }
