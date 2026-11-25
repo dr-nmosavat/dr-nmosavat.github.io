@@ -2404,3 +2404,4 @@ body.hb-drpage .hb-staffhdr { margin-bottom: 12px; }
 .hb-st { font-style: normal; font-size: 12px; padding: 2px 8px; border-radius: 999px; } .st-paid { background: #e2f4ea; color: #12684a; } .st-pend { background: #fde8e8; color: #a12a2a; } .st-part { background: #fff4e0; color: #8a5a00; } .st-free { background: #e8eef7; color: #335; }
 .hb-invnb { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px; margin: 6px 0; border: 1px dashed #f0cf94; border-radius: 12px; background: #fffaf0; font-size: 14px; }
 .hb-scinv { margin-inline-start: 6px; }
+.hb-invc.open { border-color: #1f5aa6; background: #f3f8ff; } [data-hb-pttabbox] .hb-inv { margin: 0 0 10px; } .hb-nbnote { font-size: 12.5px; margin: 4px 2px; }

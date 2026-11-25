@@ -2180,7 +2180,6 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     var l = invItems.map(function (x, i) { return { x: x, i: i }; }).filter(function (o) { return o.x.pkey === pk && o.x.status !== "void"; });
     l.sort(function (a, b) { return a.x.date < b.x.date ? 1 : a.x.date > b.x.date ? -1 : a.i - b.i; });
     var out = ptInvOk[pk] === 2 ? "" : '<p class="hb-qmsg">در حال بارگذاری فاکتورها…</p>', last = "";
-    out += '<div data-hb-invpanel></div>';
     l.forEach(function (o) {
       var v = o.x, st = INV_ST[v.status] || [v.status, "pend"];
       if (v.date !== last) { last = v.date; out += '<h5 class="hb-invdg">' + esc(wdOf(v.date)) + " " + esc(fd(v.date)) + "</h5>"; }
@@ -2189,7 +2188,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (!l.length && ptInvOk[pk] === 2) out += '<p class="hb-qmsg">هنوز فاکتوری برای این پرونده ثبت نشده است.</p>';
     if (!SECP && ptInvOk[pk] === 2) {
       var nb = g.filter(function (v) { return !invItems.some(function (x) { return x.vid === v.id && x.status !== "void"; }); });
-      if (nb.length) out += '<h5 class="hb-invdg">⚠️ ویزیت‌های بدون فاکتور</h5>' + nb.map(function (v) { return '<div class="hb-invnb"><span>' + esc(fd(v.date)) + (v.reason ? " · " + esc(v.reason) : "") + '</span><button type="button" class="btn small primary" data-hb-ptbill="' + esc(v.id) + '">💳 صدور فاکتور</button></div>'; }).join("");
+      if (nb.length) out += '<h5 class="hb-invdg">⚠️ ویزیت‌های بدون فاکتور</h5>' + nb.map(function (v) { return '<div class="hb-invnb"><span>' + esc(fd(v.date)) + (v.reason ? " · " + esc(v.reason) : "") + '</span><button type="button" class="btn small primary" data-hb-ptbill="' + esc(v.id) + '">💳 صدور و ارسال به پذیرش</button></div>'; }).join("") + '<p class="hb-mut hb-nbnote">با «صدور و ارسال به پذیرش» فاکتور ساخته می‌شود و برای دریافت وجه به میز پذیرش می‌رود.</p>';
     }
     return out;
   }
@@ -2200,6 +2199,10 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
           + '<div class="hb-ptvd" data-hb-ptvd="' + esc(v.id) + '" hidden>' + (np.f ? '<p class="hb-ptn"><b>🔍 یافته‌ها:</b> ' + esc(np.f) + "</p>" : "") + (np.d ? '<p class="hb-ptn"><b>💊 تشخیص و درمان:</b> ' + esc(np.d) + "</p>" : "") + (!np.f && !np.d ? '<p class="hb-ptn hb-mut">یادداشتی ثبت نشده است.</p>' : "") + "</div>"
           + '<div class="hb-ptvb"><button type="button" class="btn small ghost" data-hb-ptedit="' + esc(v.id) + '">✏️ ویرایش</button><button type="button" class="btn small ghost hb-danger" data-hb-ptdel="' + esc(v.id) + '">🗑 حذف</button></div></div>';
       }).join("");
+  }
+  function invMount(id) {
+    [].forEach.call(document.querySelectorAll("[data-hb-invpanel]"), function (e) { if (e.parentNode) e.parentNode.removeChild(e); });
+    var card = q('[data-hb-invfile="' + id + '"]'); if (!card) return; card.insertAdjacentHTML("afterend", '<div data-hb-invpanel></div>'); invOpenId = id; invPanel();
   }
   function invRefresh() { if (ptBox() && root.getAttribute("data-dview") === "pt" && ptMode === "file") ptShow(); else if (todayBox()) todayRender(); }
   function ptShow() {
@@ -2223,7 +2226,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
         + (SECP ? '<h4 class="hb-pth2">🧾 فاکتورها</h4>' : "")
         + '<div data-hb-pttabbox>' + (ptTab === "inv" ? ptInvHtml(r.pkey, g) : ptMedHtml(g)) + "</div>";
       if (!SECP) { brFill(box, "pt"); ptIdInit(r); }
-      if (ptTab === "inv") { if (invOpenId && invItems.some(function (x) { return x.id === invOpenId && x.pkey === r.pkey; })) invPanel(); }
+      if (ptTab === "inv") { if (invOpenId && invItems.some(function (x) { return x.id === invOpenId && x.pkey === r.pkey; })) invMount(invOpenId); }
       else if (!SECP) {
         ptInitVisit(ptEditV);
         var vf = box.querySelector(".hb-ptvform"), vt = box.querySelector("[data-hb-ptvt]");
@@ -2288,7 +2291,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (t.closest("[data-hb-ptback]")) { var bv0 = ptBackView; ptBackView = ""; ptMode = "list"; ptEditV = null; invOpenId = ""; if (bv0 === "today") return ptToToday(); if (bv0 && bv0 !== "pt") { dview(bv0); return; } return ptShow(); }
     if ((b = t.closest("[data-hb-pttab]"))) { ptTab = b.getAttribute("data-hb-pttab"); ptEditV = null; invOpenId = ""; return ptShow(); }
     if ((b = t.closest("[data-hb-ptvtog]"))) { var vd1 = q('[data-hb-ptvd="' + b.getAttribute("data-hb-ptvtog") + '"]'); if (vd1) vd1.hidden = !vd1.hidden; return; }
-    if ((b = t.closest("[data-hb-invfile]"))) { invOpenId = b.getAttribute("data-hb-invfile"); if (!q("[data-hb-invpanel]")) { var tb2 = q("[data-hb-pttabbox]"); if (tb2) tb2.insertAdjacentHTML("afterbegin", '<div data-hb-invpanel></div>'); } invPanel(); return; }
+    if ((b = t.closest("[data-hb-invfile]"))) { var fid = b.getAttribute("data-hb-invfile"); if (invOpenId === fid && q("[data-hb-invpanel]")) { invOpenId = ""; [].forEach.call(document.querySelectorAll("[data-hb-invpanel]"), function (e) { if (e.parentNode) e.parentNode.removeChild(e); }); b.classList.remove("open"); return; } invMount(fid); [].forEach.call(document.querySelectorAll(".hb-invc.open"), function (e) { e.classList.remove("open"); }); b.classList.add("open"); return; }
     if (t.closest("[data-hb-invedit]")) { var ve = invItems.filter(function (x) { return x.id === invOpenId; })[0], vv0 = ve && ptItems.filter(function (x) { return x.id === ve.vid; })[0]; if (!vv0) return toast("⚠️ مراجعهٔ این فاکتور پیدا نشد (شاید حذف شده)."); if (root.getAttribute("data-dview") !== "pt") { ptBackView = root.getAttribute("data-dview"); dview("pt"); } ptCur = ve.pkey; billRet = "file"; invOpenId = ""; billOpen(vv0); return; }
     if ((b = t.closest("[data-hb-pttoday]"))) { var gt = ptGroup(b.getAttribute("data-hb-pttoday"))[0]; if (gt) ptToday(gt, b); return; }
     b = t.closest("[data-hb-ptopen]");
@@ -2302,7 +2305,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if ((b = t.closest("[data-hb-ptbill]"))) { var bv = ptItems.filter(function (x) { return x.id === b.getAttribute("data-hb-ptbill"); })[0]; if (bv) { billRet = "file"; var exi = invItems.filter(function (x) { return x.vid === bv.id && x.status !== "void"; })[0]; if (exi) { invOpenId = exi.id; var bx = ptBox(); if (!q("[data-hb-invpanel]")) bx.insertAdjacentHTML("afterbegin", '<div data-hb-invpanel></div>'); invPanel(); return; } if (!invItems.length) invLoad(function () { billOpen(bv); }); else billOpen(bv); } return; }
     if ((b = t.closest("[data-hb-ptview]"))) { var vd = q('[data-hb-ptvd="' + b.getAttribute("data-hb-ptview") + '"]'); if (vd) { vd.hidden = !vd.hidden; b.textContent = vd.hidden ? "👁 دیدن" : "🔼 بستن"; } return; }
     if ((b = t.closest("[data-hb-ptedit]"))) { ptEditV = ptItems.filter(function (x) { return x.id === b.getAttribute("data-hb-ptedit"); })[0] || null; ptShow(); try { q("[data-hb-ptvt]").scrollIntoView({ behavior: "smooth", block: "center" }); } catch (x) {} return; }
-    if ((b = t.closest("[data-hb-ptdel]"))) { if (!confirm("این مراجعه حذف شود؟")) return; api({ a: "patDel", t: tokGet(), id: b.getAttribute("data-hb-ptdel") }).then(function (j) { if (!j.ok) return alert(errMsg(j.err)); ptItems = ptItems.filter(function (x) { return x.id !== b.getAttribute("data-hb-ptdel"); }); ptShow(); }); return; }
+    if ((b = t.closest("[data-hb-ptdel]"))) { var dv0 = ptItems.filter(function (x) { return x.id === b.getAttribute("data-hb-ptdel"); })[0] || {}, hasInv = invItems.some(function (x) { return x.vid === dv0.id && x.status !== "void"; }); if (!confirm("⚠️ مراجعهٔ " + fd(dv0.date || "") + (dv0.reason ? " (" + dv0.reason + ")" : "") + " حذف شود؟\nاین کار قابل برگشت نیست." + (hasInv ? "\n(فاکتور این مراجعه حذف نمی‌شود؛ اگر لازم است جداگانه باطلش کنید.)" : ""))) return; api({ a: "patDel", t: tokGet(), id: b.getAttribute("data-hb-ptdel") }).then(function (j) { if (!j.ok) return alert(errMsg(j.err)); ptItems = ptItems.filter(function (x) { return x.id !== b.getAttribute("data-hb-ptdel"); }); ptShow(); }); return; }
     if (t.closest("[data-hb-ptsms]")) { var gs = ptGroup(ptCur)[0]; if (!gs) return; if (!gs.phone) return toast("⚠️ برای این بیمار شمارهٔ تماس ثبت نشده است."); if (!confirm("پیامک تأیید ثبت برای سرپرست «" + (gs.owner || gs.name) + "» ارسال شود؟")) return; ptSendSms(ptCur); return; }
     if (t.closest("[data-hb-ptbook]")) { var g2 = ptGroup(ptCur)[0]; if (!g2) return; dview("new"); petForm(null); q("#hb-pn").value = g2.name; q("#hb-po").value = g2.owner || ""; q("#hb-ph").value = g2.phone || ""; var sb2 = q('[data-seg="hbsp"] [data-v="' + g2.species + '"]'); if (sb2) sb2.click(); toast("اطلاعات بیمار وارد شد؛ تاریخ تولد و رضایت را کامل کنید"); return; }
     if ((b = t.closest("[data-hb-ptsavenew]"))) {
@@ -2634,7 +2637,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (t.closest("[data-hb-invdisc]")) { var vd = invItems.filter(function (x) { return x.id === invOpenId; })[0]; if (!vd) return; var dv = prompt("مبلغ کل تخفیف این فاکتور (تومان):\nجمع خدمات: " + money(vd.sub) + "\n(برای حذف تخفیف ۰ بزنید)", vd.disc || ""); if (dv === null) return; var dn = Math.max(0, numIn(dv));
       api({ a: "invDisc", t: tokGet(), id: vd.id, disc: dn }).then(function (j) { if (!j.ok) return toast("⚠️ " + (j.err === "bad" ? "این تخفیف ممکن نیست (فاکتور تسویه شده یا مبلغ بیش از دریافتی‌هاست)." : errMsg(j.err)), 7000); invItems = invItems.map(function (x) { return x.id === j.item.id ? j.item : x; }); toast("✅ تخفیف ثبت شد · مبلغ جدید " + money(j.item.total)); invPanel(); invRefresh(); if (!q("[data-hb-invpanel]") && j.item) { /* پنل با todayRender بسته می‌شود */ invOpenId = j.item.id; var tb = todayBox(); if (tb && !q("[data-hb-invpanel]")) { tb.insertAdjacentHTML("afterbegin", '<div data-hb-invpanel></div>'); invPanel(); } } });
       return; }
-    if (t.closest("[data-hb-invclose]")) { invOpenId = ""; invPanel(); return; }
+    if (t.closest("[data-hb-invclose]")) { invOpenId = ""; invPanel(); [].forEach.call(document.querySelectorAll("[data-hb-pttabbox] [data-hb-invpanel]"), function (e) { if (e.parentNode) e.parentNode.removeChild(e); }); [].forEach.call(document.querySelectorAll(".hb-invc.open"), function (e) { e.classList.remove("open"); }); return; }
     if (t.closest("[data-hb-invvoid]")) {
       var vv = invItems.filter(function (x) { return x.id === invOpenId; })[0]; if (!vv) return;
       var why = prompt("فاکتور «" + vv.name + "» (" + money(vv.total) + ") باطل شود؟" + (vv.paid ? "\n⚠️ " + money(vv.paid) + " پرداخت شده؛ برگشت پول را جداگانه انجام دهید." : "") + "\nدلیل:", ""); if (why === null) return;
