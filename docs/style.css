@@ -2416,3 +2416,8 @@ body.hb-drpage .hb-staffhdr { margin-bottom: 12px; }
 .hb-invpay .btn { min-height: 44px; } .hb-invpay .btn.ghost { margin-top: 8px; }
 .hb-invh { flex-wrap: nowrap !important; align-items: flex-start !important; } .hb-invh > .btn { flex: 0 0 auto; min-height: 34px; padding: 4px 10px; font-size: 13px; margin-inline-start: 0 !important; }
 .hb-invsum { margin: 4px 0 8px; padding: 10px 12px; border: 1px solid #cfdff1; border-radius: 14px; background: #f3f8ff; } .hb-invsum div { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 3px 0; font-size: 14px; } .hb-invsum span { color: #4b5d73; } .hb-invsum b { color: #1f3b63; } .hb-invsum .hb-invdebt b, .hb-invsum .hb-invdebt span { color: #a12a2a; }
+/* تعرفه‌ها: کارت جمع‌وجور */
+.hb-svc2 { margin: 10px 0; padding: 10px; border: 1px solid #cfdff1; border-radius: 14px; background: #fff; }
+.hb-svt { display: flex; align-items: center; gap: 8px; } .hb-svt input[type="text"] { flex: 1 1 auto; min-width: 0; min-height: 42px; } .hb-svt input[type="checkbox"] { width: 22px; height: 22px; flex: 0 0 auto; } .hb-svt .btn { flex: 0 0 auto; min-height: 42px; padding: 4px 12px; margin: 0; }
+.hb-svf { display: grid; grid-template-columns: 1.3fr 1.3fr 0.8fr; gap: 8px; margin-top: 8px; } .hb-svf label { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--muted); } .hb-svf input { width: 100%; min-width: 0; min-height: 40px; text-align: center; }
+.hb-svw { display: none; margin-top: 6px; color: #a12a2a; font-size: 12.5px; } .hb-svc2.bad { border-color: #efc4c4; background: #fff8f8; } .hb-svc2.bad .hb-svw { display: block; }
