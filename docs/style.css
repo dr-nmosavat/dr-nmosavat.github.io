@@ -2442,3 +2442,14 @@ body.hb-drpage .hb-staffhdr { margin-bottom: 12px; }
 .hb-ptacts .hb-newpetb { background: #e8f6ee; border-color: #b6dccf; color: #12684a; }
 .hb-ptv .btn.hb-danger { background: #fdf2f2; border-color: #efc4c4; color: #a12a2a; }
 .hb-scopen { cursor: pointer; }
+/* فاکتور: لیست خدمات با اسکرول جدا، شمارندهٔ تعداد، نوار پایین ثابت */
+.hb-bl { max-height: 52vh; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 6px; border: 1px solid #dbe5f2; border-radius: 12px; background: #fbfdff; touch-action: pan-y; }
+.hb-blr { flex-wrap: wrap; padding: 8px 10px; } .hb-blr .hb-bln { flex: 1 1 0; min-width: 0; }
+.hb-blpt { flex: 0 0 auto; direction: ltr; color: #4b5d73; font-size: 13.5px; } .hb-blr.on .hb-blpt { display: none; } .hb-blr:not(.on) .hb-blp { display: none; }
+.hb-blqs { display: none; flex: 1 0 100%; align-items: center; gap: 8px; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #cfe5d7; } .hb-blr.on .hb-blqs { display: flex; }
+.hb-blqs > span { color: #4b5d73; font-size: 13px; } .hb-blqs .hb-blt { margin-inline-start: auto; font-size: 13.5px; color: #1b7a4b; }
+.hb-qb { width: 44px; height: 40px; border: 1px solid #1f5aa6; border-radius: 10px; background: #fff; color: #1f5aa6; font-size: 22px; line-height: 1; cursor: pointer; padding: 0; touch-action: manipulation; }
+.hb-blqs .hb-blq { width: 56px !important; min-height: 40px; margin: 0; font-size: 16px; text-align: center; }
+.hb-blbar { position: sticky; bottom: 0; z-index: 40; margin: 10px -6px 0; padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0px)); background: #fff; border-top: 1px solid #cfdff1; box-shadow: 0 -6px 14px rgba(31, 59, 99, .08); border-radius: 14px 14px 0 0; }
+.hb-blbar1 { display: flex; align-items: center; gap: 10px; } .hb-blmini { flex: 1 1 auto; display: flex; flex-direction: column; } .hb-blmini small { color: #5b6b80; font-size: 12px; } .hb-blmini b { font-size: 17px; color: #1f3b63; }
+.hb-blbar1 .btn { flex: 0 0 auto; min-height: 46px; padding: 6px 16px; } .hb-blbar2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; } .hb-blbar2 .btn { min-height: 40px; margin: 0; width: 100%; }
