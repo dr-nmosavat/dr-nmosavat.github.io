@@ -2433,3 +2433,4 @@ body.hb-drpage .hb-staffhdr { margin-bottom: 12px; }
 .hb-svc2 .hb-svf { grid-template-columns: 1fr 1fr !important; } .hb-svon { grid-column: 1 / -1; flex-direction: row !important; align-items: center; gap: 8px !important; font-size: 14px !important; color: #1f3b63 !important; } .hb-svon input { width: 22px !important; min-height: 22px !important; height: 22px; }
 .hb-svc2 .hb-svf .btn { grid-column: 1 / -1; }
 .hb-svt .hb-svn { flex: 1 1 0 !important; width: auto !important; } .hb-svt .hb-svpr { flex: 0 0 100px !important; width: 100px !important; } .hb-svt .hb-svtg { flex: 0 0 36px !important; width: 36px; }
+.hb-ptabs.one { grid-template-columns: 1fr; } .hb-ptabs .hb-arw { margin-inline-start: 6px; font-size: 13px; }

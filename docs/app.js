@@ -2195,9 +2195,11 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     }
     return out;
   }
+  function ptFormHtml() {
+    return '<div class="hb-ptform hb-ptvform"><h4 class="hb-ptsec hb-ptsec2" data-hb-ptvt>پروندهٔ بیمار · مراجعهٔ امروز</h4>' + ptVisitFields() + '<p class="hb-err" data-hb-pterr2 hidden></p><div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-ptsavev>ثبت مراجعه</button><button type="button" class="btn small ghost" data-hb-ptvcancel hidden>انصراف از ویرایش</button></div></div>';
+  }
   function ptMedHtml(g) {
-    return '<div class="hb-ptform hb-ptvform"><h4 class="hb-ptsec hb-ptsec2" data-hb-ptvt>پروندهٔ بیمار · مراجعهٔ امروز</h4>' + ptVisitFields() + '<p class="hb-err" data-hb-pterr2 hidden></p><div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-ptsavev>ثبت مراجعه</button><button type="button" class="btn small ghost" data-hb-ptvcancel hidden>انصراف از ویرایش</button></div></div>'
-      + '<h4 class="hb-pth2">سوابق درمانی (' + toolFa(g.length) + ")</h4>" + g.map(function (v) {
+    return g.map(function (v) {
         var np = noteSplit(v.note || ""); return '<div class="hb-ptv"><div class="hb-ptvh" data-hb-ptvtog="' + esc(v.id) + '" role="button"><div class="hb-ptvt"><b>' + esc(fd(v.date)) + "</b>" + (v.reason ? " · " + esc(v.reason) : "") + (v.follow ? ' <small class="hb-ptfu">پیگیری: ' + esc(fd(v.follow)) + "</small>" : "") + ' <span class="hb-arw">▾</span></div></div>' + visInv(v)
           + '<div class="hb-ptvd" data-hb-ptvd="' + esc(v.id) + '" hidden>' + (np.f ? '<p class="hb-ptn"><b>🔍 یافته‌ها:</b> ' + esc(np.f) + "</p>" : "") + (np.d ? '<p class="hb-ptn"><b>💊 تشخیص و درمان:</b> ' + esc(np.d) + "</p>" : "") + (!np.f && !np.d ? '<p class="hb-ptn hb-mut">یادداشتی ثبت نشده است.</p>' : "") + "</div>"
           + '<div class="hb-ptvb"><button type="button" class="btn small ghost" data-hb-ptedit="' + esc(v.id) + '">✏️ ویرایش</button><button type="button" class="btn small ghost hb-danger" data-hb-ptdel="' + esc(v.id) + '">🗑 حذف</button></div></div>';
@@ -2217,19 +2219,18 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (ptMode === "file") {
       var g = ptGroup(ptCur); if (!g.length) { ptMode = "list"; return ptShow(); }
       if (ptInvOk[ptCur] !== 1 && ptInvOk[ptCur] !== 2) ptInvLoad(ptCur);
-      if (SECP) ptTab = "inv";
       var r = Object.assign({}, g[0], ptEff(g));
       var dbt = invItems.filter(function (x) { return x.pkey === r.pkey && (x.status === "pending" || x.status === "partial"); }).reduce(function (t0, x) { return t0 + x.total - x.paid; }, 0), tot0 = invItems.filter(function (x) { return x.pkey === r.pkey && x.status !== "void"; }), sm = tot0.reduce(function (t0, x) { return t0 + x.total; }, 0);
       box.innerHTML = '<button type="button" class="btn small ghost hb-ptbk" data-hb-ptback>→ برگشت</button>'
         + '<div class="hb-ptfile" data-hb-ptfile><h4 class="hb-ptsec">اطلاعات پت و سرپرست</h4><div class="hb-ptinfo"><b class="hb-ptn1">' + esc(r.name) + "</b>" + (r.fno ? '<span class="hb-fno">پروندهٔ ' + esc(r.fno) + "</span>" : "") + "<span>" + esc(r.species) + (r.breed ? " · " + esc(r.breed) : "") + (r.owner ? " · سرپرست: " + esc(r.owner) : "") + "</span>" + ((r.sex || r.neut || r.birth) ? '<span class="hb-ptmeta">' + [r.sex, r.neut, r.birth ? "سن: " + ptAge(r.birth) + " (تولد " + fd(r.birth) + ")" : ""].filter(Boolean).map(esc).join(" · ") + "</span>" : "") + (r.phone ? '<a class="hb-call" dir="ltr" href="tel:' + esc(r.phone) + '">📞 ' + esc(r.phone) + "</a>" : "<small>شمارهٔ تماس ثبت نشده</small>") + "</div>"
         + (SECP ? "" : '<p class="hb-ptlastl">اولین مراجعه: ' + esc(fd(g[g.length - 1].date)) + (g.length > 1 ? " · " + toolFa(g.length) + " مراجعه" : "") + "</p>" + '<p class="hb-smsst" data-hb-ptsmsst>' + smsLine(r.pkey) + "</p>")
         + (SECP ? "" : '<button type="button" class="hb-actog" data-hb-actog aria-expanded="' + (ptActOpen ? "true" : "false") + '">⚙️ عملیات پرونده <span class="hb-arw">' + (ptActOpen ? "▴" : "▾") + '</span></button><div class="hb-adb hb-ptacts"' + (ptActOpen ? "" : " hidden") + '><button type="button" class="btn small ghost" data-hb-ptidedit>✏️ ویرایش اطلاعات</button><button type="button" class="btn small ghost" data-hb-ptbook>🪪 صدور شناسنامه</button><button type="button" class="btn small ghost" data-hb-ptsms>📩 ارسال پیامک</button><button type="button" class="btn small ghost" data-hb-ptappt>🗓 ثبت نوبت</button><button type="button" class="btn small ghost" data-hb-ptnewpet>🐾 پت جدید</button></div><div class="hb-ptidf" data-hb-ptidf hidden>' + ptIdFields(r) + '<p class="hb-err" data-hb-pterr hidden></p><div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-ptidsave>ذخیرهٔ اطلاعات</button><button type="button" class="btn small ghost" data-hb-ptidcancel>انصراف</button></div></div>') + "</div>"
-        + (SECP ? "" : '<div class="hb-ptabs"><button type="button" class="btn' + (ptTab === "med" ? " primary" : " ghost") + '" data-hb-pttab="med">🩺 سوابق درمانی</button><button type="button" class="btn' + (ptTab === "inv" ? " primary" : " ghost") + '" data-hb-pttab="inv">🧾 فاکتورها</button></div>')
-        + (SECP ? '<h4 class="hb-pth2">🧾 فاکتورها</h4>' : "")
-        + '<div data-hb-pttabbox>' + (ptTab === "inv" ? ptInvHtml(r.pkey, g) : ptMedHtml(g)) + "</div>";
+        + (SECP ? "" : ptFormHtml())
+        + '<div class="hb-ptabs' + (SECP ? " one" : "") + '">' + (SECP ? "" : '<button type="button" class="btn' + (ptTab === "med" ? " primary" : " ghost") + '" data-hb-pttab="med">🩺 سوابق درمانی (' + toolFa(g.length) + ') <span class="hb-arw">' + (ptTab === "med" ? "▴" : "▾") + '</span></button>') + '<button type="button" class="btn' + (ptTab === "inv" ? " primary" : " ghost") + '" data-hb-pttab="inv">🧾 فاکتورها <span class="hb-arw">' + (ptTab === "inv" ? "▴" : "▾") + '</span></button></div>'
+        + '<div data-hb-pttabbox>' + (ptTab === "inv" ? ptInvHtml(r.pkey, g) : ptTab === "med" ? ptMedHtml(g) : "") + "</div>";
       if (!SECP) { brFill(box, "pt"); ptIdInit(r); }
       if (ptTab === "inv") { if (invOpenId && invItems.some(function (x) { return x.id === invOpenId && x.pkey === r.pkey; })) invMount(invOpenId); }
-      else if (!SECP) {
+      if (!SECP) {
         ptInitVisit(ptEditV);
         var vf = box.querySelector(".hb-ptvform"), vt = box.querySelector("[data-hb-ptvt]");
         if (vf && vt) { vt.setAttribute("role", "button"); if (!ptEditV && visitedToday(ptCur)) { vf.classList.add("hb-coll"); vt.innerHTML = "✅ امروز ویزیت شده · ثبت مراجعهٔ دیگر <span class=\"hb-arw\">▾</span>"; } else vt.innerHTML = esc(vt.textContent) + ' <span class="hb-arw">▴</span>'; }
@@ -2291,13 +2292,13 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (t.closest("[data-hb-ptnew]")) { ptPre = null; ptFromAp = ""; ptMode = "new"; return ptShow(); }
     if (t.closest("[data-hb-ptref]")) { ptLoaded = false; return ptLoad(); }
     if (t.closest("[data-hb-ptback]")) { var bv0 = ptBackView; ptBackView = ""; ptMode = "list"; ptEditV = null; invOpenId = ""; if (bv0 === "today") return ptToToday(); if (bv0 && bv0 !== "pt") { dview(bv0); return; } return ptShow(); }
-    if ((b = t.closest("[data-hb-pttab]"))) { ptTab = b.getAttribute("data-hb-pttab"); ptEditV = null; invOpenId = ""; return ptShow(); }
+    if ((b = t.closest("[data-hb-pttab]"))) { var tv = b.getAttribute("data-hb-pttab"); ptTab = ptTab === tv ? "" : tv; invOpenId = ""; return ptShow(); }
     if ((b = t.closest("[data-hb-ptvtog]"))) { var vd1 = q('[data-hb-ptvd="' + b.getAttribute("data-hb-ptvtog") + '"]'); if (vd1) vd1.hidden = !vd1.hidden; return; }
     if ((b = t.closest("[data-hb-invfile]"))) { var fid = b.getAttribute("data-hb-invfile"); if (invOpenId === fid && q("[data-hb-invpanel]")) { invOpenId = ""; [].forEach.call(document.querySelectorAll("[data-hb-invpanel]"), function (e) { if (e.parentNode) e.parentNode.removeChild(e); }); b.classList.remove("open"); return; } invMount(fid); [].forEach.call(document.querySelectorAll(".hb-invc.open"), function (e) { e.classList.remove("open"); }); b.classList.add("open"); return; }
     if (t.closest("[data-hb-invedit]")) { var ve = invItems.filter(function (x) { return x.id === invOpenId; })[0], vv0 = ve && ptItems.filter(function (x) { return x.id === ve.vid; })[0]; if (!vv0) return toast("⚠️ مراجعهٔ این فاکتور پیدا نشد (شاید حذف شده)."); if (root.getAttribute("data-dview") !== "pt") { ptBackView = root.getAttribute("data-dview"); dview("pt"); } ptCur = ve.pkey; billRet = "file"; invOpenId = ""; billOpen(vv0); return; }
     if ((b = t.closest("[data-hb-pttoday]"))) { var gt = ptGroup(b.getAttribute("data-hb-pttoday"))[0]; if (gt) ptToday(gt, b); return; }
     b = t.closest("[data-hb-ptopen]");
-    if (b) { ptActOpen = false; ptBackView = ""; ptTab = SECP ? "inv" : "med"; invOpenId = ""; ptCur = b.getAttribute("data-hb-ptopen"); touchLog("patient", ptCur, (ptGroup(ptCur)[0] || {}).name); ptMode = "file"; ptEditV = null; ptShow(); try { window.scrollTo(0, ptBox().getBoundingClientRect().top + window.pageYOffset - 80); } catch (x) {} return; }
+    if (b) { ptActOpen = false; ptBackView = ""; ptTab = ""; invOpenId = ""; ptCur = b.getAttribute("data-hb-ptopen"); touchLog("patient", ptCur, (ptGroup(ptCur)[0] || {}).name); ptMode = "file"; ptEditV = null; ptShow(); try { window.scrollTo(0, ptBox().getBoundingClientRect().top + window.pageYOffset - 80); } catch (x) {} return; }
     if (t.closest("[data-hb-ptnewpet]")) { var g9 = ptGroup(ptCur), r9 = g9[0] || {}; ptPre = { owner: r9.owner, phone: r9.phone }; ptFromAp = ""; ptMode = "new"; ptShow(); toast("🐾 مشخصات سرپرست وارد شد؛ نام، نوع و نژاد پت جدید را بزنید"); return; }
     if ((b = t.closest("[data-hb-ptnewown]"))) { dview("pt"); ptPre = { owner: b.getAttribute("data-o"), phone: b.getAttribute("data-p") }; ptFromAp = ""; ptMode = "new"; ptShow(); mkAct("pt"); toast("🐾 مشخصات سرپرست وارد شد؛ نام، نوع و نژاد پت جدید را بزنید"); return; }
     if (t.closest("[data-hb-actog]")) { ptActOpen = !ptActOpen; var ac = q(".hb-ptacts"); if (ac) ac.hidden = !ptActOpen; var tg = q("[data-hb-actog]"); if (tg) { tg.setAttribute("aria-expanded", ptActOpen ? "true" : "false"); tg.querySelector(".hb-arw").textContent = ptActOpen ? "▴" : "▾"; } return; }
@@ -2776,7 +2777,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   }
   // بعد از ثبت ویزیت: فرم بسته شود و به «امروز» برگردد
   function ptToToday() { ptMode = "list"; ptEditV = null; dview("today"); try { window.scrollTo(0, 0); } catch (e) {} }
-  function ptJump(k) { if (SECP) return; ptActOpen = false; ptBackView = root.getAttribute("data-dview") === "pt" ? "" : root.getAttribute("data-dview"); ptTab = "med"; invOpenId = ""; ptPending = k; touchLog("patient", k); dview("pt"); if (ptLoaded && ptGroup(k).length) { ptPending = ""; ptCur = k; ptMode = "file"; ptEditV = null; ptShow(); } }
+  function ptJump(k) { if (SECP) return; ptActOpen = false; ptBackView = root.getAttribute("data-dview") === "pt" ? "" : root.getAttribute("data-dview"); ptTab = ""; invOpenId = ""; ptPending = k; touchLog("patient", k); dview("pt"); if (ptLoaded && ptGroup(k).length) { ptPending = ""; ptCur = k; ptMode = "file"; ptEditV = null; ptShow(); } }
 
   // نوبت‌دهی
   var apItems = [], apToday = "", apMode = "list", apFilter = "today", apEditId = "", apPref = null, APJ = {};
