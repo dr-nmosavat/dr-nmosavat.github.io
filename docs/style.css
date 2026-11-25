@@ -2392,3 +2392,4 @@ body.hb-drpage .hb-staffhdr { margin-bottom: 12px; }
 .hb-smscb input { flex: 0 0 auto; width: 20px; height: 20px; margin: 0; }
 .hb-smscb small { flex: 1 0 100%; padding-inline-start: 28px; color: var(--muted); font-size: 12.5px; line-height: 1.6; }
 .hb-agerow { flex-wrap: nowrap; gap: 6px; font-size: 13.5px; } .hb-agerow .hb-lbl { white-space: nowrap; font-size: 13px; } .hb-agerow input { width: 54px; padding: 4px; } .hb-agerow span { white-space: nowrap; color: var(--muted); }
+.hb-otrow { display: flex; align-items: center; gap: 10px; } .hb-otrow .hb-lbl { margin: 0; } .hb-otrow .seg { width: auto; flex: 0 0 auto; } .hb-otrow .seg button { min-width: 0; padding: 4px 14px; min-height: 32px; font-size: 14px; }

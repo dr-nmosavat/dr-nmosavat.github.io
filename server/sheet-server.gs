@@ -65,7 +65,7 @@ var H = {
 };
 var PET_COLS = ['code', 'key', 'name', 'en', 'owner', 'guardian', 'species', 'breed', 'breedEn', 'birth', 'plan', 'consent', 'created', 'updated', 'deleted', 'auth', 'sex', 'neut', 'phone', 'smsok'];
 var SMS_COLS = ['time', 'to', 'kind', 'text', 'status', 'response', 'raw'];
-var PT_COLS = ['id', 'pkey', 'created', 'updated', 'date', 'name', 'species', 'breed', 'owner', 'phone', 'reason', 'note', 'follow', 'code', 'deleted', 'fee', 'paid', 'pay', 'fno', 'birth', 'sex', 'neut'];
+var PT_COLS = ['id', 'pkey', 'created', 'updated', 'date', 'name', 'species', 'breed', 'owner', 'phone', 'reason', 'note', 'follow', 'code', 'deleted', 'fee', 'paid', 'pay', 'fno', 'birth', 'sex', 'neut', 'otitle'];
 var ACT_COLS = ['day', 'time', 'kind', 'ref', 'name'];
 var SV_COLS = ['id', 'name', 'price', 'active', 'sort', 'updated', 'cost', 'pct'];   // cost = هزینهٔ مصرفی (خرید) هر واحد؛ pct = درصد سهم دکتر (خالی = پیش‌فرض)
 var CUR_ROLE_ = '';
@@ -430,7 +430,7 @@ function doGet(e) {
   }
   if (p.action === 'spin') return json_(spin_(p));
   if (p.action === 'verify') return verifyPage_(p);
-  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v34-disc' });
+  return json_({ ok: true, service: 'sheet-server', wheel: true, health: true, version: 'v35-title' });
 }
 
 // ======================= چرخ هدیه =======================
@@ -804,7 +804,7 @@ function petRemind_(b) {
   return o.sent ? { ok: true, sent: o.sent, failed: o.failed } : { ok: false, err: 'fail', msg: o.errs[0] || '' };
 }
 // ---- دفتر «بیماران من» (فقط دکتر؛ هر ردیف = یک مراجعه) ----
-function patOut_(r) { return { created: r.created || '', birth: r.birth || '', sex: r.sex || '', neut: r.neut || '', fno: r.fno || '', breed: r.breed || '', id: r.id, pkey: r.pkey, date: r.date, name: r.name, species: r.species, owner: r.owner, phone: r.phone, reason: r.reason, note: r.note, follow: r.follow, code: r.code, fee: r.fee || '', paid: r.paid === '1', pay: r.pay || '' }; }
+function patOut_(r) { return { otitle: r.otitle || '', created: r.created || '', birth: r.birth || '', sex: r.sex || '', neut: r.neut || '', fno: r.fno || '', breed: r.breed || '', id: r.id, pkey: r.pkey, date: r.date, name: r.name, species: r.species, owner: r.owner, phone: r.phone, reason: r.reason, note: r.note, follow: r.follow, code: r.code, fee: r.fee || '', paid: r.paid === '1', pay: r.pay || '' }; }
 // آخرین پیامک موفق برای هر پرونده/نوبت (از شیت SMS)، تا روی همهٔ دستگاه‌ها دیده شود
 function smsAtMap_(prefix) {
   var m = {}, re = new RegExp('^' + prefix + ':([^:]+)');
@@ -967,7 +967,7 @@ function patList_() {
   var sm = smsAtMap_('patient'), items = rows.slice(0, 1500).map(patOut_); items.forEach(function (x) { x.smsAt = sm[x.pkey] || ''; });
   return { ok: true, items: items };
 }
-function sexNeut_(k, x) { x = String(x || ''); return (k === 'sex' ? ['نر', 'ماده'] : ['عقیم', 'غیرعقیم']).indexOf(x) > -1 ? x : ''; }
+function sexNeut_(k, x) { x = String(x || ''); return (k === 'sex' ? ['نر', 'ماده'] : k === 'otitle' ? ['خانم', 'آقا'] : ['عقیم', 'غیرعقیم']).indexOf(x) > -1 ? x : ''; }
 function patSave_(b) {
   var sh = hsheet_('Patients', PT_COLS), rows = readAll_(sh, PT_COLS), r = null, i, v = b.v || {};
   var name = clip_(v.name, 40); if (!name) return { ok: false, err: 'bad' };
@@ -979,7 +979,7 @@ function patSave_(b) {
   r.name = name; r.species = ['سگ', 'گربه', 'پرنده', 'دیگر'].indexOf(v.species) > -1 ? v.species : 'دیگر';
   r.owner = clip_(v.owner, 40); r.phone = String(v.phone || '').replace(/[^0-9+]/g, '').slice(0, 16); r.breed = clip_(v.breed, 40);
   var sib = rows.filter(function (x) { return x.pkey === r.pkey && x.deleted !== '1' && x !== r; });   // مشخصات پت از سایر مراجعه‌های همین پرونده به ارث می‌رسد
-  ['birth', 'sex', 'neut'].forEach(function (k) { if (v[k] !== undefined) r[k] = k === 'birth' ? date_(v[k]) : sexNeut_(k, v[k]); else if (!r[k]) { var o = sib.filter(function (x) { return x[k]; })[0]; r[k] = o ? o[k] : ''; } });
+  ['birth', 'sex', 'neut', 'otitle'].forEach(function (k) { if (v[k] !== undefined) r[k] = k === 'birth' ? date_(v[k]) : sexNeut_(k, v[k]); else if (!r[k]) { var o = sib.filter(function (x) { return x[k]; })[0]; r[k] = o ? o[k] : ''; } });
   r.date = date_(v.date) || Utilities.formatDate(new Date(), CFG.tz, 'yyyy-MM-dd');
   r.reason = clip_(v.reason, 200); r.note = clip_(v.note, 1500); r.follow = date_(v.follow); r.code = clip_(v.code, 20);
   if (v.fee !== undefined) r.fee = String(v.fee).replace(/[^0-9]/g, '').slice(0, 12);   // زیرساخت هزینه (فعلاً بدون رابط)
@@ -995,7 +995,7 @@ function patPatient_(b) {
   var species = ['سگ', 'گربه', 'پرنده', 'دیگر'].indexOf(v.species) > -1 ? v.species : 'دیگر';
   for (i = 0; i < rows.length; i++) if (rows[i].pkey === b.pkey && rows[i].deleted !== '1') {
     rows[i].name = name; rows[i].species = species; rows[i].owner = clip_(v.owner, 40); rows[i].phone = String(v.phone || '').replace(/[^0-9+]/g, '').slice(0, 16); rows[i].breed = clip_(v.breed, 40);
-    if (v.birth !== undefined) rows[i].birth = date_(v.birth); if (v.sex !== undefined) rows[i].sex = sexNeut_('sex', v.sex); if (v.neut !== undefined) rows[i].neut = sexNeut_('neut', v.neut);
+    if (v.birth !== undefined) rows[i].birth = date_(v.birth); if (v.sex !== undefined) rows[i].sex = sexNeut_('sex', v.sex); if (v.neut !== undefined) rows[i].neut = sexNeut_('neut', v.neut); if (v.otitle !== undefined) rows[i].otitle = sexNeut_('otitle', v.otitle);
     rows[i].updated = nowIso_(); writeRow_(sh, PT_COLS, rows[i], rows[i]._row); n++;
   }
   return n ? { ok: true, n: n } : { ok: false, err: 'notfound' };

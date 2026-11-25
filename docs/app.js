@@ -2138,6 +2138,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function ptIdFields(r, lk) {
     var bx = lk ? '<div class="hb-lkres"></div>' : "";
     return '<div class="fld"><input data-pt="owner"' + (lk ? ' data-hb-lk="pt" autocomplete="off"' : "") + ' type="text" maxlength="40" placeholder="👤 نام سرپرست' + (lk ? " (جستجو در سوابق)" : "") + '" value="' + esc(r && r.owner || "") + '">' + bx + "</div>"
+      + '<div class="fld hb-otrow"><span class="hb-lbl">عنوان سرپرست:</span>' + segOpts("hb-ptot", ["خانم", "آقا"], r && r.otitle) + "</div>"
       + '<div class="fld"><input data-pt="name"' + (lk ? ' data-hb-lk="pt" autocomplete="off"' : "") + ' type="text" maxlength="40" placeholder="' + (lk ? "🔎 نام پت (جستجو در سوابق)" : "نام پت") + '" value="' + esc(r && r.name || "") + '">' + bx + "</div>"
       + '<div class="fld"><input data-pt="phone"' + (lk ? ' data-hb-lk="pt"' : "") + ' type="tel" inputmode="tel" dir="ltr" maxlength="16" placeholder="📞 شمارهٔ تماس (۰۹۱۲…)" autocomplete="off" value="' + esc(r && r.phone || "") + '">' + bx + "</div>"
       + '<div class="fld">' + ptSpecies(r && r.species) + "</div>"
@@ -2153,10 +2154,10 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     function fromBirth() { var b = PTJ.pb.get(), t = jToday(); if (!b) return; var a = g2j(b), m = (t[0] - a[0]) * 12 + (t[1] - a[1]) - (t[2] < a[2] ? 1 : 0); if (m < 0) m = 0; ay.value = Math.floor(m / 12) || ""; am.value = m % 12 || ""; }
     function fromAge() { var y = parseInt(faDigits(ay.value), 10) || 0, m = parseInt(faDigits(am.value), 10) || 0; if (!y && !m) { PTJ.pb.set(""); return; } var t = jToday(), tot = t[0] * 12 + (t[1] - 1) - (y * 12 + m), yy = Math.floor(tot / 12), mm = tot % 12 + 1; PTJ.pb.set(j2g(yy, mm, Math.min(t[2], jLen(yy, mm)))); }
     PTJ.pb.on(fromBirth); ay.addEventListener("input", fromAge); am.addEventListener("input", fromAge); fromBirth();
-    [].forEach.call(bx.querySelectorAll('[data-seg="hb-ptsex"]'), function (sg) { sg.addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; var was = b.classList.contains("on"); [].forEach.call(sg.children, function (x) { x.classList.remove("on"); }); if (!was) b.classList.add("on"); }); });
+    [].forEach.call(bx.querySelectorAll('[data-seg="hb-ptsex"],[data-seg="hb-ptot"]'), function (sg) { sg.addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; var was = b.classList.contains("on"); [].forEach.call(sg.children, function (x) { x.classList.remove("on"); }); if (!was) b.classList.add("on"); }); });
   }
   function ptAge(iso) { if (!iso) return ""; var a = g2j(iso), t = jToday(), m = (t[0] - a[0]) * 12 + (t[1] - a[1]) - (t[2] < a[2] ? 1 : 0); if (m < 0) return ""; var y = Math.floor(m / 12), mm = m % 12; return y ? toolFa(y) + " سال" + (mm ? " و " + toolFa(mm) + " ماه" : "") : (mm ? toolFa(mm) + " ماه" : "کمتر از ۱ ماه"); }
-  function ptEff(g) { var o = {}; ["birth", "sex", "neut"].forEach(function (k) { var h = g.filter(function (x) { return x[k]; })[0]; o[k] = h ? h[k] : ""; }); return o; }
+  function ptEff(g) { var o = {}; ["birth", "sex", "neut", "otitle"].forEach(function (k) { var h = g.filter(function (x) { return x[k]; })[0]; o[k] = h ? h[k] : ""; }); return o; }
   var invLoaded = false;
   function visInv(v) {
     var l = invItems.filter(function (x) { return x.vid === v.id && x.status !== "void"; }); if (!l.length) return "";
@@ -2234,7 +2235,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function ptSendSms(pkey) {
     api({ a: "patSms", t: tokGet(), pkey: pkey }).then(function (j) { if (j.ok) { smsMark(pkey); var sl = q("[data-hb-ptsmsst]"); if (sl) sl.textContent = smsLine(pkey); } toast(j.ok ? "📩 پیامک برای سرپرست ارسال شد" : "⚠️ " + (SMS_ERR[j.err] || ("ارسال پیامک ناموفق بود. " + (j.msg || errMsg(j.err)))), j.ok ? 5000 : 8000); });
   }
-  function ptIdVals() { var o = { species: segVal("hb-ptsp") }; ["name", "owner", "phone", "breed"].forEach(function (k) { o[k] = k === "phone" ? faDigits(ptF(k).value.trim()) : ptF(k).value.trim(); }); o.birth = PTJ.pb ? PTJ.pb.get() : ""; o.sex = segVal("hb-ptsex"); var nc = ptBox().querySelector('input[data-pt="neut"]'); o.neut = nc && nc.checked ? "عقیم" : ""; return o; }
+  function ptIdVals() { var o = { species: segVal("hb-ptsp") }; ["name", "owner", "phone", "breed"].forEach(function (k) { o[k] = k === "phone" ? faDigits(ptF(k).value.trim()) : ptF(k).value.trim(); }); o.birth = PTJ.pb ? PTJ.pb.get() : ""; o.sex = segVal("hb-ptsex"); o.otitle = segVal("hb-ptot"); var nc = ptBox().querySelector('input[data-pt="neut"]'); o.neut = nc && nc.checked ? "عقیم" : ""; return o; }
   document.addEventListener("input", function (e) { if (e.target && e.target.matches && e.target.matches("[data-hb-ptq]")) ptRenderList(); });
   document.addEventListener("click", function (e) {
     var t = e.target, b; if (!t.closest || !ptBox()) return;
@@ -2259,7 +2260,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if ((b = t.closest("[data-hb-ptsavenew]"))) {
       var mode = b.getAttribute("data-hb-ptsavenew"), er = q("[data-hb-pterr]"), btn = b, id = ptIdVals(), vv = ptNewVals(); if (!id.name) { er.textContent = "نام پت را بنویسید."; er.hidden = false; ptF("name").focus(); return; }
       if (!vv.reason) { er.textContent = "دلیل مراجعه را انتخاب کنید."; er.hidden = false; return; }
-      er.hidden = true; [].forEach.call(box0(), function (x) { x.disabled = true; }); var smsBox = q("[data-hb-ptsms-cb]"), wantSms = !!(smsBox && smsBox.checked), fa = ptFromAp; var v = { name: id.name, species: id.species, breed: id.breed, owner: id.owner, phone: id.phone, birth: id.birth, sex: id.sex, neut: id.neut, date: vv.date, reason: vv.reason, note: "", follow: "", pkey: "" };
+      er.hidden = true; [].forEach.call(box0(), function (x) { x.disabled = true; }); var smsBox = q("[data-hb-ptsms-cb]"), wantSms = !!(smsBox && smsBox.checked), fa = ptFromAp; var v = { name: id.name, species: id.species, breed: id.breed, owner: id.owner, phone: id.phone, birth: id.birth, sex: id.sex, neut: id.neut, otitle: id.otitle, date: vv.date, reason: vv.reason, note: "", follow: "", pkey: "" };
       api({ a: "patSave", t: tokGet(), id: "", v: v }).then(function (j) {
         [].forEach.call(box0(), function (x) { x.disabled = false; }); if (!j.ok) { er.textContent = errMsg(j.err); er.hidden = false; return; }
         ptItems.unshift(j.item); ptCur = j.item.pkey; ptEditV = null; ptFromAp = ""; ptPre = null; toast("✅ بیمار ثبت شد · " + j.item.name);
@@ -2283,7 +2284,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     }
     if (t.closest("[data-hb-ptidsave]")) {
       var er3 = q("[data-hb-pterr]"), id3 = ptIdVals(); if (!id3.name) { er3.textContent = "نام پت را بنویسید."; er3.hidden = false; return; }
-      api({ a: "patPatient", t: tokGet(), pkey: ptCur, v: id3 }).then(function (j) { if (!j.ok) { er3.textContent = errMsg(j.err); er3.hidden = false; return; } ptItems.forEach(function (x) { if (x.pkey === ptCur) { x.name = id3.name; x.species = id3.species; x.breed = id3.breed; x.owner = id3.owner; x.phone = id3.phone; x.birth = id3.birth; x.sex = id3.sex; x.neut = id3.neut; } }); toast("✅ اطلاعات ذخیره شد"); ptShow(); });
+      api({ a: "patPatient", t: tokGet(), pkey: ptCur, v: id3 }).then(function (j) { if (!j.ok) { er3.textContent = errMsg(j.err); er3.hidden = false; return; } ptItems.forEach(function (x) { if (x.pkey === ptCur) { x.name = id3.name; x.species = id3.species; x.breed = id3.breed; x.owner = id3.owner; x.phone = id3.phone; x.birth = id3.birth; x.sex = id3.sex; x.neut = id3.neut; x.otitle = id3.otitle; } }); toast("✅ اطلاعات ذخیره شد"); ptShow(); });
     }
   });
   // ---- جستجوی شماره تماس در سوابق (پرکردن خودکار فرم) ----
@@ -2496,7 +2497,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (miss) { var mi = billRows.indexOf(miss), me = box.querySelector('[data-hb-brep="' + mi + '"]'); er.textContent = "تاریخ تکرار «" + miss.name + "» را انتخاب کنید (برای پیامک یادآور لازم است)."; er.hidden = false; if (me) { me.classList.add("bad"); try { me.scrollIntoView({ block: "center" }); } catch (e) {} } return; }
     var note = (box.querySelector("[data-hb-bnote]") || {}).value || ""; if (free && why) note = (note ? note + " · " : "") + "بدون هزینه: " + why;
     er.hidden = true; [].forEach.call(box.querySelectorAll(".hb-bill .btn"), function (b) { b.disabled = true; });
-    api({ a: "invSave", t: tokGet(), v: { id: v._inv ? v._inv.id : "", vid: v.id, pkey: v.pkey, name: v.name, owner: v.owner, phone: v.phone, date: v.date || isoNow(), items: items, disc: numIn((box.querySelector("[data-hb-bdisc]") || {}).value), tax: (box.querySelector("[data-hb-btax]") || {}).checked ? 1 : 0, free: free ? 1 : 0, note: note } }).then(function (j) {
+    api({ a: "invSave", t: tokGet(), v: { id: v._inv ? v._inv.id : "", vid: v.id, pkey: v.pkey, name: v.name, owner: ((ptEff(ptGroup(v.pkey)).otitle || "") + " " + (v.owner || "")).trim(), phone: v.phone, date: v.date || isoNow(), items: items, disc: numIn((box.querySelector("[data-hb-bdisc]") || {}).value), tax: (box.querySelector("[data-hb-btax]") || {}).checked ? 1 : 0, free: free ? 1 : 0, note: note } }).then(function (j) {
       [].forEach.call(box.querySelectorAll(".hb-bill .btn"), function (b) { b.disabled = false; });
       if (!j.ok) { er.textContent = errMsg(j.err); er.hidden = false; return; }
       invItems = invItems.filter(function (x) { return x.id !== j.item.id; }); invItems.unshift(j.item);
