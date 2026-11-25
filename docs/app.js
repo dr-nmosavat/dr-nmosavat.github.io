@@ -1993,7 +1993,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   // ---- شمارندهٔ تب‌ها (دکتر) ----
   var tabBase = {};
   var tabCnt = {};
-  function grpBadges() { var G = { clients: ["today", "appt"], book: ["req"], more: ["adopt"] }; [].forEach.call(root.querySelectorAll("[data-hb-grp]"), function (gb) { var g = gb.getAttribute("data-hb-grp"), sum = 0; (G[g] || []).forEach(function (v) { sum += tabCnt[v] || 0; }); if (!gb.getAttribute("data-base")) gb.setAttribute("data-base", gb.textContent); gb.textContent = gb.getAttribute("data-base") + (sum ? " (" + toolFa(sum) + ")" : ""); gb.classList.toggle("has-new", sum > 0); }); }
+  function grpBadges() { var G = { clients: ["today", "appt"], book: ["req"], more: ["adopt"] }; [].forEach.call(root.querySelectorAll("[data-hb-grp]"), function (gb) { var g = gb.getAttribute("data-hb-grp"), sum = 0; (G[g] || []).forEach(function (v) { sum += (g === "clients" && v === "appt") ? apFutureCount() : (tabCnt[v] || 0); }); if (!gb.getAttribute("data-base")) gb.setAttribute("data-base", gb.textContent); gb.textContent = gb.getAttribute("data-base") + (sum ? " (" + toolFa(sum) + ")" : ""); gb.classList.toggle("has-new", sum > 0); }); }
   var apRemShown = "";
   function apRemind() {   // یادآوری ورود: دکتر نوبت امروز یا روزهای بعد دارد
     if (!DRPAGE || SECP || !isDr() || !apItems.length) return; var td = apToday || isoNow(), up = apItems.filter(function (r) { return r.status === "booked" && r.date >= td && !isQueue(r) && !(r.date === td && cameOn(r)); }), nt = up.filter(function (r) { return r.date === td; }).length, key = td + ":" + up.length;
@@ -2010,6 +2010,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   });
   function apPoll() { if (!DRPAGE || SECP || document.hidden || !srvOn() || !isDr()) return; api({ a: "apList", t: tokGet() }).then(function (j) { if (j && j.ok) { apItems = j.items || []; apToday = j.today || apToday || isoNow(); setTabCount("appt", apCountAll()); apRemind(); } }); }
   setInterval(apPoll, 60000); setTimeout(apPoll, 3000); document.addEventListener("visibilitychange", function () { if (!document.hidden) apPoll(); });
+  function apFutureCount() { var td = apToday || isoNow(); return apItems.filter(function (r) { return r.status === "booked" && r.date > td && !isQueue(r); }).length; }
   function apCountAll() { var td = apToday || isoNow(); return apItems.filter(function (r) { return r.status === "booked" && r.date >= td && !isQueue(r) && !(r.date === td && cameOn(r)); }).length; }
   function setTabCount(v, n) { tabCnt[v] = n; grpBadges(); var b = q('[data-hb-dtab="' + v + '"]'); if (!b) return; if (!tabBase[v]) tabBase[v] = b.textContent;
     if (v === "appt") { b.innerHTML = esc(tabBase[v]) + (n ? ' <span class="hb-apdot">' + toolFa(n) + "</span>" : ""); b.classList.remove("has-new"); return; } b.textContent = tabBase[v] + (n ? " (" + toolFa(n) + ")" : ""); b.classList.toggle("has-new", n > 0); }
