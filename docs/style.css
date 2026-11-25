@@ -2546,3 +2546,10 @@ html.hb-billmode .hb-blbar .btn.ghost { background: #fff; color: #1f3b63; border
 .hb-blhdr { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 6px; } .hb-blhdr .hb-pth { margin: 0 !important; flex: 1 1 auto; min-width: 0; }
 .hb-blhdr .hb-blbk { flex: 0 0 auto; min-height: 34px; padding: 2px 14px; font-size: 13px; margin: 0; }
 .hb-tdrs { display: block; margin-top: 2px; color: #8a5a00; font-weight: 700; font-size: 12.5px; } .hb-todayreason { margin: 4px 0; padding: 6px 10px; background: #fff4d6; border: 1px solid #e8c36a; border-radius: 10px; color: #6f4a00; font-size: 14px; }
+/* پنجرهٔ علت مراجعه هنگام «به امروز» */
+.hb-rsm { position: fixed; inset: 0; z-index: 400; display: flex; align-items: flex-end; justify-content: center; background: rgba(15, 34, 56, .55); }
+.hb-rsc { width: 100%; max-width: 560px; max-height: 88vh; overflow-y: auto; -webkit-overflow-scrolling: touch; background: #fff; border-radius: 18px 18px 0 0; padding: 16px 14px calc(14px + env(safe-area-inset-bottom, 0px)); }
+.hb-rsc h3 { margin: 0 0 10px; font-size: 16px; color: #1f3b63; }
+.hb-rsg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; } .hb-rsb { min-height: 46px; padding: 6px 8px; border: 1.5px solid #9fb0c6; border-radius: 12px; background: #f7fafe; font: inherit; font-size: 13.5px; line-height: 1.4; color: #1f3b63; cursor: pointer; } .hb-rsb.on { background: #1f5aa6; border-color: #1f5aa6; color: #fff; font-weight: 800; }
+.hb-rsx { width: 100%; min-height: 44px; padding: 8px 12px; margin-bottom: 12px; border: 1px solid #cbd5e1; border-radius: 12px; font: inherit; font-size: 15px; }
+.hb-rsa { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } .hb-rsa .btn { min-height: 46px; margin: 0; width: 100%; } .hb-rsa .primary { grid-column: 1 / -1; background: #17a05d; border-color: #17a05d; color: #fff; font-weight: 800; }
