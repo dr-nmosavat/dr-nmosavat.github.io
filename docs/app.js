@@ -2091,7 +2091,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function ptSetReason(r) { var sel = ptF("reason"), rx = ptF("reasonx"); if (!sel) { if (rx) rx.value = r || ""; return; } if (r && PT_REASONS.indexOf(r) < 0) { sel.value = "__other"; rx.value = r; rx.hidden = false; } else sel.value = r || PT_REASONS[0]; }
   function ptInitVisit(v) {
     var box = ptBox(); PTJ.d = initJd(box.querySelector('[data-pjd="d"]'), { minY: -10, maxY: 0 }); PTJ.d.set(v && v.date || isoNow()); if (v && v.date && v.date !== isoNow()) { box.querySelector("[data-hb-vdate]").hidden = false; box.querySelector(".hb-vdl").hidden = true; }
-    ptSetReason(v && v.reason || "");
+    ptSetReason(v && v.reason || (!v && !SECP && ptCur && emptyTodayVisit(ptCur) ? emptyTodayVisit(ptCur).reason : "") || "");
     if (SECP) return;
     PTJ.f = initJd(box.querySelector('[data-pjd="f"]'), { optional: true, minY: -1, maxY: 2 }); PTJ.f.set(v && v.follow || ""); var mo = box.querySelector("[data-hb-ptmore]"); if (mo && v && v.follow) mo.open = true;
     var np = noteSplit(v && v.note || ""); ptF("find").value = np.f; ptF("note").value = np.d;
@@ -2178,6 +2178,11 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     var o = ""; l.forEach(function (inv) { (inv.items || []).forEach(function (x) { if (x.rep || needsRep(x.name)) o += '<div class="hb-ptvx">' + (/ضد ?انگل/.test(x.name) ? "🪱 " : "💉 ") + "<b>" + esc(x.name) + "</b>" + (x.rep ? " · تکرار: " + esc(repLabel(x.rep)) : "") + "</div>"; }); });
     return o ? '<div class="hb-ptvi">' + o + "</div>" : "";
   }
+  function emptyTodayVisit(pk) { var td = isoNow(); return ptGroup(pk).filter(function (x) { return x.date === td && !String(x.note || "").trim(); })[0] || null; }
+  function todayReason(e) {
+    if (!e) return ""; var r = ""; if (e.pkey) { var tv = emptyTodayVisit(e.pkey); if (tv && tv.reason) r = tv.reason; }
+    if (!r && e.ap && e.ap.reason && e.ap.reason !== "در انتظار ویزیت") r = e.ap.reason; if (!r && e.q && e.q.note && !/^\[?صف\]?/.test(e.q.note)) r = e.q.note; return r;
+  }
   var ptActOpen = false, ptTab = "med", ptInvOk = {}, ptBackView = "", billRet = "today";
   function ptInvLoad(pk) {
     ptInvOk[pk] = 1;
@@ -2239,6 +2244,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       var dbt = invItems.filter(function (x) { return x.pkey === r.pkey && (x.status === "pending" || x.status === "partial"); }).reduce(function (t0, x) { return t0 + x.total - x.paid; }, 0), tot0 = invItems.filter(function (x) { return x.pkey === r.pkey && x.status !== "void"; }), sm = tot0.reduce(function (t0, x) { return t0 + x.total; }, 0);
       box.innerHTML = '<button type="button" class="btn small ghost hb-ptbk" data-hb-ptback>→ برگشت</button>' + (billDraft && billDraft.pkey === ptCur ? '<button type="button" class="btn small primary hb-ptbk hb-resume" data-hb-billresume>↩ برگشت به فاکتور (خدمات انتخاب‌شده حفظ شده)</button>' : "")
         + '<div class="hb-ptfile" data-hb-ptfile><h4 class="hb-ptsec">اطلاعات پت و سرپرست</h4><div class="hb-ptinfo"><b class="hb-ptn1">' + esc(r.name) + "</b>" + (r.fno ? '<span class="hb-fno">پروندهٔ ' + esc(r.fno) + "</span>" : "") + "<span>" + esc(r.species) + (r.breed ? " · " + esc(r.breed) : "") + (r.owner ? " · سرپرست: " + esc(r.owner) : "") + "</span>" + ((r.sex || r.neut || r.birth) ? '<span class="hb-ptmeta">' + [r.sex, r.neut, r.birth ? "سن: " + ptAge(r.birth) + " (تولد " + fd(r.birth) + ")" : ""].filter(Boolean).map(esc).join(" · ") + "</span>" : "") + (r.phone ? '<a class="hb-call" dir="ltr" href="tel:' + esc(r.phone) + '">📞 ' + esc(r.phone) + "</a>" : "<small>شمارهٔ تماس ثبت نشده</small>") + "</div>"
+        + (SECP || !emptyTodayVisit(r.pkey) || !emptyTodayVisit(r.pkey).reason ? "" : '<p class="hb-todayreason">📝 علت مراجعهٔ امروز: <b>' + esc(emptyTodayVisit(r.pkey).reason) + "</b></p>")
         + (SECP ? "" : '<p class="hb-ptlastl">اولین مراجعه: ' + esc(fd(g[g.length - 1].date)) + (g.length > 1 ? " · " + toolFa(g.length) + " مراجعه" : "") + "</p>" + '<p class="hb-smsst" data-hb-ptsmsst>' + smsLine(r.pkey) + "</p>")
         + "</div>"
         + (SECP ? "" : ptFormHtml())
@@ -2344,11 +2350,11 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       var er2 = q("[data-hb-pterr2]"), btn2 = q("[data-hb-ptsavev]"), g = ptGroup(ptCur)[0], vv2 = ptVisitVals(); if (!g) return;
       if (!vv2.reason) { er2.textContent = "دلیل مراجعه را بنویسید."; er2.hidden = false; return; }
       er2.hidden = true; btn2.disabled = true; var v2 = { name: g.name, species: g.species, breed: g.breed, owner: g.owner, phone: g.phone, date: vv2.date, reason: vv2.reason, note: vv2.note, follow: vv2.follow, pkey: ptCur };
-      var wasEdit = !!ptEditV, editId = ptEditV ? ptEditV.id : "";
+      var adopted = false; if (!ptEditV) { var tv0 = emptyTodayVisit(ptCur); if (tv0) { ptEditV = tv0; adopted = true; } } var wasEdit = !!ptEditV, editId = ptEditV ? ptEditV.id : "";
       api({ a: "patSave", t: tokGet(), id: ptEditV ? ptEditV.id : "", v: v2 }).then(function (j) {
         btn2.disabled = false; if (!j.ok) { er2.textContent = errMsg(j.err); er2.hidden = false; return; }
         if (!ptEditV || ptEditV.follow !== vv2.follow) ptFollowAppt(g, ptCur, vv2); if (ptEditV) ptItems = ptItems.map(function (x) { return x.id === j.item.id ? j.item : x; }); else ptItems.unshift(j.item);
-        ptItems.sort(function (x, y) { return x.date < y.date ? 1 : x.date > y.date ? -1 : 0; }); ptEditV = null; toast("✅ مراجعه ثبت شد"); if (!SECP && vv2.date === isoNow() && vv2.note) markVisited(ptCur); if (billDraft && billDraft.vid === editId) { billResume(); return; } if (!SECP && !wasEdit) billOpen(j.item); else ptShow();
+        ptItems.sort(function (x, y) { return x.date < y.date ? 1 : x.date > y.date ? -1 : 0; }); ptEditV = null; toast("✅ مراجعه ثبت شد"); if (!SECP && vv2.date === isoNow() && vv2.note) markVisited(ptCur); if (billDraft && billDraft.vid === editId) { billResume(); return; } if (!SECP && (!wasEdit || adopted)) billOpen(j.item); else ptShow();
       });
       return;
     }
@@ -2459,7 +2465,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     var st = done ? ' <span class="hb-tdvb">ویزیت شد</span>' : ' <span class="hb-tdwb">⏳ در انتظار</span>', iv = done && e.pkey ? invOf(e.pkey) : null;
     if (iv) { st += iv.status === "paid" ? ' <span class="hb-ivb hb-ivok">✅ تسویه · ' + money(iv.total) + "</span>" : iv.status === "free" ? ' <span class="hb-ivb">بدون هزینه</span>' : ' <span class="hb-ivb hb-ivpend">💳 ' + money(iv.total - iv.paid) + "</span>"; if (SECP || iv.status === "pending" || iv.status === "partial") open = 'data-hb-invopen="' + esc(iv.id) + '"'; }
     tdEnt[e.k] = e; var del = !done ? '<button type="button" class="hb-qdel" data-hb-qdel="' + esc(e.k) + '" aria-label="حذف از امروز" title="حذف از امروز">✕</button>' : "";
-    return '<div class="hb-qrw hb-tdc' + (done ? " hb-tdv" : " hb-tdw") + (iv && (iv.status === "pending" || iv.status === "partial") ? " hb-tdpay" : "") + '"><button type="button" class="hb-qr1" ' + open + "><b>" + (done ? "✅ " : "") + esc(e.name || "—") + st + tag + "</b><small>" + esc(e.species || "") + (e.owner ? " · " + esc(e.owner) : "") + (!e.ap && e.q && e.q.time && !done ? " · ورود " + toolFa(e.q.time) : "") + "</small></button>" + (e.phone ? '<a class="hb-call hb-callq" dir="ltr" href="tel:' + esc(e.phone) + '">📞 ' + esc(e.phone) + "</a>" : "") + del + "</div>";
+    return '<div class="hb-qrw hb-tdc' + (done ? " hb-tdv" : " hb-tdw") + (iv && (iv.status === "pending" || iv.status === "partial") ? " hb-tdpay" : "") + '"><button type="button" class="hb-qr1" ' + open + "><b>" + (done ? "✅ " : "") + esc(e.name || "—") + st + tag + "</b><small>" + esc(e.species || "") + (e.owner ? " · " + esc(e.owner) : "") + (!e.ap && e.q && e.q.time && !done ? " · ورود " + toolFa(e.q.time) : "") + "</small>" + (!done && todayReason(e) ? '<small class="hb-tdrs">📝 علت: ' + esc(todayReason(e)) + "</small>" : "") + "</button>" + (e.phone ? '<a class="hb-call hb-callq" dir="ltr" href="tel:' + esc(e.phone) + '">📞 ' + esc(e.phone) + "</a>" : "") + del + "</div>";
   }
   var tdEnt = {};
   document.addEventListener("click", function (ev) {

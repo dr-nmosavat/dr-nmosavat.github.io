@@ -2545,3 +2545,4 @@ html.hb-billmode .hb-blbar .btn.ghost { background: #fff; color: #1f3b63; border
 .hb-sic2 { flex: 0 0 auto; min-width: 36px; text-align: center; font-size: 22px; line-height: 1; }
 .hb-blhdr { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 6px; } .hb-blhdr .hb-pth { margin: 0 !important; flex: 1 1 auto; min-width: 0; }
 .hb-blhdr .hb-blbk { flex: 0 0 auto; min-height: 34px; padding: 2px 14px; font-size: 13px; margin: 0; }
+.hb-tdrs { display: block; margin-top: 2px; color: #8a5a00; font-weight: 700; font-size: 12.5px; } .hb-todayreason { margin: 4px 0; padding: 6px 10px; background: #fff4d6; border: 1px solid #e8c36a; border-radius: 10px; color: #6f4a00; font-size: 14px; }
