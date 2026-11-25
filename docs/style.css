@@ -2415,3 +2415,4 @@ body.hb-drpage .hb-staffhdr { margin-bottom: 12px; }
 .hb-invacts .hb-danger { background: #fdf2f2; border-color: #efc4c4; color: #a12a2a; }
 .hb-invpay .btn { min-height: 44px; } .hb-invpay .btn.ghost { margin-top: 8px; }
 .hb-invh { flex-wrap: nowrap !important; align-items: flex-start !important; } .hb-invh > .btn { flex: 0 0 auto; min-height: 34px; padding: 4px 10px; font-size: 13px; margin-inline-start: 0 !important; }
+.hb-invsum { margin: 4px 0 8px; padding: 10px 12px; border: 1px solid #cfdff1; border-radius: 14px; background: #f3f8ff; } .hb-invsum div { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 3px 0; font-size: 14px; } .hb-invsum span { color: #4b5d73; } .hb-invsum b { color: #1f3b63; } .hb-invsum .hb-invdebt b, .hb-invsum .hb-invdebt span { color: #a12a2a; }

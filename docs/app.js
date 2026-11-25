@@ -2162,7 +2162,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function visInv(v) {
     var l = invItems.filter(function (x) { return x.vid === v.id && x.status !== "void"; }); if (!l.length) return "";
     var o = ""; l.forEach(function (inv) { (inv.items || []).forEach(function (x) { if (x.rep || needsRep(x.name)) o += '<div class="hb-ptvx">' + (/ضد ?انگل/.test(x.name) ? "🪱 " : "💉 ") + "<b>" + esc(x.name) + "</b>" + (x.rep ? " · تکرار: " + esc(repLabel(x.rep)) : "") + "</div>"; }); });
-    return '<div class="hb-ptvi">' + o + '<div class="hb-ptvx">💰 هزینه: ' + money(l.reduce(function (t, x) { return t + x.total; }, 0)) + "</div></div>";
+    return o ? '<div class="hb-ptvi">' + o + "</div>" : "";
   }
   var ptActOpen = false, ptTab = "med", ptInvOk = {}, ptBackView = "", billRet = "today";
   function ptInvLoad(pk) {
@@ -2180,6 +2180,8 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     var l = invItems.map(function (x, i) { return { x: x, i: i }; }).filter(function (o) { return o.x.pkey === pk && o.x.status !== "void"; });
     l.sort(function (a, b) { return a.x.date < b.x.date ? 1 : a.x.date > b.x.date ? -1 : a.i - b.i; });
     var out = ptInvOk[pk] === 2 ? "" : '<p class="hb-qmsg">در حال بارگذاری فاکتورها…</p>', last = "";
+    var smT = l.reduce(function (t, o) { return t + (o.x.total || 0); }, 0), dbtT = l.reduce(function (t, o) { return t + ((o.x.status === "pending" || o.x.status === "partial") ? o.x.total - o.x.paid : 0); }, 0);
+    if (l.length) out += '<div class="hb-invsum"><div><span>جمع هزینه‌ها</span><b>' + money(smT) + "</b></div><div><span>تعداد فاکتور</span><b>" + toolFa(l.length) + "</b></div>" + (dbtT ? '<div class="hb-invdebt"><span>بدهی (در انتظار پرداخت)</span><b>' + money(dbtT) + "</b></div>" : "") + "</div>";
     l.forEach(function (o) {
       var v = o.x, st = INV_ST[v.status] || [v.status, "pend"];
       if (v.date !== last) { last = v.date; out += '<h5 class="hb-invdg">' + esc(wdOf(v.date)) + " " + esc(fd(v.date)) + "</h5>"; }
@@ -2220,7 +2222,6 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       box.innerHTML = '<button type="button" class="btn small ghost hb-ptbk" data-hb-ptback>→ برگشت</button>'
         + '<div class="hb-ptfile" data-hb-ptfile><h4 class="hb-ptsec">اطلاعات پت و سرپرست</h4><div class="hb-ptinfo"><b class="hb-ptn1">' + esc(r.name) + "</b>" + (r.fno ? '<span class="hb-fno">پروندهٔ ' + esc(r.fno) + "</span>" : "") + "<span>" + esc(r.species) + (r.breed ? " · " + esc(r.breed) : "") + (r.owner ? " · سرپرست: " + esc(r.owner) : "") + "</span>" + ((r.sex || r.neut || r.birth) ? '<span class="hb-ptmeta">' + [r.sex, r.neut, r.birth ? "سن: " + ptAge(r.birth) + " (تولد " + fd(r.birth) + ")" : ""].filter(Boolean).map(esc).join(" · ") + "</span>" : "") + (r.phone ? '<a class="hb-call" dir="ltr" href="tel:' + esc(r.phone) + '">📞 ' + esc(r.phone) + "</a>" : "<small>شمارهٔ تماس ثبت نشده</small>") + "</div>"
         + (SECP ? "" : '<p class="hb-ptlastl">اولین مراجعه: ' + esc(fd(g[g.length - 1].date)) + (g.length > 1 ? " · " + toolFa(g.length) + " مراجعه" : "") + "</p>" + '<p class="hb-smsst" data-hb-ptsmsst>' + smsLine(r.pkey) + "</p>")
-        + (sm ? '<p class="hb-ptcost">💰 جمع هزینه‌ها: ' + money(sm) + " · " + toolFa(tot0.length) + " فاکتور</p>" : "") + (dbt ? '<p class="hb-debt">💳 بدهی: ' + money(dbt) + "</p>" : "")
         + (SECP ? "" : '<button type="button" class="hb-actog" data-hb-actog aria-expanded="' + (ptActOpen ? "true" : "false") + '">⚙️ عملیات پرونده <span class="hb-arw">' + (ptActOpen ? "▴" : "▾") + '</span></button><div class="hb-adb hb-ptacts"' + (ptActOpen ? "" : " hidden") + '><button type="button" class="btn small ghost" data-hb-ptidedit>✏️ ویرایش اطلاعات</button><button type="button" class="btn small ghost" data-hb-ptbook>🪪 صدور شناسنامه</button><button type="button" class="btn small ghost" data-hb-ptsms>📩 ارسال پیامک</button><button type="button" class="btn small ghost" data-hb-ptappt>🗓 ثبت نوبت</button><button type="button" class="btn small ghost" data-hb-ptnewpet>🐾 پت جدید</button></div><div class="hb-ptidf" data-hb-ptidf hidden>' + ptIdFields(r) + '<p class="hb-err" data-hb-pterr hidden></p><div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-ptidsave>ذخیرهٔ اطلاعات</button><button type="button" class="btn small ghost" data-hb-ptidcancel>انصراف</button></div></div>') + "</div>"
         + (SECP ? "" : '<div class="hb-ptabs"><button type="button" class="btn' + (ptTab === "med" ? " primary" : " ghost") + '" data-hb-pttab="med">🩺 سوابق درمانی</button><button type="button" class="btn' + (ptTab === "inv" ? " primary" : " ghost") + '" data-hb-pttab="inv">🧾 فاکتورها</button></div>')
         + (SECP ? '<h4 class="hb-pth2">🧾 فاکتورها</h4>' : "")
