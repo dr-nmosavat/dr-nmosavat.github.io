@@ -2453,3 +2453,12 @@ body.hb-drpage .hb-staffhdr { margin-bottom: 12px; }
 .hb-blbar { position: sticky; bottom: 0; z-index: 40; margin: 10px -6px 0; padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0px)); background: #fff; border-top: 1px solid #cfdff1; box-shadow: 0 -6px 14px rgba(31, 59, 99, .08); border-radius: 14px 14px 0 0; }
 .hb-blbar1 { display: flex; align-items: center; gap: 10px; } .hb-blmini { flex: 1 1 auto; display: flex; flex-direction: column; } .hb-blmini small { color: #5b6b80; font-size: 12px; } .hb-blmini b { font-size: 17px; color: #1f3b63; }
 .hb-blbar1 .btn { flex: 0 0 auto; min-height: 46px; padding: 6px 16px; } .hb-blbar2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; } .hb-blbar2 .btn { min-height: 40px; margin: 0; width: 100%; }
+/* فرم مشخصات پت: چیدمان منظم و فشرده */
+.hb-ptform .fld, .hb-ptidf .fld { margin: 0 0 8px; }
+.hb-ownf { position: relative; } .hb-ownf > input { width: 100%; padding-left: 112px !important; }
+.hb-ownf > .seg { position: absolute; left: 6px; top: 50%; transform: translateY(-50%); display: flex; gap: 4px; width: auto; margin: 0; }
+.hb-ownf > .seg button { min-width: 0 !important; min-height: 32px !important; padding: 2px 11px !important; font-size: 13.5px !important; border-radius: 10px !important; }
+.hb-ptform .seg[data-seg="hb-ptsp"] { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; } .hb-ptform .seg[data-seg="hb-ptsp"] button { min-height: 42px; min-width: 0; padding: 4px 2px; font-size: 14px; }
+.hb-sxrow { display: flex; align-items: center; gap: 10px; flex-wrap: nowrap; } .hb-sxrow .seg { display: flex; gap: 6px; width: auto; flex: 0 0 auto; } .hb-sxrow .seg button { min-height: 38px; padding: 4px 16px; min-width: 0; font-size: 14px; } .hb-neut { margin-inline-start: auto; }
+.hb-bdrow { display: grid; gap: 4px; } .hb-bdrow .hb-lbl { margin: 0; } .hb-bdrow .jd { display: grid; grid-template-columns: 0.8fr 1.4fr 1fr; gap: 6px; } .hb-bdrow .jd select { min-height: 40px; padding: 4px 6px; font-size: 14px; }
+.hb-agerow { display: flex !important; flex-wrap: nowrap; align-items: center; gap: 6px; } .hb-agerow .hb-lbl { white-space: nowrap; margin: 0; font-size: 13px; } .hb-agerow input { flex: 1 1 0; min-width: 0; width: auto !important; min-height: 40px; text-align: center; } .hb-agerow span:not(.hb-lbl) { color: var(--muted); font-size: 13px; white-space: nowrap; }

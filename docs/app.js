@@ -2136,17 +2136,28 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     return '<select data-pt="reason" aria-label="دلیل مراجعه"><option value="">دلیل مراجعه</option>' + AP_REASONS.map(function (x) { return '<option value="' + esc(x) + '">' + esc(x) + "</option>"; }).join("") + '<option value="__other">سایر (قابل نوشتن)…</option></select><input data-pt="reasonx" type="text" maxlength="150" placeholder="دلیل را بنویسید" hidden>';
   }
   function ptNewVals() { var sl = ptF("reason"); return { date: isoNow(), reason: sl.value === "__other" ? ptF("reasonx").value.trim() : sl.value, note: "", follow: "", fu: "" }; }
+  var NM_F = "نیلوفر سارا مریم زهرا فاطمه نرگس شیما مهسا سمانه الهام ندا لیلا سحر پریسا پریا مینا سپیده آتنا آیدا ترانه هانیه یاسمن یاسمین نازنین نسترن نگار نگین شبنم شقایق شادی شیرین مهشید مرجان رویا رها ریحانه زینب معصومه الناز الهه بهار بهناز پرستو پروین فرزانه فریبا فرشته کتایون گلناز گلنوش گیتا ماهرخ مژگان مهناز مهدیس مبینا مائده ملیکا مهتاب نازی نسیم نجمه نفیسه هستی هدیه هلیا هما یلدا ژاله ژیلا سوگند سودابه سمیرا ستاره سیمین صبا صدف ساناز سهیلا سوسن شهرزاد شهلا شکوفه طاهره عاطفه عسل عطیه غزل فرناز فروغ کیمیا کوثر لادن لاله مارال مانیا محبوبه مرضیه منیره منا مهری میترا ناهید نرجس نیکی نیلا وحیده ویدا پگاه پانته‌آ آوا آزاده آرزو اکرم افسانه افسر اعظم اشرف بتول بنفشه پوران پونه تینا ثمین جمیله حانیه حدیث حلیمه خدیجه دنیا دلارام راضیه رقیه رعنا زیبا ساره سولماز سیما شراره شهین فاطیما فاطمه‌زهرا فریده لیدا مستانه ملیحه مهین نازیلا نغمه نیکا نسرین نوشین هاجر هانیه هلن هنگامه".split(/\s+/),
+      NM_M = "علی محمد حسین حسن رضا مهدی امیر امیرحسین امیررضا محمدرضا محمدحسین مجید حمید سعید فرهاد بهرام بهزاد کامران کیوان آرش آرمان آریا پارسا پویا پوریا پژمان سینا سامان سجاد سروش شهرام شاهین صادق صالح طاها عباس عبدالله عرفان علیرضا فرزاد فرشید فریدون قاسم کاوه کریم کوروش مازیار مسعود مصطفی منصور مهران مهرداد میلاد ناصر نیما نوید هادی هاشم همایون وحید یاسر یاشار یوسف یونس ابراهیم احسان احمد اسماعیل اکبر امین ایمان بابک بهروز بیژن پیمان تورج جواد جمشید جلال حامد حبیب حمیدرضا خسرو داود دانیال رامین رحیم رسول روزبه سهراب سیاوش سیامک سلمان شایان شهروز فرامرز فربد کسری کمال محسن محمود مرتضی مهیار موسی نادر نصرالله هومن هوشنگ آقا‌جان اصغر اکبر جعفر جمال حسام حیدر خلیل رحمان رستم سبحان سعدی سلیم شعیب صمد صفر طالب ظفر عادل عارف عبدالرضا عزیز علی‌اکبر علی‌رضا غلامرضا فتح‌الله فرید فضل‌الله قدرت کرم لطفعلی ماهان مهرشاد مهراد نعمت هرمز هژیر".split(/\s+/);
+  function guessTitle(owner) {
+    var t = String(owner || "").replace(/[يى]/g, "ی").replace(/ك/g, "ک").replace(/[\u200c\u200f]/g, " ").trim().replace(/^(خانم|آقای|آقا|دکتر|مهندس|سرکار|جناب)\s+/, "");
+    if (!t) return ""; var w = t.split(/\s+/), one = w[0], two = w.length > 1 ? w[0] + w[1] : "";
+    if (two && (NM_M.indexOf(two) > -1)) return "آقا"; if (two && (NM_F.indexOf(two) > -1)) return "خانم";
+    if (NM_F.indexOf(one) > -1 && NM_M.indexOf(one) < 0) return "خانم"; if (NM_M.indexOf(one) > -1 && NM_F.indexOf(one) < 0) return "آقا"; return "";
+  }
+  function ptApplyGuess(force) {
+    var sg = q('[data-seg="hb-ptot"]'), ow = ptF("owner"); if (!sg || !ow) return; if (sg.getAttribute("data-manual") && !force) return;
+    var g = guessTitle(ow.value); [].forEach.call(sg.children, function (b) { b.classList.toggle("on", !!g && b.getAttribute("data-v") === g); });
+  }
   function ptIdFields(r, lk) {
     var bx = lk ? '<div class="hb-lkres"></div>' : "";
-    return '<div class="fld"><input data-pt="owner"' + (lk ? ' data-hb-lk="pt" autocomplete="off"' : "") + ' type="text" maxlength="40" placeholder="👤 نام سرپرست' + (lk ? " (جستجو در سوابق)" : "") + '" value="' + esc(r && r.owner || "") + '">' + bx + "</div>"
-      + '<div class="fld hb-otrow"><span class="hb-lbl">عنوان سرپرست:</span>' + segOpts("hb-ptot", ["خانم", "آقا"], r && r.otitle) + "</div>"
+    return '<div class="fld"><div class="hb-ownf"><input data-pt="owner"' + (lk ? ' data-hb-lk="pt" autocomplete="off"' : "") + ' type="text" maxlength="40" placeholder="👤 نام سرپرست' + (lk ? " (جستجو در سوابق)" : "") + '" value="' + esc(r && r.owner || "") + '">' + segOpts("hb-ptot", ["خانم", "آقا"], r && r.otitle) + "</div>" + bx + "</div>"
       + '<div class="fld"><input data-pt="name"' + (lk ? ' data-hb-lk="pt" autocomplete="off"' : "") + ' type="text" maxlength="40" placeholder="' + (lk ? "🔎 نام پت (جستجو در سوابق)" : "نام پت") + '" value="' + esc(r && r.name || "") + '">' + bx + "</div>"
       + '<div class="fld"><input data-pt="phone"' + (lk ? ' data-hb-lk="pt"' : "") + ' type="tel" inputmode="tel" dir="ltr" maxlength="16" placeholder="📞 شمارهٔ تماس (۰۹۱۲…)" autocomplete="off" value="' + esc(r && r.phone || "") + '">' + bx + "</div>"
       + '<div class="fld">' + ptSpecies(r && r.species) + "</div>"
       + breedFld("pt", r && r.breed)
       + '<div class="fld hb-sxrow">' + segOpts("hb-ptsex", ["نر", "ماده"], r && r.sex) + '<label class="hb-neut"><input type="checkbox" data-pt="neut"' + (r && r.neut === "عقیم" ? " checked" : "") + '> عقیم</label></div>'
-      + '<div class="fld"><label class="hb-lbl">🎂 تاریخ تولد <small>(اختیاری)</small></label><div class="jd" data-pjd="pb"></div></div>'
-      + '<div class="fld hb-agerow"><label class="hb-lbl">یا فقط سن تقریبی:</label><input type="text" inputmode="numeric" dir="ltr" data-pt="agey" placeholder="سال" maxlength="2"><span>سال</span><input type="text" inputmode="numeric" dir="ltr" data-pt="agem" placeholder="ماه" maxlength="2"><span>ماه</span></div>';
+      + '<div class="fld hb-bdrow"><span class="hb-lbl">🎂 تاریخ تولد <small>(اختیاری)</small></span><div class="jd" data-pjd="pb"></div></div>'
+      + '<div class="fld hb-agerow"><span class="hb-lbl">یا سن تقریبی:</span><input type="text" inputmode="numeric" dir="ltr" data-pt="agey" placeholder="۰" maxlength="2"><span>سال</span><input type="text" inputmode="numeric" dir="ltr" data-pt="agem" placeholder="۰" maxlength="2"><span>ماه</span></div>';
   }
   function segOpts(n, l, sel) { return '<div class="seg" data-seg="' + n + '">' + l.map(function (x) { return '<button type="button"' + (x === sel ? ' class="on"' : "") + ' data-v="' + x + '">' + x + "</button>"; }).join("") + "</div>"; }
   function ptIdInit(r) {
@@ -2155,7 +2166,9 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     function fromBirth() { var b = PTJ.pb.get(), t = jToday(); if (!b) return; var a = g2j(b), m = (t[0] - a[0]) * 12 + (t[1] - a[1]) - (t[2] < a[2] ? 1 : 0); if (m < 0) m = 0; ay.value = Math.floor(m / 12) || ""; am.value = m % 12 || ""; }
     function fromAge() { var y = parseInt(faDigits(ay.value), 10) || 0, m = parseInt(faDigits(am.value), 10) || 0; if (!y && !m) { PTJ.pb.set(""); return; } var t = jToday(), tot = t[0] * 12 + (t[1] - 1) - (y * 12 + m), yy = Math.floor(tot / 12), mm = tot % 12 + 1; PTJ.pb.set(j2g(yy, mm, Math.min(t[2], jLen(yy, mm)))); }
     PTJ.pb.on(fromBirth); ay.addEventListener("input", fromAge); am.addEventListener("input", fromAge); fromBirth();
-    [].forEach.call(bx.querySelectorAll('[data-seg="hb-ptsex"],[data-seg="hb-ptot"]'), function (sg) { sg.addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; var was = b.classList.contains("on"); [].forEach.call(sg.children, function (x) { x.classList.remove("on"); }); if (!was) b.classList.add("on"); }); });
+    [].forEach.call(bx.querySelectorAll('[data-seg="hb-ptsex"],[data-seg="hb-ptot"]'), function (sg) { sg.addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; var was = b.classList.contains("on"); [].forEach.call(sg.children, function (x) { x.classList.remove("on"); }); if (!was) b.classList.add("on"); if (sg.getAttribute("data-seg") === "hb-ptot") sg.setAttribute("data-manual", "1"); }); });
+    var otg = bx.querySelector('[data-seg="hb-ptot"]'), own = bx.querySelector('[data-pt="owner"]');
+    if (otg && own) { if (r && r.otitle) otg.setAttribute("data-manual", "1"); else ptApplyGuess(false); own.addEventListener("input", function () { ptApplyGuess(false); }); }
   }
   function ptAge(iso) { if (!iso) return ""; var a = g2j(iso), t = jToday(), m = (t[0] - a[0]) * 12 + (t[1] - a[1]) - (t[2] < a[2] ? 1 : 0); if (m < 0) return ""; var y = Math.floor(m / 12), mm = m % 12; return y ? toolFa(y) + " سال" + (mm ? " و " + toolFa(mm) + " ماه" : "") : (mm ? toolFa(mm) + " ماه" : "کمتر از ۱ ماه"); }
   function ptEff(g) { var o = {}; ["birth", "sex", "neut", "otitle"].forEach(function (k) { var h = g.filter(function (x) { return x[k]; })[0]; o[k] = h ? h[k] : ""; }); return o; }
@@ -2386,6 +2399,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     var F = ctx === "ap" ? apF : ptF;
     ["name", "owner", "breed"].forEach(function (k) { var x = F(k); if (x && it[k]) x.value = it[k]; }); if (it.phone) F("phone").value = it.phone;
     if (it.species) setSeg("hb-ptsp", it.species);
+    if (ctx === "pt") { var sgx = q('[data-seg="hb-ptot"]'); if (sgx) sgx.removeAttribute("data-manual"); try { ptApplyGuess(false); } catch (eg) {} }
     brFill(ctx === "ap" ? apBox() : ptBox(), ctx);
     if (ctx === "ap") { apLink = it.pkey || ""; }
     [].forEach.call(root.querySelectorAll(".hb-lkres"), function (x) { x.innerHTML = ""; }); var okb = lkBox(ctx); if (okb) okb.innerHTML = '<small class="hb-lkn">✅ اطلاعات «' + esc(it.name) + '» وارد شد.</small>';
