@@ -2536,3 +2536,9 @@ html.hb-billmode .hb-blbar .btn.ghost { background: #fff; color: #1f3b63; border
 .hb-tdoth summary::-webkit-details-marker { display: none; } .hb-tdoth summary::marker { content: ""; }
 .hb-tdoth summary b { font-size: 14.5px; white-space: nowrap; } .hb-tdoth summary .hb-arw { font-style: normal; margin-inline-start: 4px; }
 .hb-tdoth[open] summary .hb-arw { display: inline-block; transform: rotate(180deg); } .hb-tdoth > :not(summary) { margin-left: 10px; margin-right: 10px; } .hb-tdoth > .hb-tdr:first-of-type { margin-top: 10px; } .hb-tdoth > .hb-tdr:last-child { margin-bottom: 10px; }
+/* بدهی روزهای قبل: ظاهر ملایم با آیکن و نشان قرمز (جایگزین نوار قرمز بزرگ) */
+.hb-tdoth { margin: 4px 0 10px; border: 1px solid #e3b4b4; border-radius: 12px; background: #fff; overflow: hidden; }
+.hb-tdoth summary { background: #fff !important; color: #7a1f1f !important; font-size: 14.5px; font-weight: 800; min-height: 44px; padding: 8px 12px; display: flex; align-items: center; gap: 8px; }
+.hb-tdoth summary > span { flex: 1 1 auto; } .hb-debtpill { font-style: normal; background: #d32f2f; color: #fff; border-radius: 999px; padding: 3px 10px; font-size: 12.5px; font-weight: 800; white-space: nowrap; }
+.hb-tdoth summary .hb-arw { color: #7a1f1f; } .hb-tdoth[open] summary { border-bottom: 1px solid #f0d0d0; }
+.hb-sic { font-style: normal; margin-inline-end: 4px; font-size: 1.05em; }

@@ -2498,7 +2498,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function oldDebts() {
     var td = isoNow(), l = invItems.filter(function (v) { return v.date < td && (v.status === "pending" || v.status === "partial"); }); if (!l.length) return "";
     var dsum = l.reduce(function (t, v) { return t + v.total - v.paid; }, 0);
-    return '<details class="hb-tdoth"><summary><span>💳 بدهی روزهای قبل (' + toolFa(l.length) + " مورد)</span><b>" + money(dsum) + ' <i class="hb-arw">▾</i></b></summary>' + l.map(function (v) { return '<div class="hb-tdr"><div class="hb-tdri"><b>' + esc(v.name) + "</b><small>" + esc(fd(v.date)) + " · مانده: " + money(v.total - v.paid) + '</small></div><button type="button" class="btn small primary" data-hb-invopen="' + esc(v.id) + '">💳 دریافت</button></div>'; }).join("") + "</details>";
+    return '<details class="hb-tdoth"><summary><span>🚨 بدهی روزهای قبل</span><em class="hb-debtpill">' + toolFa(l.length) + " مورد · " + money(dsum) + '</em><i class="hb-arw">▾</i></summary>' + l.map(function (v) { return '<div class="hb-tdr"><div class="hb-tdri"><b>' + esc(v.name) + "</b><small>" + esc(fd(v.date)) + " · مانده: " + money(v.total - v.paid) + '</small></div><button type="button" class="btn small primary" data-hb-invopen="' + esc(v.id) + '">💳 دریافت</button></div>'; }).join("") + "</details>";
   }
   function dayReport() {
     if (SECP) return ""; var td = isoNow(), l = invItems.filter(function (v) { return v.date === td && v.status !== "void"; }); if (!l.length) return "";
@@ -2528,13 +2528,17 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     var cnt = {}; invItems.forEach(function (v) { (v.items || []).forEach(function (x) { cnt[x.name] = (cnt[x.name] || 0) + 1; }); });
     return billRows.map(function (r, i) { return { i: i, c: cnt[r.name] || 0 }; }).sort(function (a, b) { return b.c - a.c || a.i - b.i; }).slice(0, 6).map(function (x) { return x.i; });
   }
+  function svcIcon(n) {
+    n = String(n || ""); if (/pcr|ژن|ژنتیک/i.test(n)) return "🧬"; if (/خون.?گیری/.test(n)) return "🩸"; if (/آزمایش|cbc|cbt|سونوگرافی|رادیو|اشعه/i.test(n)) return "🔬";
+    if (/کیت|تشخیص/.test(n)) return "🌡️"; if (/واکسن|تزریق|سرم/.test(n)) return "💉"; if (/ضد.?انگل|دارو|قرص|شربت|پماد/.test(n)) return "💊"; if (/ویزیت|معاینه|چکاپ|مشاوره/.test(n)) return "🩺"; return "";
+  }
   function billList() {
     var el = ptBox().querySelector("[data-hb-blist]"); if (!el) return; var qn = billQ.toLowerCase(), top = billTop(), idx = [];
     var sct = el.scrollTop;
     billRows.forEach(function (r, i) { if (r.on || (qn ? r.name.toLowerCase().indexOf(qn) > -1 : (billAll || top.indexOf(i) > -1))) idx.push(i); });
     var hidden = billRows.length - idx.length, exact = billRows.some(function (r) { return r.name.toLowerCase() === qn; });
     el.innerHTML = '<div class="hb-blhead"><span>خدمت</span><span>قیمت</span><span>تعداد</span><span>جمع</span></div>' + idx.map(function (i) {
-      var r = billRows[i], row = '<div class="hb-blr' + (r.on ? " on" : "") + '"><input type="checkbox" class="hb-bck" data-hb-bon="' + i + '"' + (r.on ? " checked" : "") + ' tabindex="-1"><div class="hb-blmain" role="button" data-hb-bmain="' + i + '"><span class="hb-bln">' + esc(r.name) + '</span></div><span class="hb-blpr" data-hb-bp="' + i + '">' + (r.price ? grp3(r.price) : "۰") + '</span><div class="hb-blqs"><button type="button" class="hb-qb" data-hb-qm="' + i + '" aria-label="کم">−</button><input class="hb-blq" type="text" inputmode="numeric" data-hb-bq="' + i + '" value="' + r.qty + '"><button type="button" class="hb-qb" data-hb-qp="' + i + '" aria-label="زیاد">+</button></div><b class="hb-blt" data-hb-blt="' + i + '"></b></div>';
+      var r = billRows[i], row = '<div class="hb-blr' + (r.on ? " on" : "") + '"><input type="checkbox" class="hb-bck" data-hb-bon="' + i + '"' + (r.on ? " checked" : "") + ' tabindex="-1"><div class="hb-blmain" role="button" data-hb-bmain="' + i + '"><span class="hb-bln">' + (svcIcon(r.name) ? '<i class="hb-sic">' + svcIcon(r.name) + "</i> " : "") + esc(r.name) + '</span></div><span class="hb-blpr" data-hb-bp="' + i + '">' + (r.price ? grp3(r.price) : "۰") + '</span><div class="hb-blqs"><button type="button" class="hb-qb" data-hb-qm="' + i + '" aria-label="کم">−</button><input class="hb-blq" type="text" inputmode="numeric" data-hb-bq="' + i + '" value="' + r.qty + '"><button type="button" class="hb-qb" data-hb-qp="' + i + '" aria-label="زیاد">+</button></div><b class="hb-blt" data-hb-blt="' + i + '"></b></div>';
       if (r.on && needsRep(r.name)) row += '<div class="hb-blrep' + (r.rep ? " ok" : "") + '" data-hb-brep="' + i + '"><div class="hb-brh"><b>📅 تاریخ تکرار «' + esc(r.name) + '»</b><span class="hb-brv">' + (r.rep ? esc(repLabel(r.rep)) : "⚠️ انتخاب نشده (الزامی)") + '</span></div><div class="hb-brq"><button type="button" data-hb-rpq="1" data-i="' + i + '">۱ ماه بعد</button><button type="button" data-hb-rpq="3" data-i="' + i + '">۳ ماه بعد</button><button type="button" data-hb-rpq="12" data-i="' + i + '">۱ سال بعد</button></div><div class="jd" data-pjd="br' + i + '"></div></div>';
       return row;
     }).join("")
