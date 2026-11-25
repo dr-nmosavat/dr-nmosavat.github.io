@@ -2434,3 +2434,10 @@ body.hb-drpage .hb-staffhdr { margin-bottom: 12px; }
 .hb-svc2 .hb-svf .btn { grid-column: 1 / -1; }
 .hb-svt .hb-svn { flex: 1 1 0 !important; width: auto !important; } .hb-svt .hb-svpr { flex: 0 0 100px !important; width: 100px !important; } .hb-svt .hb-svtg { flex: 0 0 36px !important; width: 36px; }
 .hb-ptabs.one { grid-template-columns: 1fr; } .hb-ptabs .hb-arw { margin-inline-start: 6px; font-size: 13px; }
+/* سه دکمهٔ پرونده: عملیات / فاکتورها / سوابق */
+.hb-ptabs.three { grid-template-columns: repeat(3, 1fr); gap: 6px; } .hb-ptabs.two { grid-template-columns: 1fr 1fr; gap: 8px; }
+.hb-ptabs .btn { min-height: 46px; padding: 6px 4px; font-size: 13.5px; line-height: 1.3; white-space: normal; }
+.hb-ptabs .btn.ghost { background: #fff; border: 1.5px solid #1f5aa6; color: #1f5aa6; }
+.hb-ptacts .btn { background: #fff; border: 1px solid #cbd5e1; color: #334155; }
+.hb-ptacts .hb-newpetb { background: #e8f6ee; border-color: #b6dccf; color: #12684a; }
+.hb-ptv .btn.hb-danger { background: #fdf2f2; border-color: #efc4c4; color: #a12a2a; }
