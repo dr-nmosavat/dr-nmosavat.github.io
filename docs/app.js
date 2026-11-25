@@ -2532,7 +2532,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     n = String(n || ""); var ic = "";
     if (/pcr|ژن|ژنتیک/i.test(n)) ic = "🧬"; else if (/خون.?گیری/.test(n)) ic = "🩸"; else if (/رادیو|اشعه|سونوگرافی|ایکس.?ری|x.?ray/i.test(n)) ic = "🩻";
     else if (/آزمایش|cbc|cbt|ادرار|مدفوع/i.test(n)) ic = "🧪"; else if (/میکروسکوپ|اسمیر|کشت|سیتولوژی|پوست.?تراشی/.test(n)) ic = "🔬";
-    else if (/کیت|تشخیص/.test(n)) ic = "🌡️"; else if (/پانسمان|بخیه|زخم|باند|چسب/.test(n)) ic = "🩹"; else if (/واکسن|تزریق|سرم/.test(n)) ic = "💉";
+    else if (/کیت|تشخیص/.test(n)) ic = "🦠"; else if (/ناخن/.test(n)) ic = "💅🏽"; else if (/پانسمان|بخیه|زخم|باند|چسب/.test(n)) ic = "🩹"; else if (/واکسن|تزریق|سرم/.test(n)) ic = "💉";
     else if (/ضد.?انگل|دارو|قرص|شربت|پماد|قطره/.test(n)) ic = "💊"; else if (/ویزیت|معاینه|چکاپ|مشاوره/.test(n)) ic = "🩺";
     var sp = /سگ/.test(n) ? "🐶" : /گربه/.test(n) ? "🐱" : ""; return ic + sp;
   }
