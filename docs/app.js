@@ -2229,7 +2229,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
         + (SECP ? "" : '<p class="hb-ptlastl">اولین مراجعه: ' + esc(fd(g[g.length - 1].date)) + (g.length > 1 ? " · " + toolFa(g.length) + " مراجعه" : "") + "</p>" + '<p class="hb-smsst" data-hb-ptsmsst>' + smsLine(r.pkey) + "</p>")
         + "</div>"
         + (SECP ? "" : ptFormHtml())
-        + '<div class="hb-ptabs' + (SECP ? " two" : " three") + '"><button type="button" class="btn' + (ptTab === "ops" ? " primary" : " ghost") + '" data-hb-pttab="ops">⚙️ عملیات</button><button type="button" class="btn' + (ptTab === "inv" ? " primary" : " ghost") + '" data-hb-pttab="inv">🧾 فاکتورها</button>' + (SECP ? "" : '<button type="button" class="btn' + (ptTab === "med" ? " primary" : " ghost") + '" data-hb-pttab="med">🩺 سوابق (' + toolFa(g.length) + ")</button>") + "</div>"
+        + '<div class="hb-ftabs' + (SECP ? " two" : " three") + '"><button type="button" class="btn' + (ptTab === "ops" ? " primary" : " ghost") + '" data-hb-pttab="ops">⚙️ عملیات</button><button type="button" class="btn' + (ptTab === "inv" ? " primary" : " ghost") + '" data-hb-pttab="inv">🧾 فاکتورها</button>' + (SECP ? "" : '<button type="button" class="btn' + (ptTab === "med" ? " primary" : " ghost") + '" data-hb-pttab="med">🩺 سوابق (' + toolFa(g.length) + ")</button>") + "</div>"
         + '<div data-hb-pttabbox>' + (ptTab === "inv" ? ptInvHtml(r.pkey, g) : ptTab === "med" ? ptMedHtml(g) : ptTab === "ops" ? ptOpsHtml(r) : "") + "</div>";
       brFill(box, "pt"); if (ptTab === "ops") ptIdInit(r);
       if (ptTab === "inv") { if (invOpenId && invItems.some(function (x) { return x.id === invOpenId && x.pkey === r.pkey; })) invMount(invOpenId); }
