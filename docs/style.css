@@ -2421,3 +2421,15 @@ body.hb-drpage .hb-staffhdr { margin-bottom: 12px; }
 .hb-svt { display: flex; align-items: center; gap: 8px; } .hb-svt input[type="text"] { flex: 1 1 auto; min-width: 0; min-height: 42px; } .hb-svt input[type="checkbox"] { width: 22px; height: 22px; flex: 0 0 auto; } .hb-svt .btn { flex: 0 0 auto; min-height: 42px; padding: 4px 12px; margin: 0; }
 .hb-svf { display: grid; grid-template-columns: 1.3fr 1.3fr 0.8fr; gap: 8px; margin-top: 8px; } .hb-svf label { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--muted); } .hb-svf input { width: 100%; min-width: 0; min-height: 40px; text-align: center; }
 .hb-svw { display: none; margin-top: 6px; color: #a12a2a; font-size: 12.5px; } .hb-svc2.bad { border-color: #efc4c4; background: #fff8f8; } .hb-svc2.bad .hb-svw { display: block; }
+/* تعرفه‌ها: ردیف فشرده، جزئیات با ▾ */
+.hb-svhelp { margin: 4px 0 10px; } .hb-svhelp summary { cursor: pointer; font-weight: 700; color: #1f5aa6; font-size: 14px; } .hb-svhelp p { font-size: 13px; line-height: 1.8; margin: 6px 0 0; }
+.hb-svdef { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 6px 0 10px; padding: 8px 10px; border: 1px solid #cfdff1; border-radius: 12px; background: #f3f8ff; } .hb-svdef label { font-size: 13.5px; font-weight: 700; color: #1f3b63; } .hb-svdef input { width: 80px; min-height: 38px; text-align: center; }
+.hb-svc2 { margin: 6px 0; padding: 6px 8px; } .hb-svt { gap: 6px; }
+.hb-svt .hb-svn { flex: 1 1 auto; min-width: 0; min-height: 40px; padding: 4px 8px; font-size: 14.5px; } .hb-svt .hb-svpr { flex: 0 0 96px; width: 96px; min-height: 40px; padding: 4px 6px; text-align: center; font-size: 14px; }
+.hb-svtg { flex: 0 0 auto; width: 38px; min-height: 40px; border: 1px solid #cfdff1; border-radius: 10px; background: #f3f8ff; color: #1f5aa6; font-size: 16px; cursor: pointer; padding: 0; } .hb-svc2.open .hb-svtg { background: #1f5aa6; color: #fff; transform: none; }
+.hb-svc2 .hb-svf { display: none; grid-template-columns: 1fr 1fr auto; align-items: end; gap: 8px; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #dbe5f2; } .hb-svc2.open .hb-svf { display: grid; }
+.hb-svc2 .hb-svf .btn { min-height: 40px; margin: 0; padding: 4px 12px; } .hb-svc2 .hb-svw { grid-column: 1 / -1; }
+.hb-svt .hb-svpr { flex: 0 0 118px !important; width: 118px !important; } .hb-svt .hb-svn { min-width: 0; }
+.hb-svc2 .hb-svf { grid-template-columns: 1fr 1fr !important; } .hb-svon { grid-column: 1 / -1; flex-direction: row !important; align-items: center; gap: 8px !important; font-size: 14px !important; color: #1f3b63 !important; } .hb-svon input { width: 22px !important; min-height: 22px !important; height: 22px; }
+.hb-svc2 .hb-svf .btn { grid-column: 1 / -1; }
+.hb-svt .hb-svn { flex: 1 1 0 !important; width: auto !important; } .hb-svt .hb-svpr { flex: 0 0 100px !important; width: 100px !important; } .hb-svt .hb-svtg { flex: 0 0 36px !important; width: 36px; }
