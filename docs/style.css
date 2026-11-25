@@ -2405,3 +2405,13 @@ body.hb-drpage .hb-staffhdr { margin-bottom: 12px; }
 .hb-invnb { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px; margin: 6px 0; border: 1px dashed #f0cf94; border-radius: 12px; background: #fffaf0; font-size: 14px; }
 .hb-scinv { margin-inline-start: 6px; }
 .hb-invc.open { border-color: #1f5aa6; background: #f3f8ff; } [data-hb-pttabbox] .hb-inv { margin: 0 0 10px; } .hb-nbnote { font-size: 12.5px; margin: 4px 2px; }
+/* عملیات پرونده: بسته به‌صورت پیش‌فرض، دو ستون هم‌اندازه */
+.hb-actog { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 44px; margin: 10px 0 0; padding: 8px 14px; border: 1px solid #cfdff1; border-radius: 14px; background: #fff; font: inherit; font-weight: 700; color: #1f3b63; cursor: pointer; }
+.hb-ptacts { display: grid !important; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; } .hb-ptacts[hidden] { display: none !important; }
+.hb-ptacts .btn { width: 100%; min-height: 42px; padding: 6px 8px; font-size: 14px; justify-content: center; text-align: center; margin: 0; }
+.hb-ptacts .btn:last-child:nth-child(odd) { grid-column: 1 / -1; }
+/* دکمه‌های فاکتور */
+.hb-invacts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; } .hb-invacts .btn { width: 100%; min-height: 44px; font-size: 14px; justify-content: center; margin: 0; } .hb-invacts .hb-wide { grid-column: 1 / -1; }
+.hb-invacts .hb-danger { background: #fdf2f2; border-color: #efc4c4; color: #a12a2a; }
+.hb-invpay .btn { min-height: 44px; } .hb-invpay .btn.ghost { margin-top: 8px; }
+.hb-invh { flex-wrap: nowrap !important; align-items: flex-start !important; } .hb-invh > .btn { flex: 0 0 auto; min-height: 34px; padding: 4px 10px; font-size: 13px; margin-inline-start: 0 !important; }
