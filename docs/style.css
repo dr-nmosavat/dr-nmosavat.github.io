@@ -2394,3 +2394,13 @@ body.hb-drpage .hb-staffhdr { margin-bottom: 12px; }
 .hb-agerow { flex-wrap: nowrap; gap: 6px; font-size: 13.5px; } .hb-agerow .hb-lbl { white-space: nowrap; font-size: 13px; } .hb-agerow input { width: 54px; padding: 4px; } .hb-agerow span { white-space: nowrap; color: var(--muted); }
 .hb-otrow { display: flex; align-items: center; gap: 10px; } .hb-otrow .hb-lbl { margin: 0; } .hb-otrow .seg { width: auto; flex: 0 0 auto; } .hb-otrow .seg button { min-width: 0; padding: 4px 14px; min-height: 32px; font-size: 14px; }
 .hb-invh { align-items: flex-start; gap: 10px; } .hb-invm { flex: 1 1 auto; min-width: 0; } .hb-invr { display: flex; justify-content: space-between; gap: 6px 12px; flex-wrap: wrap; font-size: 14px; margin: 3px 0; } .hb-invr b { color: #1f3b63; }
+/* پروندهٔ بیمار: تب‌ها و کارت‌ها */
+.hb-ptabs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0 10px; } .hb-ptabs .btn { min-height: 46px; font-size: 15px; width: 100%; justify-content: center; }
+.hb-ptvb { display: grid !important; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; } .hb-ptvb .btn { width: 100%; min-height: 40px; justify-content: center; }
+.hb-ptvh { cursor: pointer; } .hb-ptvh .hb-arw { color: var(--muted); }
+.hb-invdg { margin: 14px 0 6px; font-size: 13.5px; color: #1f3b63; }
+.hb-invc { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; width: 100%; text-align: start; padding: 10px 12px; margin: 6px 0; border: 1px solid #cfdff1; border-radius: 14px; background: #fff; font: inherit; color: inherit; cursor: pointer; }
+.hb-invc1 { grid-column: 1; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; } .hb-invc2 { grid-column: 1; color: var(--muted); font-size: 13px; } .hb-invc3 { grid-column: 2; grid-row: 1 / span 2; align-self: center; font-weight: 800; color: #1f3b63; white-space: nowrap; }
+.hb-st { font-style: normal; font-size: 12px; padding: 2px 8px; border-radius: 999px; } .st-paid { background: #e2f4ea; color: #12684a; } .st-pend { background: #fde8e8; color: #a12a2a; } .st-part { background: #fff4e0; color: #8a5a00; } .st-free { background: #e8eef7; color: #335; }
+.hb-invnb { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px; margin: 6px 0; border: 1px dashed #f0cf94; border-radius: 12px; background: #fffaf0; font-size: 14px; }
+.hb-scinv { margin-inline-start: 6px; }
