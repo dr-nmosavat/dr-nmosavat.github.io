@@ -1333,7 +1333,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   var drListRun = null, pendingReq = "";
   function grpOf(v) { return { today: "clients", pt: "clients", list: "book", "new": "book", req: "book", code: "book", adopt: "more", svc: "more", rep: "more", appt: "clients" }[v]; }
   var lastView = "";
-  function dview(v) { try { mkAct(""); } catch (e0) {} if (SECP && ["list", "new", "req", "code", "adopt", "pet"].indexOf(v) > -1) v = "today"; if (v !== "pet") lastView = v; root.removeAttribute("data-dcollapsed"); root.setAttribute("data-dview", v); var _g = grpOf(v); if (_g) { root.setAttribute("data-grp", _g); [].forEach.call(root.querySelectorAll("[data-hb-grp]"), function (gb) { gb.classList.toggle("on", gb.getAttribute("data-hb-grp") === _g); }); } if (v === "today" && isDr() && srvOn() && todayBox()) todayLoad(); if (v === "appt" && isDr() && srvOn() && apBox()) apEnter(); if (v === "svc" && isDr() && srvOn()) svcEnter(); if (v === "rep" && isDr() && srvOn()) repEnter(); [].forEach.call(root.querySelectorAll("[data-hb-dtab]"), function (b) { b.classList.toggle("on", b.getAttribute("data-hb-dtab") === v); }); if (v === "list" && isDr() && srvOn() && drListRun) drListRun(); if (v === "adopt" && isDr() && srvOn()) adLoad(); if (v === "req" && isDr() && srvOn()) rqLoad(); if (v === "pt" && isDr() && srvOn() && ptBox() && !ptBox().hasAttribute("data-on")) { ptBox().setAttribute("data-on", "1"); ptEnter(); } if (v !== "pt" && ptBox()) ptBox().removeAttribute("data-on"); if (v === "list") tabCounts(); if (v !== "new" && v !== "pet") pendingReq = ""; }
+  function dview(v) { try { mkAct(""); } catch (e0) {} if (SECP && ["list", "new", "req", "code", "adopt", "pet"].indexOf(v) > -1) v = "today"; if (v !== "pet") lastView = v; root.removeAttribute("data-dcollapsed"); root.setAttribute("data-dview", v); try { syncBillMode(); } catch (e9) {} var _g = grpOf(v); if (_g) { root.setAttribute("data-grp", _g); [].forEach.call(root.querySelectorAll("[data-hb-grp]"), function (gb) { gb.classList.toggle("on", gb.getAttribute("data-hb-grp") === _g); }); } if (v === "today" && isDr() && srvOn() && todayBox()) todayLoad(); if (v === "appt" && isDr() && srvOn() && apBox()) apEnter(); if (v === "svc" && isDr() && srvOn()) svcEnter(); if (v === "rep" && isDr() && srvOn()) repEnter(); [].forEach.call(root.querySelectorAll("[data-hb-dtab]"), function (b) { b.classList.toggle("on", b.getAttribute("data-hb-dtab") === v); }); if (v === "list" && isDr() && srvOn() && drListRun) drListRun(); if (v === "adopt" && isDr() && srvOn()) adLoad(); if (v === "req" && isDr() && srvOn()) rqLoad(); if (v === "pt" && isDr() && srvOn() && ptBox() && !ptBox().hasAttribute("data-on")) { ptBox().setAttribute("data-on", "1"); ptEnter(); } if (v !== "pt" && ptBox()) ptBox().removeAttribute("data-on"); if (v === "list") tabCounts(); if (v !== "new" && v !== "pet") pendingReq = ""; }
   function purgeDrCache() { db.pets = db.pets.filter(function (p) { return !srvOf(p); }); db.recs = db.recs.filter(function (r) { return db.pets.some(function (p) { return p.id === r.pet; }); }); db.cur = db.pets[0] ? db.pets[0].id : null; save(); }
   function drDrop(msg) { try { localStorage.removeItem("dm_hb_dr"); } catch (e) {} purgeDrCache(); tokSet(""); setTimeout(function () { applyRole(); render(); toast(msg); }, 0); }
   function isDr() { if (!DRPAGE) return false; try { var f = localStorage.getItem("dm_hb_dr") === "1"; if (f && srvOn() && !tokGet()) { drDrop("مدت اعتبار ورود تمام شد؛ لطفاً دوباره وارد شوید."); return false; } return f; } catch (e) { return false; } }
@@ -2227,7 +2227,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   }
   function invRefresh() { if (ptBox() && root.getAttribute("data-dview") === "pt" && ptMode === "file") ptShow(); else if (todayBox()) todayRender(); }
   function ptShow() {
-    var box = ptBox(); if (!box) return; if (ptMode === "bill") return;
+    var box = ptBox(); if (!box) return; syncBillMode(); if (ptMode === "bill") return;
     if (ptMode === "new") {
       box.innerHTML = '<div class="hb-ptform"><h3 class="hb-pth hb-ctr hb-ft hb-ft2">🐾 ثبت بیمار جدید</h3>' + ptIdFields(ptPre, true) + '<div class="fld">' + ptReasonSel() + '</div><label class="hb-cons hb-smscb"><input type="checkbox" data-hb-ptsms-cb checked> 📩 ارسال پیامک تأیید ثبت به سرپرست <small>(با اطلاع ایشان؛ شمارهٔ موبایل معتبر لازم است)</small></label><p class="hb-err" data-hb-pterr hidden></p><div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-ptsavenew="today">ثبت و بردن به لیست امروز</button>' + (SECP ? "" : '<button type="button" class="btn small ghost" data-hb-ptsavenew="only">فقط ثبت</button>') + '<button type="button" class="btn small ghost" data-hb-ptback>انصراف</button></div></div>';
       brFill(box, "pt"); ptIdInit(ptPre); (function () { var sl = ptF("reason"), rx = ptF("reasonx"); sl.addEventListener("change", function () { rx.hidden = sl.value !== "__other"; if (!rx.hidden) rx.focus(); }); var pr = ptPre && ptPre.reason; if (pr) { if (AP_REASONS.indexOf(pr) > -1) sl.value = pr; else { sl.value = "__other"; rx.value = pr; rx.hidden = false; } } })(); return;
@@ -2237,7 +2237,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       if (ptInvOk[ptCur] !== 1 && ptInvOk[ptCur] !== 2) ptInvLoad(ptCur);
       var r = Object.assign({}, g[0], ptEff(g));
       var dbt = invItems.filter(function (x) { return x.pkey === r.pkey && (x.status === "pending" || x.status === "partial"); }).reduce(function (t0, x) { return t0 + x.total - x.paid; }, 0), tot0 = invItems.filter(function (x) { return x.pkey === r.pkey && x.status !== "void"; }), sm = tot0.reduce(function (t0, x) { return t0 + x.total; }, 0);
-      box.innerHTML = '<button type="button" class="btn small ghost hb-ptbk" data-hb-ptback>→ برگشت</button>'
+      box.innerHTML = '<button type="button" class="btn small ghost hb-ptbk" data-hb-ptback>→ برگشت</button>' + (billDraft && billDraft.pkey === ptCur ? '<button type="button" class="btn small primary hb-ptbk hb-resume" data-hb-billresume>↩ برگشت به فاکتور (خدمات انتخاب‌شده حفظ شده)</button>' : "")
         + '<div class="hb-ptfile" data-hb-ptfile><h4 class="hb-ptsec">اطلاعات پت و سرپرست</h4><div class="hb-ptinfo"><b class="hb-ptn1">' + esc(r.name) + "</b>" + (r.fno ? '<span class="hb-fno">پروندهٔ ' + esc(r.fno) + "</span>" : "") + "<span>" + esc(r.species) + (r.breed ? " · " + esc(r.breed) : "") + (r.owner ? " · سرپرست: " + esc(r.owner) : "") + "</span>" + ((r.sex || r.neut || r.birth) ? '<span class="hb-ptmeta">' + [r.sex, r.neut, r.birth ? "سن: " + ptAge(r.birth) + " (تولد " + fd(r.birth) + ")" : ""].filter(Boolean).map(esc).join(" · ") + "</span>" : "") + (r.phone ? '<a class="hb-call" dir="ltr" href="tel:' + esc(r.phone) + '">📞 ' + esc(r.phone) + "</a>" : "<small>شمارهٔ تماس ثبت نشده</small>") + "</div>"
         + (SECP ? "" : '<p class="hb-ptlastl">اولین مراجعه: ' + esc(fd(g[g.length - 1].date)) + (g.length > 1 ? " · " + toolFa(g.length) + " مراجعه" : "") + "</p>" + '<p class="hb-smsst" data-hb-ptsmsst>' + smsLine(r.pkey) + "</p>")
         + "</div>"
@@ -2344,11 +2344,11 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       var er2 = q("[data-hb-pterr2]"), btn2 = q("[data-hb-ptsavev]"), g = ptGroup(ptCur)[0], vv2 = ptVisitVals(); if (!g) return;
       if (!vv2.reason) { er2.textContent = "دلیل مراجعه را بنویسید."; er2.hidden = false; return; }
       er2.hidden = true; btn2.disabled = true; var v2 = { name: g.name, species: g.species, breed: g.breed, owner: g.owner, phone: g.phone, date: vv2.date, reason: vv2.reason, note: vv2.note, follow: vv2.follow, pkey: ptCur };
-      var wasEdit = !!ptEditV;
+      var wasEdit = !!ptEditV, editId = ptEditV ? ptEditV.id : "";
       api({ a: "patSave", t: tokGet(), id: ptEditV ? ptEditV.id : "", v: v2 }).then(function (j) {
         btn2.disabled = false; if (!j.ok) { er2.textContent = errMsg(j.err); er2.hidden = false; return; }
         if (!ptEditV || ptEditV.follow !== vv2.follow) ptFollowAppt(g, ptCur, vv2); if (ptEditV) ptItems = ptItems.map(function (x) { return x.id === j.item.id ? j.item : x; }); else ptItems.unshift(j.item);
-        ptItems.sort(function (x, y) { return x.date < y.date ? 1 : x.date > y.date ? -1 : 0; }); ptEditV = null; toast("✅ مراجعه ثبت شد"); if (!SECP && vv2.date === isoNow() && vv2.note) markVisited(ptCur); if (!SECP && !wasEdit) billOpen(j.item); else ptShow();
+        ptItems.sort(function (x, y) { return x.date < y.date ? 1 : x.date > y.date ? -1 : 0; }); ptEditV = null; toast("✅ مراجعه ثبت شد"); if (!SECP && vv2.date === isoNow() && vv2.note) markVisited(ptCur); if (billDraft && billDraft.vid === editId) { billResume(); return; } if (!SECP && !wasEdit) billOpen(j.item); else ptShow();
       });
       return;
     }
@@ -2550,12 +2550,29 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function billRepUI(i) { var e0 = ptBox().querySelector("[data-hb-berr]"); if (e0) e0.hidden = true; var el = ptBox().querySelector('[data-hb-brep="' + i + '"]'), r = billRows[i]; if (!el || !r) return; el.classList.toggle("ok", !!r.rep); el.classList.remove("bad"); el.querySelector(".hb-brv").textContent = r.rep ? repLabel(r.rep) : "⚠️ انتخاب نشده (الزامی)"; }
   function billShow(disc, note) {
     var box = ptBox(), v = billV; billQ = ""; billAll = false;
-    box.innerHTML = '<button type="button" class="btn small ghost hb-ptbk" data-hb-blback>→ برگشت</button><div class="hb-ptform hb-bill"><h3 class="hb-pth">💳 صورتحساب «' + esc(v.name) + '»</h3><input type="search" class="hb-bsearch" data-hb-bsearch autocomplete="off" placeholder="🔎 جستجوی خدمت (مثلاً: واکسن)"><p class="hb-mut hb-blhint">برای افزودن، روی نام خدمت بزنید؛ هر بار لمس، یکی به تعداد اضافه می‌شود. قیمت‌ها فقط از «تعرفه‌ها» تغییر می‌کنند.</p><div class="hb-bl" data-hb-blist></div>'
-      + '<div class="hb-bltot" data-hb-btot></div><p class="hb-err" data-hb-berr hidden></p><div class="hb-blbar"><button type="button" class="hb-blxt" data-hb-blxtog>🏷 تخفیف، مالیات و توضیح <span class="hb-arw">▾</span></button><div class="hb-blx"><label class="hb-blxd"><span>تخفیف (تومان)</span><input type="text" inputmode="numeric" dir="ltr" data-hb-bdisc value="' + (disc ? grp3(disc) : "") + '"></label><label class="hb-blxtax"><input type="checkbox" data-hb-btax' + (billTax ? " checked" : "") + '> مالیات ۱۰٪ (بعد از تخفیف)</label><label class="hb-blxn"><span>توضیح <small>(اختیاری)</small></span><input type="text" maxlength="200" data-hb-bnote value="' + esc(note || "") + '"></label></div><div class="hb-blbar1"><div class="hb-blmini" data-hb-bmini></div><button type="button" class="btn primary" data-hb-bsend>📤 ارسال به پذیرش</button></div><div class="hb-blbar2"><button type="button" class="btn small ghost" data-hb-bfree>بدون هزینه</button><button type="button" class="btn small ghost" data-hb-blater>⏭ بعداً</button></div></div>' + (/\S/.test(v.note || "") ? "" : '<p class="hb-emptywarn">⚠️ پروندهٔ این مراجعه خالی است (یافته‌ها/تشخیص ثبت نشده). برای اینکه پذیرش بتواند تسویه‌حساب کند، پرونده را تکمیل کنید.</p>') + "</div>";
-    billList(); billCalc(); try { window.scrollTo(0, Math.max(0, box.getBoundingClientRect().top + window.pageYOffset - 140)); } catch (e) {}
+    box.innerHTML = '<button type="button" class="btn small ghost hb-ptbk" data-hb-blback>→ برگشت</button><div class="hb-ptform hb-bill"><h3 class="hb-pth">💳 صورتحساب «' + esc(v.name) + '»</h3>' + (/\S/.test(v.note || "") ? "" : '<div class="hb-emptywarn"><span>⚠️ پروندهٔ این مراجعه خالی است</span><button type="button" class="btn small" data-hb-fillrec>📝 تکمیل پرونده</button></div>') + '<input type="search" class="hb-bsearch" data-hb-bsearch autocomplete="off" placeholder="🔎 جستجوی خدمت (لمس نام خدمت = یکی اضافه)"><div class="hb-bl" data-hb-blist></div>'
+      + '<div class="hb-bltot" data-hb-btot></div><p class="hb-err" data-hb-berr hidden></p><div class="hb-blbar"><button type="button" class="hb-blxt" data-hb-blxtog>🏷 تخفیف، مالیات و توضیح <span class="hb-arw">▾</span></button><div class="hb-blx"><label class="hb-blxd"><span>تخفیف (تومان)</span><input type="text" inputmode="numeric" dir="ltr" data-hb-bdisc value="' + (disc ? grp3(disc) : "") + '"></label><label class="hb-blxtax"><input type="checkbox" data-hb-btax' + (billTax ? " checked" : "") + '> مالیات ۱۰٪ (بعد از تخفیف)</label><label class="hb-blxn"><span>توضیح <small>(اختیاری)</small></span><input type="text" maxlength="200" data-hb-bnote value="' + esc(note || "") + '"></label></div><div class="hb-blbar1"><div class="hb-blmini" data-hb-bmini></div><button type="button" class="btn primary" data-hb-bsend>📤 ارسال به پذیرش</button></div><div class="hb-blbar2"><button type="button" class="btn small ghost" data-hb-bfree>بدون هزینه</button><button type="button" class="btn small ghost" data-hb-blater>⏭ بعداً</button></div></div>' + "</div>";
+    billList(); billCalc(); syncBillMode();
+    try { var hd = document.querySelector(".hb-staffhdr"); window.scrollTo(0, Math.max(0, box.getBoundingClientRect().top + window.pageYOffset - (hd ? hd.offsetHeight : 60) - 6)); } catch (e) {}
+    setTimeout(billFit, 30); setTimeout(billFit, 300);
   }
-  function billDone() { billV = null; if (billRet === "file") { billRet = "today"; ptMode = "file"; ptTab = "inv"; ptShow(); try { window.scrollTo(0, 0); } catch (e) {} } else ptToToday(); }
-  document.addEventListener("click", function (e) { var t = e.target; if (!t.closest) return; var b = t.closest("[data-hb-blxtog]"); if (!b) return; var bar = b.closest(".hb-blbar"); bar.classList.toggle("xo"); b.querySelector(".hb-arw").textContent = bar.classList.contains("xo") ? "▴" : "▾"; });
+  function syncBillMode() { document.documentElement.classList.toggle("hb-billmode", ptMode === "bill" && !!root.getAttribute("data-dview") && root.getAttribute("data-dview") === "pt"); }
+  function billFit() {
+    if (!document.documentElement.classList.contains("hb-billmode")) return; var l = q("[data-hb-blist]"), bar = q(".hb-blbar"); if (!l || !bar) return;
+    l.style.height = "auto"; l.style.maxHeight = "none"; var top = l.getBoundingClientRect().top, ih = window.innerHeight || document.documentElement.clientHeight;
+    l.style.height = Math.max(170, ih - top - bar.offsetHeight - 14) + "px";
+  }
+  var billDraft = null;
+  function billSnapshot() { billRead(); var bx = ptBox(); billDraft = { vid: billV.id, pkey: billV.pkey, qv: billV, rows: billRows, inv: billV._inv || null, disc: numIn((bx.querySelector("[data-hb-bdisc]") || {}).value), note: (bx.querySelector("[data-hb-bnote]") || {}).value || "", tax: !!(bx.querySelector("[data-hb-btax]") || {}).checked }; }
+  function billResume() { var d = billDraft; if (!d) return; billDraft = null; var vis = ptItems.filter(function (x) { return x.id === d.vid; })[0] || d.qv; vis._inv = d.inv; billV = vis; billRows = d.rows; billTax = d.tax; ptCur = d.pkey; ptEditV = null; ptMode = "bill"; if (root.getAttribute("data-dview") !== "pt") dview("pt"); billShow(d.disc, d.note); }
+  document.addEventListener("click", function (e) {
+    var t = e.target; if (!t.closest) return;
+    if (t.closest("[data-hb-fillrec]")) { e.preventDefault(); if (!billV) return; billSnapshot(); var vis = ptItems.filter(function (x) { return x.id === billDraft.vid; })[0]; if (!vis) { billDraft = null; return toast("⚠️ مراجعه پیدا نشد."); } ptCur = vis.pkey; ptMode = "file"; ptTab = ""; ptEditV = vis; ptShow(); try { var f = q("[data-hb-ptvt]"); if (f) f.scrollIntoView({ block: "start" }); window.scrollBy(0, -90); } catch (e1) {} return; }
+    if (t.closest("[data-hb-billresume]")) { e.preventDefault(); billResume(); }
+  });
+  window.addEventListener("resize", function () { setTimeout(billFit, 60); }); window.addEventListener("orientationchange", function () { setTimeout(billFit, 300); });
+  function billDone() { billDraft = null; billV = null; if (billRet === "file") { billRet = "today"; ptMode = "file"; ptTab = "inv"; ptShow(); try { window.scrollTo(0, 0); } catch (e) {} } else ptToToday(); }
+  document.addEventListener("click", function (e) { var t = e.target; if (!t.closest) return; var b = t.closest("[data-hb-blxtog]"); if (!b) return; var bar = b.closest(".hb-blbar"); bar.classList.toggle("xo"); b.querySelector(".hb-arw").textContent = bar.classList.contains("xo") ? "▴" : "▾"; setTimeout(billFit, 30); });
   function billSet(i, qty) { billRead(); var r = billRows[i]; if (!r) return; if (qty <= 0) { r.on = false; r.qty = 1; } else { r.on = true; r.qty = Math.min(99, qty); } billList(); billCalc(); }
   document.addEventListener("click", function (e) {
     var t = e.target; if (!t.closest || !t.closest(".hb-bill")) return;
@@ -2571,7 +2588,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (t) t.innerHTML = "<span>جمع: " + money(sub) + "</span>" + (d ? "<span>تخفیف: " + money(d) + "</span>" : "") + (tx ? "<span>مالیات ۱۰٪: " + money(tx) + "</span>" : "") + "<b>مبلغ نهایی: " + money(sub - d + tx) + "</b>";
     [].forEach.call(box.querySelectorAll(".hb-blr"), function (l) { var ck = l.querySelector("[data-hb-bon]"); l.classList.toggle("on", !!(ck && ck.checked)); });
     billRows.forEach(function (r, i) { var lt = box.querySelector('[data-hb-blt="' + i + '"]'); if (lt) lt.textContent = r.on ? money(r.qty * r.price) : ""; });
-    var mn = box.querySelector("[data-hb-bmini]"); if (mn) mn.innerHTML = "<small>مبلغ نهایی</small><b>" + money(sub - d + tx) + "</b>";
+    var mn = box.querySelector("[data-hb-bmini]"); if (mn) mn.innerHTML = "<small>جمع " + money(sub) + (d ? " · تخفیف " + money(d) : "") + (tx ? " · مالیات " + money(tx) : "") + "</small><b>نهایی: " + money(sub - d + tx) + "</b>";
   }
   function billSave(free, why) {
     billRead(); var box = ptBox(), v = billV, er = box.querySelector("[data-hb-berr]"), on = billRows.filter(function (r) { return r.on && r.name; });
@@ -2597,8 +2614,8 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     var rq = t.closest("[data-hb-rpq]"); if (rq) { billRead(); var ri = +rq.getAttribute("data-i"), rr = billRows[ri]; if (rr) { rr.rep = addMonths((billV && billV.date) || isoNow(), +rq.getAttribute("data-hb-rpq")); billList(); billCalc(); var e1 = ptBox().querySelector("[data-hb-berr]"); if (e1) e1.hidden = true; } return; }
     if (t.closest("[data-hb-bsend]")) return billSave(false);
     if (t.closest("[data-hb-bfree]")) { var why = prompt("دلیل بدون هزینه (مثلاً: پیگیری رایگان):", "پیگیری رایگان"); if (why === null) return; return billSave(true, why); }
-    if (t.closest("[data-hb-blater]")) { billV = null; ptToToday(); }
-    if (t.closest("[data-hb-blback]")) { billV = null; billRet = "today"; ptMode = "file"; ptShow(); return; }
+    if (t.closest("[data-hb-blater]")) { billDraft = null; billV = null; ptToToday(); }
+    if (t.closest("[data-hb-blback]")) { billDraft = null; billV = null; billRet = "today"; ptMode = "file"; ptShow(); return; }
   });
   // فاکتور و دریافت وجه (پذیرش و دکتر)
   var invOpenId = "";
