@@ -1331,7 +1331,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function tokSet(t) { try { if (t) localStorage.setItem("dm_hb_tok", JSON.stringify({ t: t, exp: (Number(String(t).split(".")[0]) || Date.now() + 3 * 86400000) - 60000 })); else localStorage.removeItem("dm_hb_tok"); } catch (e) {} }
   var DRPAGE = document.body.classList.contains("hb-drpage"), SECP = document.body.classList.contains("hb-secpage");
   var drListRun = null, pendingReq = "";
-  function grpOf(v) { return { today: "clients", pt: "clients", list: "book", "new": "book", req: "book", code: "book", adopt: "more", svc: "more", rep: "more", appt: "clients" }[v]; }
+  function grpOf(v) { return { today: "clients", pt: "clients", list: "book", "new": "book", req: "book", code: "book", adopt: "more", svc: "more", rep: SECP ? "clients" : "more", appt: "clients" }[v]; }
   var lastView = "";
   function dview(v) { try { mkAct(""); } catch (e0) {} if (SECP && ["list", "new", "req", "code", "adopt", "pet"].indexOf(v) > -1) v = "today"; if (v !== "pet") lastView = v; root.removeAttribute("data-dcollapsed"); root.setAttribute("data-dview", v); try { syncBillMode(); } catch (e9) {} var _g = grpOf(v); if (_g) { root.setAttribute("data-grp", _g); [].forEach.call(root.querySelectorAll("[data-hb-grp]"), function (gb) { gb.classList.toggle("on", gb.getAttribute("data-hb-grp") === _g); }); } if (v === "today" && isDr() && srvOn() && todayBox()) todayLoad(); if (v === "appt" && isDr() && srvOn() && apBox()) apEnter(); if (v === "svc" && isDr() && srvOn()) svcEnter(); if (v === "rep" && isDr() && srvOn()) repEnter(); [].forEach.call(root.querySelectorAll("[data-hb-dtab]"), function (b) { b.classList.toggle("on", b.getAttribute("data-hb-dtab") === v); }); if (v === "list" && isDr() && srvOn() && drListRun) drListRun(); if (v === "adopt" && isDr() && srvOn()) adLoad(); if (v === "req" && isDr() && srvOn()) rqLoad(); if (v === "pt" && isDr() && srvOn() && ptBox() && !ptBox().hasAttribute("data-on")) { ptBox().setAttribute("data-on", "1"); ptEnter(); } if (v !== "pt" && ptBox()) ptBox().removeAttribute("data-on"); if (v === "list") tabCounts(); if (v !== "new" && v !== "pet") pendingReq = ""; }
   function purgeDrCache() { db.pets = db.pets.filter(function (p) { return !srvOf(p); }); db.recs = db.recs.filter(function (r) { return db.pets.some(function (p) { return p.id === r.pet; }); }); db.cur = db.pets[0] ? db.pets[0].id : null; save(); }
@@ -2768,7 +2768,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (!n) return "";
     var net = g - c; return '<h4 class="hb-pth2">👩‍⚕️ کارکرد دکتر</h4><div class="hb-rep"><span>جمع فروش خدمات: ' + money(g) + "</span><span>− جمع مصرفی (هزینهٔ خرید): " + money(c) + "</span><span>= خالص: " + money(net) + "</span><span>سهم دکتر: <b>" + money(Math.round(sh)) + "</b></span><span>سهم کلینیک: " + money(Math.round(net - sh - dsc)) + (dsc ? " (بعد از کسر تخفیف‌ها: " + money(dsc) + ")" : "") + "</span><small>مالیات در این محاسبه نیست؛ فاکتورهای «تخفیف کامل» حساب نمی‌شوند.</small></div>";
   }
-  var repM = "", repMode = "m", repPk = "";
+  var repM = "", repMode = "d", repPk = "";
   function repFileInit() {
     var w = repBox().querySelector("[data-hb-repfile]");
     w.innerHTML = '<h3 class="hb-pth">🗂 گزارش هر پرونده</h3><input type="search" class="hb-bsearch" data-hb-repq autocomplete="off" placeholder="🔎 شمارهٔ پرونده، نام پت یا سرپرست (مثلاً 13701)"><div data-hb-repres></div><div data-hb-repout></div>';
@@ -2798,11 +2798,44 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   document.addEventListener("input", function (e) { if (e.target && e.target.hasAttribute && e.target.hasAttribute("data-hb-repq")) { repPk = ""; repFileList(e.target.value); var o = repBox().querySelector("[data-hb-repout]"); if (o) o.innerHTML = ""; } });
   function repBox() { return q("[data-hb-repbox]"); }
   function repMonths() { var t = jToday(), y = +t[0], m = +t[1], out = []; while (y > 1405 || (y === 1405 && m >= 7)) { out.push([y, m]); m--; if (m < 1) { m = 12; y--; } } return out.length ? out : [[1405, 7]]; }   // گزارش از مهر ۱۴۰۵ به بعد
+  var repD = "";
   function repEnter() {
-    var bx = repBox(); if (!bx) return; var ms = repMonths(); if (!repM) repM = ms[0].join("-");
-    bx.innerHTML = '<div class="hb-ptform"><div class="seg hb-repmode"><button type="button" class="btn small ' + (repMode === "m" ? "primary" : "ghost") + '" data-hb-repmode="m">📊 ماهانه</button><button type="button" class="btn small ' + (repMode === "f" ? "primary" : "ghost") + '" data-hb-repmode="f">🗂 هر پرونده</button></div>' + (repMode === "f" ? '<div data-hb-repfile></div></div>' : '<h3 class="hb-pth">📊 گزارش ماهانه</h3><div class="fld"><select data-hb-repm>' + ms.map(function (x) { var k = x.join("-"); return '<option value="' + k + '"' + (k === repM ? " selected" : "") + ">" + MON[x[1] - 1] + " " + toolFa(x[0]) + "</option>"; }).join("") + '</select></div><div data-hb-repout><p class="hb-qmsg">در حال بارگذاری…</p></div></div>');
+    var bx = repBox(); if (!bx) return; if (SECP) repMode = "d"; var ms = repMonths(); if (!repM) repM = ms[0].join("-"); if (!repD) repD = isoNow();
+    var modes = SECP ? "" : '<div class="seg hb-repmode"><button type="button" class="btn small ' + (repMode === "d" ? "primary" : "ghost") + '" data-hb-repmode="d">📆 روزانه</button><button type="button" class="btn small ' + (repMode === "m" ? "primary" : "ghost") + '" data-hb-repmode="m">📊 ماهانه</button><button type="button" class="btn small ' + (repMode === "f" ? "primary" : "ghost") + '" data-hb-repmode="f">🗂 هر پرونده</button></div>';
+    if (repMode === "d") {
+      bx.innerHTML = '<div class="hb-ptform">' + modes + '<h3 class="hb-pth">📆 گزارش روزانه</h3><div class="hb-rdnav"><button type="button" class="btn small ghost" data-hb-rdd="1">→ روز بعد</button><b data-hb-rdlab></b><button type="button" class="btn small ghost" data-hb-rdd="-1">روز قبل ←</button></div><div class="hb-rdtd"><button type="button" class="btn small ghost" data-hb-rdd="0">امروز</button><details class="hb-rdpk"><summary>📅 انتخاب تاریخ دیگر</summary><div class="jd" data-pjd="rd"></div></details></div><div data-hb-repout><p class="hb-qmsg">در حال بارگذاری…</p></div></div>';
+      var jd = initJd(bx.querySelector('[data-pjd="rd"]'), { minY: -2, maxY: 0 }); jd.set(repD); bx.querySelector('[data-pjd="rd"]').addEventListener("change", function () { var d = jd.get(); if (d) { repD = d; repLoadD(); } });
+      return repLoadD();
+    }
+    bx.innerHTML = '<div class="hb-ptform">' + modes + (repMode === "f" ? '<div data-hb-repfile></div></div>' : '<h3 class="hb-pth">📊 گزارش ماهانه</h3><div class="fld"><select data-hb-repm>' + ms.map(function (x) { var k = x.join("-"); return '<option value="' + k + '"' + (k === repM ? " selected" : "") + ">" + MON[x[1] - 1] + " " + toolFa(x[0]) + "</option>"; }).join("") + '</select></div><div data-hb-repout><p class="hb-qmsg">در حال بارگذاری…</p></div></div>');
     if (repMode === "f") return repFileInit(); repLoad();
   }
+  function repLoadD() {
+    var bx = repBox(), out = bx.querySelector("[data-hb-repout]"), lab = bx.querySelector("[data-hb-rdlab]"), d = repD, td = isoNow();
+    if (lab) lab.textContent = (d === td ? "امروز · " : "") + wdOf(d) + " " + jLabel(d);
+    out.innerHTML = '<p class="hb-qmsg">در حال بارگذاری…</p>';
+    var need = !SECP && !ptItems.length; var pr = need ? api({ a: "patList", t: tokGet() }) : Promise.resolve(null);
+    Promise.all([api({ a: "invList", t: tokGet(), from: d }), pr]).then(function (r) {
+      var j = r[0]; if (r[1] && r[1].ok) { ptItems = r[1].items || []; ptLoaded = true; }
+      if (d !== repD) return;
+      if (!j.ok) { out.innerHTML = '<p class="hb-qmsg">' + esc(errMsg(j.err)) + "</p>"; return; }
+      var l = (j.items || []).filter(function (v) { return v.date === d && v.status !== "void"; });
+      var tot = 0, paid = 0, disc = 0, free = 0, tax = 0, by = {}, sv = {};
+      l.forEach(function (v) { tot += v.total; paid += v.paid; disc += v.disc || 0; tax += v.tax || 0; if (v.status === "free") free++; if (v.paid) by[v.method || "نقد"] = (by[v.method || "نقد"] || 0) + v.paid; (v.items || []).forEach(function (x) { var o = sv[x.name] || (sv[x.name] = { n: 0, s: 0 }); o.n += x.qty; o.s += x.qty * x.price; }); });
+      var vis = {}; ptItems.forEach(function (x) { if (x.date === d) vis[x.pkey] = 1; });
+      var html = '<div class="hb-rdbox hb-rdcash"><h4>💰 صندوق (دریافتی این روز)</h4>' + (Object.keys(by).length ? Object.keys(by).map(function (k) { return "<div><span>" + esc(k) + "</span><b>" + money(by[k]) + "</b></div>"; }).join("") : '<div><span>دریافتی ثبت نشده</span><b>—</b></div>') + '<div class="hb-rdtot"><span>جمع دریافتی</span><b>' + money(paid) + "</b></div></div>"
+        + '<div class="hb-rdbox"><h4>🧾 فاکتورهای این روز</h4><div><span>تعداد فاکتور</span><b>' + toolFa(l.length) + "</b></div><div><span>جمع فاکتورها</span><b>" + money(tot) + "</b></div>" + (disc ? "<div><span>جمع تخفیف‌ها</span><b>" + money(disc) + "</b></div>" : "") + (tax ? "<div><span>مالیات</span><b>" + money(tax) + "</b></div>" : "") + (free ? "<div><span>تخفیف کامل</span><b>" + toolFa(free) + " فاکتور</b></div>" : "") + '<div class="hb-rdd"><span>مانده (پرداخت‌نشده)</span><b>' + money(tot - paid) + "</b></div></div>";
+      if (!SECP) {
+        html += '<div class="hb-rdbox"><h4>🩺 مراجعه</h4><div><span>تعداد مراجعه (پرونده‌های متفاوت)</span><b>' + toolFa(Object.keys(vis).length) + "</b></div></div>";
+        var top = Object.keys(sv).sort(function (a, b) { return sv[b].s - sv[a].s; });
+        if (top.length) html += '<h4 class="hb-pth2">خدمات این روز</h4><table class="hb-invt"><tr><th>خدمت</th><th>تعداد</th><th>مبلغ</th></tr>' + top.map(function (k) { return "<tr><td>" + (svcIcon(k) ? svcIcon(k) + " " : "") + esc(k) + "</td><td>" + toolFa(sv[k].n) + "</td><td>" + money(sv[k].s) + "</td></tr>"; }).join("") + "</table>";
+        html += drShare(l);
+        if (l.length) html += '<h4 class="hb-pth2">فهرست فاکتورها</h4>' + l.map(function (v) { var st = INV_ST[v.status] || [v.status, "pend"]; return '<div class="hb-rdrow"><span><b>' + esc(v.name) + "</b> · " + esc(v.owner || "") + '</span><em class="hb-st st-' + st[1] + '">' + st[0] + "</em><b>" + money(v.total) + "</b></div>"; }).join("");
+      }
+      out.innerHTML = l.length ? html : '<p class="hb-qmsg">در این روز فاکتوری ثبت نشده است.</p>' + (Object.keys(vis).length && !SECP ? '<div class="hb-rdbox"><div><span>تعداد مراجعه</span><b>' + toolFa(Object.keys(vis).length) + "</b></div></div>" : "");
+    });
+  }
+  document.addEventListener("click", function (e) { var b = e.target.closest && e.target.closest("[data-hb-rdd]"); if (!b || !repBox() || !repBox().contains(b)) return; var k = +b.getAttribute("data-hb-rdd"), td = isoNow(); repD = k === 0 ? td : isoPlus(repD || td, k); if (repD > td) repD = td; repEnter(); });
   function repLoad() {
     var p0 = repM.split("-"), y = +p0[0], m = +p0[1], from = j2g(y, m, 1), to = m === 12 ? j2g(y + 1, 1, 1) : j2g(y, m + 1, 1), out = repBox().querySelector("[data-hb-repout]");
     api({ a: "invList", t: tokGet(), from: from }).then(function (j) {
