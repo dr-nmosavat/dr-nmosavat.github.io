@@ -2257,7 +2257,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
         + (SECP ? "" : ptFormHtml())
         + '<div class="hb-ftabs' + (SECP ? " two" : " three") + '"><button type="button" class="btn' + (ptTab === "ops" ? " primary" : " ghost") + '" data-hb-pttab="ops">⚙️ عملیات</button><button type="button" class="btn' + (ptTab === "inv" ? " primary" : " ghost") + '" data-hb-pttab="inv">🧾 فاکتورها</button>' + (SECP ? "" : '<button type="button" class="btn' + (ptTab === "med" ? " primary" : " ghost") + '" data-hb-pttab="med">🩺 سوابق (' + toolFa(g.length) + ")</button>") + "</div>"
         + '<div data-hb-pttabbox>' + (ptTab === "inv" ? ptInvHtml(r.pkey, g) : ptTab === "med" ? ptMedHtml(g) : ptTab === "ops" ? ptOpsHtml(r) : "") + "</div>";
-      brFill(box, "pt"); if (ptTab === "ops") ptIdInit(r);
+      brFill(box, "pt"); if (ptTab === "ops") { ptIdInit(r); if (ptOpenEdit) { var f0 = q("[data-hb-ptidf]"), a0 = q(".hb-ptacts"); if (f0) f0.hidden = false; if (a0) a0.hidden = true; } }
       if (ptTab === "inv") { if (invOpenId && invItems.some(function (x) { return x.id === invOpenId && x.pkey === r.pkey; })) invMount(invOpenId); }
       if (!SECP) {
         ptInitVisit(ptEditV);
@@ -2336,8 +2336,8 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     var t = e.target, b; if (!t.closest || !ptBox()) return;
     if (t.closest("[data-hb-ptnew]")) { ptPre = null; ptFromAp = ""; ptMode = "new"; return ptShow(); }
     if (t.closest("[data-hb-ptref]")) { ptLoaded = false; return ptLoad(); }
-    if (t.closest("[data-hb-ptback]")) { var bv0 = ptBackView; ptBackView = ""; ptMode = "list"; ptEditV = null; invOpenId = ""; if (bv0 === "today") return ptToToday(); if (bv0 && bv0 !== "pt") { dview(bv0); return; } return ptShow(); }
-    if ((b = t.closest("[data-hb-pttab]"))) { var tv = b.getAttribute("data-hb-pttab"); ptTab = ptTab === tv ? "" : tv; invOpenId = ""; return ptShow(); }
+    if (t.closest("[data-hb-ptback]")) { ptOpenEdit = false; var bv0 = ptBackView; ptBackView = ""; ptMode = "list"; ptEditV = null; invOpenId = ""; if (bv0 === "today") return ptToToday(); if (bv0 && bv0 !== "pt") { dview(bv0); return; } return ptShow(); }
+    if ((b = t.closest("[data-hb-pttab]"))) { ptOpenEdit = false; var tv = b.getAttribute("data-hb-pttab"); ptTab = ptTab === tv ? "" : tv; invOpenId = ""; return ptShow(); }
     if ((b = t.closest("[data-hb-ptvtog]"))) { var vd1 = q('[data-hb-ptvd="' + b.getAttribute("data-hb-ptvtog") + '"]'); if (vd1) vd1.hidden = !vd1.hidden; return; }
     if ((b = t.closest("[data-hb-invfile]"))) { var fid = b.getAttribute("data-hb-invfile"); if (invOpenId === fid && q("[data-hb-invpanel]")) { invOpenId = ""; [].forEach.call(document.querySelectorAll("[data-hb-invpanel]"), function (e) { if (e.parentNode) e.parentNode.removeChild(e); }); b.classList.remove("open"); return; } invMount(fid); [].forEach.call(document.querySelectorAll(".hb-invc.open"), function (e) { e.classList.remove("open"); }); b.classList.add("open"); return; }
     if (t.closest("[data-hb-invedit]")) { var ve = invItems.filter(function (x) { return x.id === invOpenId; })[0], vv0 = ve && ptItems.filter(function (x) { return x.id === ve.vid; })[0]; if (!vv0) return toast("⚠️ مراجعهٔ این فاکتور پیدا نشد (شاید حذف شده)."); if (root.getAttribute("data-dview") !== "pt") { ptBackView = root.getAttribute("data-dview"); dview("pt"); } ptCur = ve.pkey; billRet = "file"; invOpenId = ""; billOpen(vv0); return; }
@@ -2347,7 +2347,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (t.closest("[data-hb-ptnewpet]")) { var g9 = ptGroup(ptCur), r9 = g9[0] || {}; ptPre = { owner: r9.owner, phone: r9.phone }; ptFromAp = ""; ptMode = "new"; ptShow(); toast("🐾 مشخصات سرپرست وارد شد؛ نام، نوع و نژاد پت جدید را بزنید"); return; }
     if ((b = t.closest("[data-hb-ptnewown]"))) { dview("pt"); ptPre = { owner: b.getAttribute("data-o"), phone: b.getAttribute("data-p") }; ptFromAp = ""; ptMode = "new"; ptShow(); mkAct("pt"); toast("🐾 مشخصات سرپرست وارد شد؛ نام، نوع و نژاد پت جدید را بزنید"); return; }
     if (t.closest("[data-hb-ptidedit]")) { q("[data-hb-ptidf]").hidden = false; var ac2 = q(".hb-ptacts"); if (ac2) ac2.hidden = true; return; }
-    if (t.closest("[data-hb-ptidcancel]")) { q("[data-hb-ptidf]").hidden = true; var ac3 = q(".hb-ptacts"); if (ac3) ac3.hidden = false; return; }
+    if (t.closest("[data-hb-ptidcancel]")) { ptOpenEdit = false; q("[data-hb-ptidf]").hidden = true; var ac3 = q(".hb-ptacts"); if (ac3) ac3.hidden = false; return; }
     if (t.closest("[data-hb-ptvcancel]")) { ptEditV = null; return ptShow(); }
     if ((b = t.closest("[data-hb-ptvt]"))) { var vf2 = b.closest(".hb-ptvform"), aw = b.querySelector(".hb-arw"); if (vf2) { vf2.classList.toggle("hb-coll"); if (aw) aw.textContent = vf2.classList.contains("hb-coll") ? "▾" : "▴"; } return; }
     if ((b = t.closest("[data-hb-ptbill]"))) { var bv = ptItems.filter(function (x) { return x.id === b.getAttribute("data-hb-ptbill"); })[0]; if (bv) { billRet = "file"; var exi = invItems.filter(function (x) { return x.vid === bv.id && x.status !== "void"; })[0]; if (exi) { invOpenId = exi.id; var bx = ptBox(); if (!q("[data-hb-invpanel]")) bx.insertAdjacentHTML("afterbegin", '<div data-hb-invpanel></div>'); invPanel(); return; } if (!invItems.length) invLoad(function () { billOpen(bv); }); else billOpen(bv); } return; }
@@ -2383,7 +2383,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     }
     if (t.closest("[data-hb-ptidsave]")) {
       var er3 = q("[data-hb-pterr]"), id3 = ptIdVals(); if (!id3.name) { er3.textContent = "نام پت را بنویسید."; er3.hidden = false; return; }
-      api({ a: "patPatient", t: tokGet(), pkey: ptCur, v: id3 }).then(function (j) { if (!j.ok) { er3.textContent = errMsg(j.err); er3.hidden = false; return; } ptItems.forEach(function (x) { if (x.pkey === ptCur) { x.name = id3.name; x.species = id3.species; x.breed = id3.breed; x.owner = id3.owner; x.phone = id3.phone; x.birth = id3.birth; x.sex = id3.sex; x.neut = id3.neut; x.otitle = id3.otitle; } }); toast("✅ اطلاعات ذخیره شد"); ptShow(); });
+      api({ a: "patPatient", t: tokGet(), pkey: ptCur, v: id3 }).then(function (j) { if (!j.ok) { er3.textContent = errMsg(j.err); er3.hidden = false; return; } ptItems.forEach(function (x) { if (x.pkey === ptCur) { x.name = id3.name; x.species = id3.species; x.breed = id3.breed; x.owner = id3.owner; x.phone = id3.phone; x.birth = id3.birth; x.sex = id3.sex; x.neut = id3.neut; x.otitle = id3.otitle; } }); toast("✅ اطلاعات ذخیره شد"); ptOpenEdit = false; ptShow(); });
     }
   });
   // ---- جستجوی شماره تماس در سوابق (پرکردن خودکار فرم) ----
@@ -2478,12 +2478,14 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     var other = todayItems.filter(function (it) { if (it.kind === "patient" && map[it.ref]) { var e = map[it.ref]; e.phone = e.phone || it.phone; e.species = e.species || it.species; e.owner = e.owner || it.owner; return false; } return true; });
     var wait = [], done = [];
     list.forEach(function (e) { ((e.pkey && (visitedToday(e.pkey) || invOf(e.pkey))) || (e.q && e.q.status === "done") || (e.ap && e.ap.status === "done") ? done : wait).push(e); });
+    var rk = function (e) { var iv = invOf(e.pkey), ix = iv ? invItems.indexOf(iv) : -1; if (ix >= 0) return ix + 1; var v = ptGroup(e.pkey)[0]; return 0 - (v && v.created ? 1 : 0); };   // بدون فاکتور (تازه‌ترین) بالا، بعد فاکتور جدیدتر
+    done = done.map(function (e, i) { return { e: e, i: i }; }).sort(function (a, b) { var x = rk(a.e), y = rk(b.e); return x !== y ? x - y : b.i - a.i; }).map(function (o) { return o.e; });
     var tk = function (e) { return (e.ap && e.ap.time) || (e.q && e.q.time) || "99"; };
     wait.sort(function (a, b) { return tk(a) < tk(b) ? -1 : tk(a) > tk(b) ? 1 : 0; });
     return { wait: wait, done: done, other: other };
   }
   function qCard(e, done) {
-    var open = e.pkey ? 'data-hb-tdpt="' + esc(e.pkey) + '"' : (!SECP && e.ap ? 'data-hb-apvisit="' + esc(e.k) + '"' : "data-hb-apgo");
+    var open = e.pkey ? 'data-hb-tdpt="' + esc(e.pkey) + '"' : (e.ap ? 'data-hb-apvisit="' + esc(e.k) + '"' : "data-hb-apgo");
     var tag = e.ap ? ' <span class="hb-tdtag">🗓 نوبت' + (done ? " داشت" : "") + (e.ap.time ? " " + toolFa(e.ap.time) : "") + "</span>" : "";
     var st = done ? ' <span class="hb-tdvb">ویزیت شد</span>' : ' <span class="hb-tdwb">⏳ در انتظار</span>', iv = done && e.pkey ? invOf(e.pkey) : null;
     if (iv) { st += iv.status === "paid" ? ' <span class="hb-ivb hb-ivok">✅ تسویه · ' + money(iv.total) + "</span>" : iv.status === "free" ? ' <span class="hb-ivb">بدون هزینه</span>' : ' <span class="hb-ivb hb-ivpend">💳 ' + money(iv.total - iv.paid) + "</span>"; if (SECP || iv.status === "pending" || iv.status === "partial") open = 'data-hb-invopen="' + esc(iv.id) + '"'; }
@@ -2862,15 +2864,17 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     el.innerHTML = l.length ? '<div class="hb-ptdue hb-tdapb"><b>⏳ در انتظار ویزیت (' + toolFa(l.length) + ")</b>" + l.map(function (r) { return '<button type="button" class="hb-ptdr" data-hb-apgo><span>' + (r.time ? toolFa(r.time) + " · " : "") + esc(r.name) + (r.owner ? " · " + esc(r.owner) : "") + "</span></button>"; }).join("") + "</div>" : "";
   }
   // بعد از ثبت ویزیت: فرم بسته شود و به «امروز» برگردد
+  var ptOpenEdit = false;
+  function secOpenFile(pk) { dview("pt"); ptBackView = "today"; ptActOpen = false; ptTab = "ops"; invOpenId = ""; ptCur = pk; ptMode = "file"; ptEditV = null; ptLoaded = true; ptShow(); ptOpenEdit = true; ptShow(); try { window.scrollTo(0, 0); } catch (e) {} toast("پروندهٔ اولیه آماده است؛ اطلاعات را کامل کنید.", 4000); }
   function apVisit(r) {
     if (!r) return; var td = apToday || isoNow(), ph = phN(r.phone || ""), nm = String(r.name || "").trim(), ow = String(r.owner || "").trim();
-    var link = function (pk) { if (r.pkey !== pk) { r.pkey = pk; api({ a: "apSave", t: tokGet(), id: r.id, v: { date: r.date, time: r.time, name: r.name, species: r.species, breed: r.breed || "", owner: r.owner, phone: r.phone, reason: r.reason, note: r.note || "", pkey: pk, rem: r.rem ? 1 : 0 } }); } ptJump(pk); };
+    var link = function (pk) { if (r.pkey !== pk) { r.pkey = pk; api({ a: "apSave", t: tokGet(), id: r.id, v: { date: r.date, time: r.time, name: r.name, species: r.species, breed: r.breed || "", owner: r.owner, phone: r.phone, reason: r.reason, note: r.note || "", pkey: pk, rem: r.rem ? 1 : 0 } }); } if (SECP) secOpenFile(pk); else ptJump(pk); };
     var hit = ptItems.filter(function (x) { return (ph && phN(x.phone || "") === ph && String(x.name || "").trim() === nm) || (!ph && String(x.name || "").trim() === nm && String(x.owner || "").trim() === ow); })[0] || (ph ? ptItems.filter(function (x) { return phN(x.phone || "") === ph; })[0] : null);
     if (hit && ptGroup(hit.pkey).length) return link(hit.pkey);
     toast("در حال ساخت پروندهٔ «" + nm + "»…", 2500);
     api({ a: "patSave", t: tokGet(), id: "", v: { name: r.name, species: r.species, breed: r.breed || "", owner: r.owner, phone: r.phone, date: td, reason: r.reason || "", note: "", follow: "", pkey: "" } }).then(function (j) { if (!j.ok) return toast("⚠️ " + errMsg(j.err), 7000); ptItems.unshift(j.item); ptLoaded = true; link(j.item.pkey); });
   }
-  document.addEventListener("click", function (e) { var b = e.target.closest && e.target.closest("[data-hb-apvisit]"); if (!b || SECP) return; var en = tdEnt[b.getAttribute("data-hb-apvisit")]; if (en && en.ap) { e.preventDefault(); apVisit(en.ap); } });
+  document.addEventListener("click", function (e) { var b = e.target.closest && e.target.closest("[data-hb-apvisit]"); if (!b) return; var en = tdEnt[b.getAttribute("data-hb-apvisit")]; if (en && en.ap) { e.preventDefault(); apVisit(en.ap); } });
   function ptToToday() { ptMode = "list"; ptEditV = null; dview("today"); try { window.scrollTo(0, 0); } catch (e) {} }
   function ptJump(k) { if (SECP) return; ptActOpen = false; ptBackView = root.getAttribute("data-dview") === "pt" ? "" : root.getAttribute("data-dview"); ptTab = ""; invOpenId = ""; ptPending = k; touchLog("patient", k); dview("pt"); if (ptLoaded && ptGroup(k).length) { ptPending = ""; ptCur = k; ptMode = "file"; ptEditV = null; ptShow(); } }
 
