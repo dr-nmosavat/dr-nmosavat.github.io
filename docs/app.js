@@ -2115,7 +2115,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (!vv.follow) return;
     api({ a: "apSave", t: tokGet(), id: "", v: { date: vv.follow, time: "", name: g.name, species: g.species, owner: g.owner, phone: g.phone, reason: vv.fu || "ویزیت مجدد", note: "مراجعهٔ بعدی (تعیین‌شده توسط دکتر)", pkey: pkey, rem: g.phone ? 1 : 0 } }).then(function (j) { if (j.ok) { apItems.push(j.item); toast("📅 مراجعهٔ بعدی ثبت شد · " + wdOf(vv.follow) + " " + jLabel(vv.follow) + (g.phone ? " · پیامک یادآور می‌رود" : " · (بدون شماره، پیامکی نمی‌رود)"), 6000); } else toast("⚠️ مراجعهٔ بعدی ثبت نشد: " + errMsg(j.err), 7000); });
   }
-  function ptSpecies(sel) { return '<div class="seg" data-seg="hb-ptsp">' + ["سگ", "گربه", "پرنده", "دیگر"].map(function (x) { return '<button type="button"' + (x === (sel || "سگ") ? ' class="on"' : "") + ' data-v="' + x + '">' + x + "</button>"; }).join("") + "</div>"; }
+  function ptSpecies(sel) { return '<div class="seg" data-seg="hb-ptsp">' + ["سگ", "گربه", "پرنده", "دیگر"].map(function (x) { return '<button type="button"' + (x === sel ? ' class="on"' : "") + ' data-v="' + x + '">' + x + "</button>"; }).join("") + "</div>"; }
   // نژاد: لیست کشویی بر اساس گونه + «سایر» برای نوشتن دستی
   var BR_MIX = "مخلوط / نامشخص";
   function breedFld(attr, val) { return '<div class="fld"><select data-hb-brsel="' + attr + '" aria-label="نژاد"></select><input data-' + attr + '="breed" type="text" maxlength="40" placeholder="نژاد را بنویسید" aria-label="نژاد" value="' + esc(val || "") + '" hidden></div>'; }
@@ -2358,6 +2358,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (t.closest("[data-hb-ptbook]")) { var g2 = ptGroup(ptCur)[0]; if (!g2) return; dview("new"); petForm(null); q("#hb-pn").value = g2.name; q("#hb-po").value = g2.owner || ""; q("#hb-ph").value = g2.phone || ""; var sb2 = q('[data-seg="hbsp"] [data-v="' + g2.species + '"]'); if (sb2) sb2.click(); toast("اطلاعات بیمار وارد شد؛ تاریخ تولد و رضایت را کامل کنید"); return; }
     if ((b = t.closest("[data-hb-ptsavenew]"))) {
       var mode = b.getAttribute("data-hb-ptsavenew"), er = q("[data-hb-pterr]"), btn = b, id = ptIdVals(), vv = ptNewVals(); if (!id.name) { er.textContent = "نام پت را بنویسید."; er.hidden = false; ptF("name").focus(); return; }
+      if (!id.species) { er.textContent = "نوع پت را انتخاب کنید (سگ، گربه، پرنده یا دیگر)."; er.hidden = false; try { q("[data-seg=\"hb-ptsp\"]").scrollIntoView({ block: "center" }); } catch (e8) {} return; }
       if (!vv.reason) { er.textContent = "دلیل مراجعه را انتخاب کنید."; er.hidden = false; return; }
       er.hidden = true; [].forEach.call(box0(), function (x) { x.disabled = true; }); var smsBox = q("[data-hb-ptsms-cb]"), wantSms = !!(smsBox && smsBox.checked), fa = ptFromAp; var v = { name: id.name, species: id.species, breed: id.breed, owner: id.owner, phone: id.phone, birth: id.birth, sex: id.sex, neut: id.neut, otitle: id.otitle, date: vv.date, reason: vv.reason, note: "", follow: "", pkey: "" };
       api({ a: "patSave", t: tokGet(), id: "", v: v }).then(function (j) {
@@ -3006,6 +3007,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       var er = q("[data-hb-aperr]"), btn = q("[data-hb-apsave]"), sel = apF("reason"), name = apF("name").value.trim();
       if (!name) { er.textContent = "نام پت را بنویسید."; er.hidden = false; apF("name").focus(); return; }
       var v = { date: apBox().querySelector("[data-hb-apother]").hidden ? apSel.date : APJ.d.get(), time: apSel.time, breed: apF("breed").value.trim(), name: name, species: segVal("hb-ptsp"), owner: apF("owner").value.trim(), phone: faDigits(apF("phone").value.trim()), reason: sel.value === "__other" ? apF("reasonx").value.trim() : sel.value.trim(), rem: apF("rem").checked ? 1 : 0, note: (apEditId && (apItems.filter(function (x) { return x.id === apEditId; })[0] || {}).note) || "", pkey: apLink || (apPref && apPref.pkey) || (apEditId && (apItems.filter(function (x) { return x.id === apEditId; })[0] || {}).pkey) || "" };
+      if (!v.species) { er.textContent = "نوع پت را انتخاب کنید (سگ، گربه، پرنده یا دیگر)."; er.hidden = false; try { q("[data-seg=\"hb-ptsp\"]").scrollIntoView({ block: "center" }); } catch (e8) {} return; }
       if (!v.date) { er.textContent = "روز نوبت را انتخاب کنید."; er.hidden = false; return; }
       if (!v.time) { er.textContent = "ساعت نوبت را انتخاب کنید."; er.hidden = false; return; }
       er.hidden = true; btn.disabled = true;
