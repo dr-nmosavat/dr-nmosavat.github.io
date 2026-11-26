@@ -2564,3 +2564,8 @@ html.hb-billmode .hb-blbar .btn.ghost { background: #fff; color: #1f3b63; border
 .hb-apr2 { margin-top: 2px; font-size: 12.5px; color: #4b5d73; line-height: 1.7; } .hb-apr2 .hb-apsm { font-size: 12px; }
 .hb-apr3 { display: flex; gap: 6px; margin-top: 5px; } .hb-apr3 .hb-apb2 { flex: 0 0 auto; min-height: 32px; padding: 2px 14px; margin: 0; font-size: 13px; border-radius: 10px; } .hb-apr3 .hb-apb-ed { flex: 0 0 56px; }
 .hb-apb-dl { background: #fff; border: 1px solid #e4b4b4; color: #b3382c; }
+/* سن و تاریخ تولد: دو کادر درشت (سال راست، ماه چپ) + تاریخ تولد جمع‌شونده بدون روز */
+.hb-agerow { display: flex !important; align-items: center; gap: 10px; flex-wrap: nowrap; } .hb-agerow .hb-lbl { flex: 0 0 auto; margin: 0; font-size: 14px; font-weight: 700; color: #1f3b63; white-space: nowrap; }
+.hb-agebox { flex: 1 1 0; min-width: 0; display: flex; align-items: center; gap: 6px; padding: 0 12px; min-height: 48px; border: 1.5px solid #9fb0c6; border-radius: 12px; background: #fff; } .hb-agebox span { flex: 0 0 auto; color: #4b5d73; font-size: 14px; font-weight: 700; }
+.hb-agebox input { flex: 1 1 auto; min-width: 0; width: 100% !important; border: 0 !important; background: transparent !important; text-align: center; font-size: 20px; font-weight: 800; min-height: 44px !important; padding: 0 !important; box-shadow: none !important; outline: none; }
+.hb-bdet { margin: 0 0 8px; } .hb-bdet summary { cursor: pointer; font-size: 13.5px; font-weight: 700; color: #1f5aa6; padding: 6px 2px; } .hb-bdsel { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; } .hb-bdsel select { min-height: 44px; }
