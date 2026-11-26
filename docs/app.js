@@ -2162,8 +2162,8 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       + '<div class="fld">' + ptSpecies(r && r.species) + "</div>"
       + breedFld("pt", r && r.breed)
       + '<div class="fld hb-sxrow">' + segOpts("hb-ptsex", ["نر", "ماده"], r && r.sex) + '<label class="hb-neut"><input type="checkbox" data-pt="neut"' + (r && r.neut === "عقیم" ? " checked" : "") + '> عقیم</label></div>'
-      + '<div class="fld hb-agerow"><span class="hb-lbl">🎂 سن پت:</span><label class="hb-agebox"><input type="text" inputmode="numeric" dir="ltr" data-pt="agey" placeholder="۰" maxlength="2"><span>سال</span></label><label class="hb-agebox"><input type="text" inputmode="numeric" dir="ltr" data-pt="agem" placeholder="۰" maxlength="2"><span>ماه</span></label></div>'
-      + '<details class="hb-bdet"><summary>📅 تاریخ تولد را می‌دانم</summary><div class="hb-bdsel"><select data-pby aria-label="سال تولد"></select><select data-pbm aria-label="ماه تولد"></select></div></details>';
+      + '<div class="fld hb-agerow"><span class="hb-lbl">🎂 سن پت:</span><label class="hb-agebox"><input type="text" inputmode="numeric" dir="ltr" data-pt="agem" placeholder="۰" maxlength="2"><span>ماه</span></label><label class="hb-agebox"><input type="text" inputmode="numeric" dir="ltr" data-pt="agey" placeholder="۰" maxlength="2"><span>سال</span></label></div>'
+      + '<details class="hb-bdet"><summary>📅 تاریخ تولد را می‌دانم</summary><div class="hb-bdsel"><select data-pbm aria-label="ماه تولد"></select><select data-pby aria-label="سال تولد"></select></div></details>';
   }
   function segOpts(n, l, sel) { return '<div class="seg" data-seg="' + n + '">' + l.map(function (x) { return '<button type="button"' + (x === sel ? ' class="on"' : "") + ' data-v="' + x + '">' + x + "</button>"; }).join("") + "</div>"; }
   function ptIdInit(r) {
