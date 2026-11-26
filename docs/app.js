@@ -2399,7 +2399,16 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   }
   var lkEl = null;
   function lkBox(ctx) { var b = lkEl && lkEl.parentNode && lkEl.parentNode.querySelector(".hb-lkres"); return b || q('[data-hb-lkres="' + ctx + '"]'); }
+  function lkNorm(x) { return String(x || "").replace(/[يى]/g, "ی").replace(/ك/g, "ک").replace(/[\u200c\u200f\s]+/g, " ").trim().toLowerCase(); }
+  function lkClean(items) {   // نوبت قبلیِ هم‌نام و هم‌سرپرست با یک پروندهٔ موجود، تکراری است و نشان داده نشود
+    var real = items.filter(function (x) { return x.kind !== "appt"; });
+    return items.filter(function (it) {
+      if (it.kind !== "appt") return true;
+      return !real.some(function (r) { return (it.pkey && r.pkey === it.pkey) || (lkNorm(r.name) === lkNorm(it.name) && ((lkNorm(r.owner) && lkNorm(r.owner) === lkNorm(it.owner)) || (phN(r.phone || "") && phN(r.phone || "") === phN(it.phone || "")))); });
+    });
+  }
   function lkShow(ctx, items) {
+    items = lkClean(items);
     var box = lkBox(ctx); if (!box) return; lkRes[ctx] = items = items.slice(0, 12); items.forEach(function (it) { if (/^9\d{9}$/.test(String(it.phone || ""))) it.phone = "0" + it.phone; });
     box.innerHTML = items.length ? '<div class="hb-lkt">قبلاً آمده؟ برای پرکردن فرم لمس کنید:</div>' + items.map(function (it, k) { return '<button type="button" class="hb-lkb" data-hb-lkpick="' + ctx + '" data-i="' + k + '"><b>' + esc(it.name) + '</b><small>' + esc(it.species || "") + (it.breed ? " · " + esc(it.breed) : "") + (it.owner ? " · " + esc(it.owner) : "") + (it.phone ? ' · <span dir="ltr">' + esc(it.phone) + "</span>" : "") + " · " + (it.kind === "pet" ? "شناسنامه‌دار" : it.kind === "patient" ? "پرونده دارد" : "نوبت قبلی") + '</small></button>'; }).join("") : '<small class="hb-lkn">در سوابق نبود؛ فرم را پر کنید.</small>';
   }
@@ -2834,7 +2843,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (!(e.target && e.target.matches && e.target.matches("[data-hb-tdq]"))) return;
     tdQ = faDigits(e.target.value).trim(); clearTimeout(tdT); var r0 = q("[data-hb-tdres]");
     if (tdQ.length < 2) { tdRes = []; if (r0) r0.innerHTML = ""; return; }
-    tdT = setTimeout(function () { var qq = tdQ; if (r0) r0.innerHTML = '<p class="hb-qmsg">در حال جستجو…</p>'; api({ a: "lookup", t: tokGet(), q: /^[\d\s+-]+$/.test(qq) ? phN(qq) : qq }).then(function (j) { if (qq !== tdQ) return; tdRes = (j.ok && j.items) || []; tdRes.forEach(function (it) { if (/^9\d{9}$/.test(String(it.phone || ""))) it.phone = "0" + it.phone; }); var r1 = q("[data-hb-tdres]"); if (r1) r1.innerHTML = tdResHtml(); }); }, 450);
+    tdT = setTimeout(function () { var qq = tdQ; if (r0) r0.innerHTML = '<p class="hb-qmsg">در حال جستجو…</p>'; api({ a: "lookup", t: tokGet(), q: /^[\d\s+-]+$/.test(qq) ? phN(qq) : qq }).then(function (j) { if (qq !== tdQ) return; tdRes = lkClean((j.ok && j.items) || []); tdRes.forEach(function (it) { if (/^9\d{9}$/.test(String(it.phone || ""))) it.phone = "0" + it.phone; }); var r1 = q("[data-hb-tdres]"); if (r1) r1.innerHTML = tdResHtml(); }); }, 450);
   });
   document.addEventListener("click", function (e) {
     var b = e.target.closest && e.target.closest("[data-hb-tdtoday],[data-hb-tdnap]"); if (!b) return;
