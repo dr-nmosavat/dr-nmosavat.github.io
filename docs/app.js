@@ -2079,27 +2079,37 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (SECP) return VDATE + '<div class="fld"><label>دلیل مراجعه <small>(کوتاه)</small></label><input data-pt="reasonx" type="text" maxlength="150" placeholder="مثلاً: واکسن، ویزیت، آزمایش"></div>';
     return VDATE
       + '<div class="fld"><label>دلیل مراجعه</label><select data-pt="reason"><option value="">— علت تخصصی مراجعه را انتخاب کنید —</option>' + PT_REASONS.map(function (r) { return '<option value="' + esc(r) + '">' + esc(r) + "</option>"; }).join("") + '<option value="__other">سایر (خودم می‌نویسم)…</option></select><input data-pt="reasonx" type="text" maxlength="150" placeholder="دلیل مراجعه را بنویسید" hidden></div>'
-      + '<div class="fld"><label>🔍 یافته‌ها <small>(معاینه، علائم)</small></label><textarea data-pt="find" rows="3" maxlength="700"></textarea></div>'
-      + '<div class="fld"><label>💊 تشخیص و درمان</label><textarea data-pt="note" rows="3" maxlength="800"></textarea></div>'
+      + '<div class="fld"><label>🔍 یافته‌ها <small>(مشاهدات بالینی، معاینه، علائم)</small></label><textarea data-pt="find" rows="3" maxlength="450"></textarea></div>'
+      + '<div class="fld"><label>🩺 تشخیص</label><textarea data-pt="note" rows="2" maxlength="350"></textarea></div>'
+      + '<div class="fld"><label>💊 درمان</label><textarea data-pt="treat" rows="3" maxlength="450"></textarea></div>'
       + '<details class="hb-ptmore" data-hb-ptmore><summary>📅 مراجعهٔ بعدی (پیامک یادآور خودکار)</summary><div class="fld"><label>چه روزی بیاید؟ <small>(اختیاری)</small></label><div class="jd" data-pjd="f"></div></div>'
       + '<div class="fld"><label>به چه دلیل؟</label><select data-pt="fureason">' + FU_REASONS.map(function (r) { return '<option value="' + esc(r) + '">' + esc(r) + "</option>"; }).join("") + '<option value="__other">سایر (خودم می‌نویسم)…</option></select><input data-pt="fureasonx" type="text" maxlength="150" placeholder="دلیل مراجعهٔ بعدی" hidden></div></details>';
   }
   // یادداشت دکتر در یک ستون ذخیره می‌شود: «یافته‌ها: …» و «تشخیص و درمان: …»
-  var NF = "یافته‌ها: ", ND = "تشخیص و درمان: ";
+  var NF = "یافته‌ها: ", ND = "تشخیص: ", NT = "درمان: ", NDO = "تشخیص و درمان: ";
   var NC = "شکایت پذیرش: ";
-  function noteJoin(f, d, c) { f = String(f || "").trim(); d = String(d || "").trim(); c = String(c || "").trim(); if (!f && !d) return ""; return (c ? NC + c + "\n" : "") + (f ? NF + f : "") + (f && d ? "\n" : "") + (d ? ND + d : ""); }
-  function noteSplit(n) {
-    n = String(n || ""); var c = "", k = n.indexOf(NC); if (k > -1) { var e = n.indexOf("\n", k); c = n.slice(k + NC.length, e > -1 ? e : undefined).trim(); n = (n.slice(0, k) + (e > -1 ? n.slice(e + 1) : "")).trim(); }
-    var i = n.indexOf(NF), j = n.indexOf(ND); if (i < 0 && j < 0) return { f: "", d: n, c: c }; var f = i > -1 ? n.slice(i + NF.length, j > i ? j : undefined).trim() : "", d = j > -1 ? n.slice(j + ND.length, i > j ? i : undefined).trim() : ""; return { f: f, d: d, c: c };
+  function noteJoin(f, d, c, t) {
+    f = String(f || "").trim(); d = String(d || "").trim(); c = String(c || "").trim(); t = String(t || "").trim(); if (!f && !d && !t) return "";
+    return [c ? NC + c : "", f ? NF + f : "", d ? ND + d : "", t ? NT + t : ""].filter(Boolean).join("\n");
   }
-  function hasClin(n) { var o = noteSplit(n); return !!(o.f || o.d); }
+  function noteSplit(n) {
+    n = String(n || ""); var o = { c: "", f: "", d: "", t: "" }, MK = [[NC, "c"], [NF, "f"], [NDO, "d"], [ND, "d"], [NT, "t"]], cur = "", any = false;
+    n.split("\n").forEach(function (line) {
+      var hit = MK.filter(function (m) { return line.indexOf(m[0]) === 0; })[0];
+      if (hit) { cur = hit[1]; any = true; o[cur] += (o[cur] ? "\n" : "") + line.slice(hit[0].length); } else if (cur) o[cur] += "\n" + line; else o.d += (o.d ? "\n" : "") + line;
+    });
+    ["c", "f", "d", "t"].forEach(function (k) { o[k] = o[k].trim(); });
+    if (!any) { o.d = n.trim(); }
+    return o;
+  }
+  function hasClin(n) { var o = noteSplit(n); return !!(o.f || o.d || o.t); }
   function ptSetReason(r) { var sel = ptF("reason"), rx = ptF("reasonx"); if (!sel) { if (rx) rx.value = r || ""; return; } if (r && PT_REASONS.indexOf(r) < 0) { sel.value = "__other"; rx.value = r; rx.hidden = false; } else sel.value = r || ""; }
   function ptInitVisit(v) {
     var box = ptBox(); PTJ.d = initJd(box.querySelector('[data-pjd="d"]'), { minY: -10, maxY: 0 }); PTJ.d.set(v && v.date || isoNow()); if (v && v.date && v.date !== isoNow()) { box.querySelector("[data-hb-vdate]").hidden = false; box.querySelector(".hb-vdl").hidden = true; }
     ptSetReason(v && v.reason || "");
     if (SECP) return;
     PTJ.f = initJd(box.querySelector('[data-pjd="f"]'), { optional: true, minY: -1, maxY: 2 }); PTJ.f.set(v && v.follow || ""); var mo = box.querySelector("[data-hb-ptmore]"); if (mo && v && v.follow) mo.open = true;
-    var np = noteSplit(v && v.note || ""); ptF("find").value = np.f; ptF("note").value = np.d;
+    var np = noteSplit(v && v.note || ""); ptF("find").value = np.f; ptF("note").value = np.d; ptF("treat").value = np.t;
     var sel = ptF("reason"), rx = ptF("reasonx"), fs = ptF("fureason"), fx = ptF("fureasonx");
     sel.addEventListener("change", function () { rx.hidden = sel.value !== "__other"; if (!rx.hidden) rx.focus(); });
     fs.addEventListener("change", function () { fx.hidden = fs.value !== "__other"; if (!fx.hidden) fx.focus(); });
@@ -2108,7 +2118,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (SECP) return { date: PTJ.d.get(), reason: ptF("reasonx").value.trim(), note: "", follow: "", fu: "" };
     var sel = ptF("reason"), fs = ptF("fureason");
     var compl = ptEditV ? noteSplit(ptEditV.note).c : ""; if (!compl && (!ptEditV || ptEditV === emptyTodayVisit(ptCur)) && !visitedToday(ptCur)) { var tv = emptyTodayVisit(ptCur); compl = tv ? tv.reason : qReasonFor(ptCur); }
-    return { date: PTJ.d.get(), reason: sel.value === "__other" ? ptF("reasonx").value.trim() : sel.value, note: noteJoin(ptF("find").value, ptF("note").value, compl), follow: PTJ.f.get(), fu: fs.value === "__other" ? ptF("fureasonx").value.trim() : fs.value };
+    return { date: PTJ.d.get(), reason: sel.value === "__other" ? ptF("reasonx").value.trim() : sel.value, note: noteJoin(ptF("find").value, ptF("note").value, compl, ptF("treat").value), follow: PTJ.f.get(), fu: fs.value === "__other" ? ptF("fureasonx").value.trim() : fs.value };
   }
   // مراجعهٔ بعدی دکتر = یک نوبت با پیامک یادآور
   function ptFollowAppt(g, pkey, vv) {
@@ -2235,7 +2245,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function ptMedHtml(g) {
     return g.map(function (v) {
         var np = noteSplit(v.note || ""); return '<div class="hb-ptv"><div class="hb-ptvh" data-hb-ptvtog="' + esc(v.id) + '" role="button"><div class="hb-ptvt"><b>' + esc(fd(v.date)) + "</b>" + (v.reason ? " · " + esc(v.reason) : "") + (v.follow ? ' <small class="hb-ptfu">پیگیری: ' + esc(fd(v.follow)) + "</small>" : "") + ' <span class="hb-arw">▾</span></div></div>' + (np.c ? '<div class="hb-ptvc">🗣 شکایت پذیرش: ' + esc(np.c) + "</div>" : "") + visInv(v)
-          + '<div class="hb-ptvd" data-hb-ptvd="' + esc(v.id) + '" hidden>' + (np.f ? '<p class="hb-ptn"><b>🔍 یافته‌ها:</b> ' + esc(np.f) + "</p>" : "") + (np.d ? '<p class="hb-ptn"><b>💊 تشخیص و درمان:</b> ' + esc(np.d) + "</p>" : "") + (!np.f && !np.d ? '<p class="hb-ptn hb-mut">یادداشتی ثبت نشده است.</p>' : "") + "</div>"
+          + '<div class="hb-ptvd" data-hb-ptvd="' + esc(v.id) + '" hidden>' + (np.f ? '<p class="hb-ptn"><b>🔍 یافته‌ها:</b> ' + esc(np.f) + "</p>" : "") + (np.d ? '<p class="hb-ptn"><b>🩺 تشخیص:</b> ' + esc(np.d) + "</p>" : "") + (np.t ? '<p class="hb-ptn"><b>💊 درمان:</b> ' + esc(np.t) + "</p>" : "") + (!np.f && !np.d && !np.t ? '<p class="hb-ptn hb-mut">یادداشتی ثبت نشده است.</p>' : "") + "</div>"
           + '<div class="hb-ptvb"><button type="button" class="btn small ghost" data-hb-ptedit="' + esc(v.id) + '">✏️ ویرایش</button><button type="button" class="btn small ghost hb-danger" data-hb-ptdel="' + esc(v.id) + '">🗑 حذف</button></div></div>';
       }).join("");
   }
