@@ -2554,3 +2554,13 @@ html.hb-billmode .hb-blbar .btn.ghost { background: #fff; color: #1f3b63; border
 .hb-rsx { width: 100%; min-height: 44px; padding: 8px 12px; margin-bottom: 12px; border: 1px solid #cbd5e1; border-radius: 12px; font: inherit; font-size: 15px; }
 .hb-rsa { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } .hb-rsa .btn { min-height: 46px; margin: 0; width: 100%; } .hb-rsa .primary { grid-column: 1 / -1; background: #17a05d; border-color: #17a05d; color: #fff; font-weight: 800; }
 .hb-ptvc { margin: 2px 0 4px; padding: 4px 10px; background: #fff4d6; border-radius: 8px; color: #6f4a00; font-size: 13px; } .hb-rsc h3 small { font-weight: 400; color: #5b6b80; font-size: 12px; }
+/* لیست نوبت‌ها: ردیف‌های کوچک و باریک */
+.hb-apr { padding: 6px 10px; margin: 5px 0; background: #fff; border: 1.5px solid #b8c7dc; border-radius: 12px; }
+.hb-apr.ap-cancelled { opacity: .7; background: #f6f7f9; } .hb-apr.ap-done { background: #eef8f1; border-color: #b7e1c4; }
+.hb-apr1 { display: flex; align-items: center; gap: 8px; min-width: 0; } .hb-apr1 b { flex: 0 0 auto; color: #1f5aa6; font-size: 15px; direction: ltr; }
+.hb-apr1 .hb-apn { flex: 1 1 auto; min-width: 0; font-weight: 800; font-size: 15px; color: #1f3b63; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hb-apr1 em { flex: 0 0 auto; font-style: normal; font-size: 12px; padding: 1px 8px; border-radius: 999px; background: #eef2f8; white-space: nowrap; }
+.hb-apr1 .hb-aprb { flex: 0 0 auto; width: 30px; height: 30px; padding: 0; border: 1px solid #cfdff1; border-radius: 50%; background: #fff; font-size: 14px; }
+.hb-apr2 { margin-top: 2px; font-size: 12.5px; color: #4b5d73; line-height: 1.7; } .hb-apr2 .hb-apsm { font-size: 12px; }
+.hb-apr3 { display: flex; gap: 6px; margin-top: 5px; } .hb-apr3 .hb-apb2 { flex: 0 0 auto; min-height: 32px; padding: 2px 14px; margin: 0; font-size: 13px; border-radius: 10px; } .hb-apr3 .hb-apb-ed { flex: 0 0 56px; }
+.hb-apb-dl { background: #fff; border: 1px solid #e4b4b4; color: #b3382c; }
