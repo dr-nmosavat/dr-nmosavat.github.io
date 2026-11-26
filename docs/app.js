@@ -2813,16 +2813,15 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     var bx = repBox(); if (!bx) return; if (SECP) repMode = "d"; var ms = repMonths(); if (!repM) repM = ms[0].join("-"); if (!repD) repD = isoNow();
     var modes = SECP ? "" : '<div class="seg hb-repmode"><button type="button" class="btn small ' + (repMode === "d" ? "primary" : "ghost") + '" data-hb-repmode="d">📆 روزانه</button><button type="button" class="btn small ' + (repMode === "m" ? "primary" : "ghost") + '" data-hb-repmode="m">📊 ماهانه</button><button type="button" class="btn small ' + (repMode === "f" ? "primary" : "ghost") + '" data-hb-repmode="f">🗂 هر پرونده</button></div>';
     if (repMode === "d") {
-      bx.innerHTML = '<div class="hb-ptform">' + modes + '<h3 class="hb-pth">📆 گزارش روزانه</h3><div class="hb-rdnav"><button type="button" class="btn small ghost" data-hb-rdd="1">→ روز بعد</button><b data-hb-rdlab></b><button type="button" class="btn small ghost" data-hb-rdd="-1">روز قبل ←</button></div><div class="hb-rdtd"><button type="button" class="btn small ghost" data-hb-rdd="0">امروز</button><details class="hb-rdpk"><summary>📅 انتخاب تاریخ دیگر</summary><div class="jd" data-pjd="rd"></div></details></div><div data-hb-repout><p class="hb-qmsg">در حال بارگذاری…</p></div></div>';
-      var jd = initJd(bx.querySelector('[data-pjd="rd"]'), { minY: -2, maxY: 0 }); jd.set(repD); bx.querySelector('[data-pjd="rd"]').addEventListener("change", function () { var d = jd.get(); if (d) { repD = d; repLoadD(); } });
+      var td0 = isoNow(), opts = ""; for (var k = 0; k < 60; k++) { var dd = isoPlus(td0, -k); opts += '<option value="' + dd + '"' + (dd === repD ? " selected" : "") + ">" + (k === 0 ? "امروز · " : k === 1 ? "دیروز · " : "") + wdOf(dd) + " " + jLabel(dd) + "</option>"; }
+      bx.innerHTML = '<div class="hb-ptform">' + modes + '<h3 class="hb-pth">📆 گزارش روزانه</h3><div class="hb-rdsw"><select data-hb-rdsel aria-label="روز گزارش">' + opts + '</select></div><div data-hb-repout><p class="hb-qmsg">در حال بارگذاری…</p></div></div>';
       return repLoadD();
     }
     bx.innerHTML = '<div class="hb-ptform">' + modes + (repMode === "f" ? '<div data-hb-repfile></div></div>' : '<h3 class="hb-pth">📊 گزارش ماهانه</h3><div class="fld"><select data-hb-repm>' + ms.map(function (x) { var k = x.join("-"); return '<option value="' + k + '"' + (k === repM ? " selected" : "") + ">" + MON[x[1] - 1] + " " + toolFa(x[0]) + "</option>"; }).join("") + '</select></div><div data-hb-repout><p class="hb-qmsg">در حال بارگذاری…</p></div></div>');
     if (repMode === "f") return repFileInit(); repLoad();
   }
   function repLoadD() {
-    var bx = repBox(), out = bx.querySelector("[data-hb-repout]"), lab = bx.querySelector("[data-hb-rdlab]"), d = repD, td = isoNow();
-    if (lab) lab.textContent = (d === td ? "امروز · " : "") + wdOf(d) + " " + jLabel(d);
+    var bx = repBox(), out = bx.querySelector("[data-hb-repout]"), d = repD, td = isoNow();
     out.innerHTML = '<p class="hb-qmsg">در حال بارگذاری…</p>';
     var need = !SECP && !ptItems.length; var pr = need ? api({ a: "patList", t: tokGet() }) : Promise.resolve(null);
     Promise.all([api({ a: "invList", t: tokGet(), from: d }), pr]).then(function (r) {
@@ -2840,12 +2839,21 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
         var top = Object.keys(sv).sort(function (a, b) { return sv[b].s - sv[a].s; });
         if (top.length) html += '<h4 class="hb-pth2">خدمات این روز</h4><table class="hb-invt"><tr><th>خدمت</th><th>تعداد</th><th>مبلغ</th></tr>' + top.map(function (k) { return "<tr><td>" + (svcIcon(k) ? svcIcon(k) + " " : "") + esc(k) + "</td><td>" + toolFa(sv[k].n) + "</td><td>" + money(sv[k].s) + "</td></tr>"; }).join("") + "</table>";
         html += drShare(l);
-        if (l.length) html += '<h4 class="hb-pth2">فهرست فاکتورها</h4>' + l.map(function (v) { var st = INV_ST[v.status] || [v.status, "pend"]; return '<div class="hb-rdrow"><span><b>' + esc(v.name) + "</b> · " + esc(v.owner || "") + '</span><em class="hb-st st-' + st[1] + '">' + st[0] + "</em><b>" + money(v.total) + "</b></div>"; }).join("");
       }
+      if (l.length) html += '<h4 class="hb-pth2">فهرست فاکتورها <small class="hb-mut">(برای دیدن ریز، لمس کنید)</small></h4>' + l.map(function (v) {
+        var st = INV_ST[v.status] || [v.status, "pend"], fn1 = fnoOfPk(v.pkey);
+        var det = (v.items || []).map(function (x) { return "<tr><td>" + (svcIcon(x.name) ? svcIcon(x.name) + " " : "") + esc(x.name) + "</td><td>" + toolFa(x.qty) + "</td><td>" + money(x.qty * x.price) + "</td></tr>"; }).join("");
+        return '<button type="button" class="hb-rdrow" data-hb-rdinv="' + esc(v.id) + '"><span><b>' + esc(v.name) + "</b> · " + esc(v.owner || "") + '</span><em class="hb-st st-' + st[1] + '">' + st[0] + "</em><b>" + money(v.total) + '</b></button><div class="hb-rdd2" data-hb-rdd2 hidden><div class="hb-rdd2h">' + esc(v.id) + (fn1 ? " · پروندهٔ " + esc(fn1) : "") + '</div><table class="hb-invt"><tr><th>خدمت</th><th>تعداد</th><th>مبلغ</th></tr>' + det + "</table>" + (v.disc ? '<div class="hb-rdd2l"><span>تخفیف</span><span>− ' + money(v.disc) + "</span></div>" : "") + (v.tax ? '<div class="hb-rdd2l"><span>مالیات ۱۰٪</span><span>' + money(v.tax) + "</span></div>" : "") + '<div class="hb-rdd2l hb-rdd2t"><span>مبلغ کل</span><span>' + money(v.total) + "</span></div>" + (v.paid ? '<div class="hb-rdd2l"><span>پرداخت‌شده' + (v.method ? " · " + esc(v.method) : "") + "</span><span>" + money(v.paid) + "</span></div>" : "") + (v.status !== "paid" && v.status !== "free" && v.total - v.paid > 0 ? '<div class="hb-rdd2l hb-rdd2m"><span>مانده</span><span>' + money(v.total - v.paid) + "</span></div>" : "") + "</div>";
+      }).join("");
       out.innerHTML = l.length ? html : '<p class="hb-qmsg">در این روز فاکتوری ثبت نشده است.</p>' + (Object.keys(vis).length && !SECP ? '<div class="hb-rdbox"><div><span>تعداد مراجعه</span><b>' + toolFa(Object.keys(vis).length) + "</b></div></div>" : "");
     });
   }
-  document.addEventListener("click", function (e) { var b = e.target.closest && e.target.closest("[data-hb-rdd]"); if (!b || !repBox() || !repBox().contains(b)) return; var k = +b.getAttribute("data-hb-rdd"), td = isoNow(); repD = k === 0 ? td : isoPlus(repD || td, k); if (repD > td) repD = td; repEnter(); });
+  document.addEventListener("change", function (e) { var t = e.target; if (t && t.hasAttribute && t.hasAttribute("data-hb-rdsel")) { repD = t.value; repLoadD(); } });
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest && e.target.closest("[data-hb-rdinv]"); if (!b) return; var id = b.getAttribute("data-hb-rdinv"), nx = b.nextElementSibling, open = nx && nx.hasAttribute("data-hb-rdd2") && !nx.hidden;
+    [].forEach.call(document.querySelectorAll("[data-hb-rdd2]"), function (x) { x.hidden = true; }); [].forEach.call(document.querySelectorAll(".hb-rdrow.open"), function (x) { x.classList.remove("open"); });
+    if (!open && nx) { nx.hidden = false; b.classList.add("open"); }
+  });
   function repLoad() {
     var p0 = repM.split("-"), y = +p0[0], m = +p0[1], from = j2g(y, m, 1), to = m === 12 ? j2g(y + 1, 1, 1) : j2g(y, m + 1, 1), out = repBox().querySelector("[data-hb-repout]");
     api({ a: "invList", t: tokGet(), from: from }).then(function (j) {

@@ -2575,3 +2575,10 @@ html.hb-billmode .hb-blbar .btn.ghost { background: #fff; color: #1f3b63; border
 .hb-rdbox { margin: 8px 0; padding: 10px 12px; background: #fff; border: 1.5px solid #b8c7dc; border-radius: 14px; } .hb-rdbox h4 { margin: 0 0 6px; font-size: 14.5px; color: #1f3b63; } .hb-rdbox > div { display: flex; justify-content: space-between; gap: 10px; padding: 3px 0; font-size: 14px; } .hb-rdbox > div span { color: #4b5d73; } .hb-rdbox > div b { color: #1f3b63; white-space: nowrap; }
 .hb-rdcash { background: #eaf7ef; border-color: #7cc19a; } .hb-rdbox .hb-rdtot { margin-top: 4px; padding-top: 6px; border-top: 1px dashed #7cc19a; font-size: 16px; } .hb-rdbox .hb-rdtot b { color: #12684a; font-size: 17px; } .hb-rdbox .hb-rdd b, .hb-rdbox .hb-rdd span { color: #a12a2a; }
 .hb-rdrow { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 8px; padding: 6px 10px; margin: 4px 0; background: #fff; border: 1px solid #d3deec; border-radius: 10px; font-size: 13.5px; } .hb-rdrow > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* گزارش روزانه: انتخاب روز + ریز فاکتور */
+.hb-rdsw { margin: 6px 0 10px; } .hb-rdsw select { width: 100%; min-height: 48px; font: inherit; font-size: 16px; font-weight: 700; padding: 8px 12px; border: 1.5px solid #1f5aa6; border-radius: 12px; background: #fff; color: #1f3b63; }
+button.hb-rdrow { width: 100%; font: inherit; font-size: 14px; text-align: right; cursor: pointer; color: inherit; min-height: 44px; }
+button.hb-rdrow.open { background: #eaf2fc; border-color: #1f5aa6; margin-bottom: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.hb-rdd2 { background: #f6f9fd; border: 1px solid #1f5aa6; border-top: 0; border-radius: 0 0 10px 10px; padding: 8px 12px 10px; margin: 0 0 6px; } .hb-rdd2[hidden] { display: none; }
+.hb-rdd2h { font-size: 12.5px; color: #5b6b80; } .hb-rdd2l { display: flex; justify-content: space-between; margin: 3px 0; font-size: 14px; }
+.hb-rdd2t { font-weight: 800; color: #1f3b63; border-top: 1px solid #c9d6e8; padding-top: 4px; } .hb-rdd2m { color: #c0392b; font-weight: 700; }
