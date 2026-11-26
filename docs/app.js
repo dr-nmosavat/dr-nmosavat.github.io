@@ -2483,7 +2483,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     return { wait: wait, done: done, other: other };
   }
   function qCard(e, done) {
-    var open = e.pkey ? 'data-hb-tdpt="' + esc(e.pkey) + '"' : "data-hb-apgo";
+    var open = e.pkey ? 'data-hb-tdpt="' + esc(e.pkey) + '"' : (!SECP && e.ap ? 'data-hb-apvisit="' + esc(e.k) + '"' : "data-hb-apgo");
     var tag = e.ap ? ' <span class="hb-tdtag">🗓 نوبت' + (done ? " داشت" : "") + (e.ap.time ? " " + toolFa(e.ap.time) : "") + "</span>" : "";
     var st = done ? ' <span class="hb-tdvb">ویزیت شد</span>' : ' <span class="hb-tdwb">⏳ در انتظار</span>', iv = done && e.pkey ? invOf(e.pkey) : null;
     if (iv) { st += iv.status === "paid" ? ' <span class="hb-ivb hb-ivok">✅ تسویه · ' + money(iv.total) + "</span>" : iv.status === "free" ? ' <span class="hb-ivb">بدون هزینه</span>' : ' <span class="hb-ivb hb-ivpend">💳 ' + money(iv.total - iv.paid) + "</span>"; if (SECP || iv.status === "pending" || iv.status === "partial") open = 'data-hb-invopen="' + esc(iv.id) + '"'; }
@@ -2862,6 +2862,15 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     el.innerHTML = l.length ? '<div class="hb-ptdue hb-tdapb"><b>⏳ در انتظار ویزیت (' + toolFa(l.length) + ")</b>" + l.map(function (r) { return '<button type="button" class="hb-ptdr" data-hb-apgo><span>' + (r.time ? toolFa(r.time) + " · " : "") + esc(r.name) + (r.owner ? " · " + esc(r.owner) : "") + "</span></button>"; }).join("") + "</div>" : "";
   }
   // بعد از ثبت ویزیت: فرم بسته شود و به «امروز» برگردد
+  function apVisit(r) {
+    if (!r) return; var td = apToday || isoNow(), ph = phN(r.phone || ""), nm = String(r.name || "").trim(), ow = String(r.owner || "").trim();
+    var link = function (pk) { if (r.pkey !== pk) { r.pkey = pk; api({ a: "apSave", t: tokGet(), id: r.id, v: { date: r.date, time: r.time, name: r.name, species: r.species, breed: r.breed || "", owner: r.owner, phone: r.phone, reason: r.reason, note: r.note || "", pkey: pk, rem: r.rem ? 1 : 0 } }); } ptJump(pk); };
+    var hit = ptItems.filter(function (x) { return (ph && phN(x.phone || "") === ph && String(x.name || "").trim() === nm) || (!ph && String(x.name || "").trim() === nm && String(x.owner || "").trim() === ow); })[0] || (ph ? ptItems.filter(function (x) { return phN(x.phone || "") === ph; })[0] : null);
+    if (hit && ptGroup(hit.pkey).length) return link(hit.pkey);
+    toast("در حال ساخت پروندهٔ «" + nm + "»…", 2500);
+    api({ a: "patSave", t: tokGet(), id: "", v: { name: r.name, species: r.species, breed: r.breed || "", owner: r.owner, phone: r.phone, date: td, reason: r.reason || "", note: "", follow: "", pkey: "" } }).then(function (j) { if (!j.ok) return toast("⚠️ " + errMsg(j.err), 7000); ptItems.unshift(j.item); ptLoaded = true; link(j.item.pkey); });
+  }
+  document.addEventListener("click", function (e) { var b = e.target.closest && e.target.closest("[data-hb-apvisit]"); if (!b || SECP) return; var en = tdEnt[b.getAttribute("data-hb-apvisit")]; if (en && en.ap) { e.preventDefault(); apVisit(en.ap); } });
   function ptToToday() { ptMode = "list"; ptEditV = null; dview("today"); try { window.scrollTo(0, 0); } catch (e) {} }
   function ptJump(k) { if (SECP) return; ptActOpen = false; ptBackView = root.getAttribute("data-dview") === "pt" ? "" : root.getAttribute("data-dview"); ptTab = ""; invOpenId = ""; ptPending = k; touchLog("patient", k); dview("pt"); if (ptLoaded && ptGroup(k).length) { ptPending = ""; ptCur = k; ptMode = "file"; ptEditV = null; ptShow(); } }
 
