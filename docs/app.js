@@ -2115,6 +2115,11 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     fs.addEventListener("change", function () { fx.hidden = fs.value !== "__other"; if (!fx.hidden) fx.focus(); });
   }
   // با عوض‌کردن تب (فاکتورها/سوابق/عملیات) پروندهٔ نیمه‌پر مراجعه و جای اسکرول حفظ شود
+  function ptVTitle() {
+    var vf = q(".hb-ptvform"), vt = q("[data-hb-ptvt]"); if (!vf || !vt || ptEditV || SECP) return; var coll = vf.classList.contains("hb-coll"), v = visitedToday(ptCur);
+    var draft = coll && ["find", "note", "treat"].some(function (k) { var e = ptF(k); return e && e.value.trim(); }) ? " · پیش‌نویس دارد" : "";
+    vt.innerHTML = (coll ? (v ? "✅ امروز ویزیت شده · ثبت مراجعهٔ دیگر" : "📝 ثبت مراجعهٔ امروز") + draft : "پروندهٔ بیمار · مراجعهٔ امروز") + ' <span class="hb-arw">' + (coll ? "▾" : "▴") + "</span>";
+  }
   function ptVSnap() {
     if (SECP || !ptF("reason")) return null; var mo = q("[data-hb-ptmore]");
     return { y: window.pageYOffset, d: PTJ.d ? PTJ.d.get() : "", r: ptF("reason").value, rx: ptF("reasonx").value, f: ptF("find").value, n: ptF("note").value, t: ptF("treat").value, fol: PTJ.f ? PTJ.f.get() : "", fr: ptF("fureason").value, frx: ptF("fureasonx").value, open: !!(mo && mo.open), ed: ptEditV };
@@ -2219,7 +2224,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (!e) return ""; var r = ""; if (e.pkey) { var tv = emptyTodayVisit(e.pkey); if (tv && tv.reason) r = tv.reason; }
     if (!r && e.ap && e.ap.reason && e.ap.reason !== "در انتظار ویزیت") r = e.ap.reason; if (!r && e.q && e.q.qnote) r = e.q.qnote; return r;
   }
-  var ptActOpen = false, ptTab = "med", ptInvOk = {}, ptBackView = "", billRet = "today";
+  var ptVOpen = false, ptActOpen = false, ptTab = "med", ptInvOk = {}, ptBackView = "", billRet = "today";
   function ptInvLoad(pk) {
     ptInvOk[pk] = 1;
     api({ a: "invList", t: tokGet(), pkey: pk }).then(function (j) {
@@ -2291,7 +2296,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       if (!SECP) {
         ptInitVisit(ptEditV);
         var vf = box.querySelector(".hb-ptvform"), vt = box.querySelector("[data-hb-ptvt]");
-        if (vf && vt) { vt.setAttribute("role", "button"); if (!ptEditV && visitedToday(ptCur)) { vf.classList.add("hb-coll"); vt.innerHTML = "✅ امروز ویزیت شده · ثبت مراجعهٔ دیگر <span class=\"hb-arw\">▾</span>"; } else vt.innerHTML = esc(vt.textContent) + ' <span class="hb-arw">▴</span>'; }
+        if (vf && vt) { vt.setAttribute("role", "button"); if (!ptEditV && !ptVOpen) vf.classList.add("hb-coll"); ptVTitle(); }
         if (ptEditV) { q("[data-hb-ptvt]").textContent = "ویرایش مراجعه"; q("[data-hb-ptsavev]").textContent = "ذخیرهٔ ویرایش"; q("[data-hb-ptvcancel]").hidden = false; }
       }
       return;
@@ -2366,19 +2371,19 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (t.closest("[data-hb-ptnew]")) { ptPre = null; ptFromAp = ""; ptMode = "new"; return ptShow(); }
     if (t.closest("[data-hb-ptref]")) { ptLoaded = false; return ptLoad(); }
     if (t.closest("[data-hb-ptback]")) { ptOpenEdit = false; var bv0 = ptBackView; ptBackView = ""; ptMode = "list"; ptEditV = null; invOpenId = ""; if (bv0 === "today") return ptToToday(); if (bv0 && bv0 !== "pt") { dview(bv0); return; } return ptShow(); }
-    if ((b = t.closest("[data-hb-pttab]"))) { ptOpenEdit = false; var tv = b.getAttribute("data-hb-pttab"); ptTab = ptTab === tv ? "" : tv; invOpenId = ""; var vs = ptVSnap(); ptShow(); ptVRestore(vs); return; }
+    if ((b = t.closest("[data-hb-pttab]"))) { ptOpenEdit = false; var tv = b.getAttribute("data-hb-pttab"); ptTab = ptTab === tv ? "" : tv; invOpenId = ""; var vs = ptVSnap(); ptShow(); ptVRestore(vs); ptVTitle(); return; }
     if ((b = t.closest("[data-hb-ptvtog]"))) { var vd1 = q('[data-hb-ptvd="' + b.getAttribute("data-hb-ptvtog") + '"]'); if (vd1) vd1.hidden = !vd1.hidden; return; }
     if ((b = t.closest("[data-hb-invfile]"))) { var fid = b.getAttribute("data-hb-invfile"); if (invOpenId === fid && q("[data-hb-invpanel]")) { invOpenId = ""; [].forEach.call(document.querySelectorAll("[data-hb-invpanel]"), function (e) { if (e.parentNode) e.parentNode.removeChild(e); }); b.classList.remove("open"); return; } invMount(fid); [].forEach.call(document.querySelectorAll(".hb-invc.open"), function (e) { e.classList.remove("open"); }); b.classList.add("open"); return; }
     if (t.closest("[data-hb-invedit]")) { var ve = invItems.filter(function (x) { return x.id === invOpenId; })[0], vv0 = ve && ptItems.filter(function (x) { return x.id === ve.vid; })[0]; if (!vv0) return toast("⚠️ مراجعهٔ این فاکتور پیدا نشد (شاید حذف شده)."); if (root.getAttribute("data-dview") !== "pt") { ptBackView = root.getAttribute("data-dview"); dview("pt"); } ptCur = ve.pkey; billRet = "file"; invOpenId = ""; billOpen(vv0); return; }
     if ((b = t.closest("[data-hb-pttoday]"))) { var gt = ptGroup(b.getAttribute("data-hb-pttoday"))[0]; if (gt) ptToday(gt, b); return; }
     b = t.closest("[data-hb-ptopen]"); if (b && t.closest("a")) b = null;
-    if (b) { ptActOpen = false; ptBackView = ""; ptTab = ""; invOpenId = ""; ptCur = b.getAttribute("data-hb-ptopen"); touchLog("patient", ptCur, (ptGroup(ptCur)[0] || {}).name); ptMode = "file"; ptEditV = null; ptShow(); try { window.scrollTo(0, ptBox().getBoundingClientRect().top + window.pageYOffset - 80); } catch (x) {} return; }
+    if (b) { ptVOpen = false; ptActOpen = false; ptBackView = ""; ptTab = ""; invOpenId = ""; ptCur = b.getAttribute("data-hb-ptopen"); touchLog("patient", ptCur, (ptGroup(ptCur)[0] || {}).name); ptMode = "file"; ptEditV = null; ptShow(); try { window.scrollTo(0, ptBox().getBoundingClientRect().top + window.pageYOffset - 80); } catch (x) {} return; }
     if (t.closest("[data-hb-ptnewpet]")) { var g9 = ptGroup(ptCur), r9 = g9[0] || {}; ptPre = { owner: r9.owner, phone: r9.phone }; ptFromAp = ""; ptMode = "new"; ptShow(); toast("🐾 مشخصات سرپرست وارد شد؛ نام، نوع و نژاد پت جدید را بزنید"); return; }
     if ((b = t.closest("[data-hb-ptnewown]"))) { dview("pt"); ptPre = { owner: b.getAttribute("data-o"), phone: b.getAttribute("data-p") }; ptFromAp = ""; ptMode = "new"; ptShow(); mkAct("pt"); toast("🐾 مشخصات سرپرست وارد شد؛ نام، نوع و نژاد پت جدید را بزنید"); return; }
     if (t.closest("[data-hb-ptidedit]")) { q("[data-hb-ptidf]").hidden = false; var ac2 = q(".hb-ptacts"); if (ac2) ac2.hidden = true; return; }
     if (t.closest("[data-hb-ptidcancel]")) { ptOpenEdit = false; q("[data-hb-ptidf]").hidden = true; var ac3 = q(".hb-ptacts"); if (ac3) ac3.hidden = false; return; }
-    if (t.closest("[data-hb-ptvcancel]")) { ptEditV = null; return ptShow(); }
-    if ((b = t.closest("[data-hb-ptvt]"))) { var vf2 = b.closest(".hb-ptvform"), aw = b.querySelector(".hb-arw"); if (vf2) { vf2.classList.toggle("hb-coll"); if (aw) aw.textContent = vf2.classList.contains("hb-coll") ? "▾" : "▴"; } return; }
+    if (t.closest("[data-hb-ptvcancel]")) { ptEditV = null; ptVOpen = false; return ptShow(); }
+    if ((b = t.closest("[data-hb-ptvt]"))) { var vf2 = b.closest(".hb-ptvform"), aw = b.querySelector(".hb-arw"); if (vf2) { vf2.classList.toggle("hb-coll"); ptVOpen = !vf2.classList.contains("hb-coll"); ptVTitle(); } return; }
     if ((b = t.closest("[data-hb-ptbill]"))) { var bv = ptItems.filter(function (x) { return x.id === b.getAttribute("data-hb-ptbill"); })[0]; if (bv) { billRet = "file"; var exi = invItems.filter(function (x) { return x.vid === bv.id && x.status !== "void"; })[0]; if (exi) { invOpenId = exi.id; var bx = ptBox(); if (!q("[data-hb-invpanel]")) bx.insertAdjacentHTML("afterbegin", '<div data-hb-invpanel></div>'); invPanel(); return; } if (!invItems.length) invLoad(function () { billOpen(bv); }); else billOpen(bv); } return; }
     if ((b = t.closest("[data-hb-ptview]"))) { var vd = q('[data-hb-ptvd="' + b.getAttribute("data-hb-ptview") + '"]'); if (vd) { vd.hidden = !vd.hidden; b.textContent = vd.hidden ? "👁 دیدن" : "🔼 بستن"; } return; }
     if ((b = t.closest("[data-hb-ptedit]"))) { ptEditV = ptItems.filter(function (x) { return x.id === b.getAttribute("data-hb-ptedit"); })[0] || null; ptShow(); try { q("[data-hb-ptvt]").scrollIntoView({ behavior: "smooth", block: "center" }); } catch (x) {} return; }
@@ -2407,7 +2412,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       api({ a: "patSave", t: tokGet(), id: ptEditV ? ptEditV.id : "", v: v2 }).then(function (j) {
         btn2.disabled = false; if (!j.ok) { er2.textContent = errMsg(j.err); er2.hidden = false; return; }
         if (!ptEditV || ptEditV.follow !== vv2.follow) ptFollowAppt(g, ptCur, vv2); if (ptEditV) ptItems = ptItems.map(function (x) { return x.id === j.item.id ? j.item : x; }); else ptItems.unshift(j.item);
-        ptItems.sort(function (x, y) { return x.date < y.date ? 1 : x.date > y.date ? -1 : 0; }); ptEditV = null; toast("✅ مراجعه ثبت شد"); if (!SECP && vv2.date === isoNow() && vv2.note) markVisited(ptCur); if (billDraft && billDraft.vid === editId) { billResume(); return; } if (!SECP && (!wasEdit || adopted)) billOpen(j.item); else ptShow();
+        ptItems.sort(function (x, y) { return x.date < y.date ? 1 : x.date > y.date ? -1 : 0; }); ptEditV = null; ptVOpen = false; toast("✅ مراجعه ثبت شد"); if (!SECP && vv2.date === isoNow() && vv2.note) markVisited(ptCur); if (billDraft && billDraft.vid === editId) { billResume(); return; } if (!SECP && (!wasEdit || adopted)) billOpen(j.item); else ptShow();
       });
       return;
     }
@@ -2672,7 +2677,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function billCalc() {
     billRead(); var box = ptBox(), sub = billSub(), d = billDisc(box), tx = (box.querySelector("[data-hb-btax]") || {}).checked ? Math.round((sub - d) * 0.1) : 0;
     function set(k, h) { var e = box.querySelector("[data-hb-" + k + "]"); if (e) e.textContent = h; }
-    set("bsub", money(sub)); set("btx", tx ? money(tx) : "—"); set("bfin", money(sub - d + tx)); set("bdhint", billPct && d ? "= " + money(d) : "");
+    set("bsub", money(sub)); set("btx", tx ? money(tx) : "۰ تومان"); var tb = box.querySelector("[data-hb-btx]"); if (tb) tb.classList.toggle("dim", !tx); set("bfin", money(sub - d + tx)); set("bdhint", billPct && d ? "= " + money(d) : "");
     [].forEach.call(box.querySelectorAll(".hb-blr"), function (l) { var ck = l.querySelector("[data-hb-bon]"); l.classList.toggle("on", !!(ck && ck.checked)); });
     billRows.forEach(function (r, i) { var lt = box.querySelector('[data-hb-blt="' + i + '"]'); if (lt) lt.textContent = r.on ? money(r.qty * r.price) : ""; });
   }
@@ -2962,7 +2967,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   }
   document.addEventListener("click", function (e) { var b = e.target.closest && e.target.closest("[data-hb-apvisit]"); if (!b) return; var en = tdEnt[b.getAttribute("data-hb-apvisit")]; if (en && en.ap) { e.preventDefault(); apVisit(en.ap); } });
   function ptToToday() { ptMode = "list"; ptEditV = null; dview("today"); try { window.scrollTo(0, 0); } catch (e) {} }
-  function ptJump(k) { if (SECP) return; ptActOpen = false; ptBackView = root.getAttribute("data-dview") === "pt" ? "" : root.getAttribute("data-dview"); ptTab = ""; invOpenId = ""; ptPending = k; touchLog("patient", k); dview("pt"); if (ptLoaded && ptGroup(k).length) { ptPending = ""; ptCur = k; ptMode = "file"; ptEditV = null; ptShow(); } }
+  function ptJump(k) { if (SECP) return; ptVOpen = true; ptActOpen = false; ptBackView = root.getAttribute("data-dview") === "pt" ? "" : root.getAttribute("data-dview"); ptTab = ""; invOpenId = ""; ptPending = k; touchLog("patient", k); dview("pt"); if (ptLoaded && ptGroup(k).length) { ptPending = ""; ptCur = k; ptMode = "file"; ptEditV = null; ptShow(); } }
 
   // نوبت‌دهی
   var apItems = [], apToday = "", apMode = "list", apFilter = "today", apEditId = "", apPref = null, APJ = {};

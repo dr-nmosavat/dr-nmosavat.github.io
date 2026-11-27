@@ -2630,3 +2630,6 @@ html.hb-billmode .hb-emptywarn, .hb-bill .hb-emptywarn { padding: 3px 8px; font-
 @media (max-width: 559px) { .hb-bact { grid-template-columns: 1fr 1fr 1fr; } .hb-bag { display: contents; } .hb-bact .btn.primary { grid-column: 1 / -1; grid-row: 1; justify-self: center; width: 70%; } .hb-bact .btn.ghost { width: 100%; } .hb-bact > [data-hb-blater] { justify-self: stretch; } }
 @media (min-width: 560px) { .hb-bsum .hb-bc4 { border-top: 0; } }
 .hb-bdm1 { min-width: 92px; font-size: 12.5px; white-space: nowrap; } .hb-bdm1 i { font-style: normal; opacity: .55; font-weight: 600; } .hb-bdm1 i.on { opacity: 1; font-weight: 900; text-decoration: underline; text-underline-offset: 3px; }
+/* ثابت‌ماندن چیدمان خلاصهٔ صورتحساب با تیک مالیات */
+.hb-bsum .hb-bc { height: 36px; min-height: 36px; overflow: hidden; } .hb-bsum .hb-bc b { white-space: nowrap; min-width: 0; } .hb-bsum .hb-bc b.dim { opacity: .4; font-weight: 600; } .hb-bc3 .hb-bstax { white-space: nowrap; }
+@media (min-width: 760px) { .hb-bsum { grid-template-columns: 1fr 1.5fr 1.5fr 1.3fr; } }
