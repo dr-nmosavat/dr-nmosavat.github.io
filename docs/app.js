@@ -2573,7 +2573,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       billV._inv = ex || null; billTax = ex ? !!ex.tax : true; ptMode = "bill"; billShow(ex ? ex.disc : 0, ex ? ex.note : "");
     });
   }
-  var billQ = "", billAll = true, billTax = true, billPct = false, billJd = {};
+  var billTop0 = false, billQ = "", billAll = true, billTax = true, billPct = false, billJd = {};
   var REP_RE = /واکسن|ضد ?انگل/;
   function needsRep(n) { return REP_RE.test(normFa(n)); }
   function repLabel(iso) { var j = g2j(iso); return wdOf(iso) + " " + toolFa(j[2]) + " " + MON[j[1] - 1] + " " + toolFa(j[0]); }
@@ -2596,7 +2596,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function billList() {
     var el = ptBox().querySelector("[data-hb-blist]"); if (!el) return; var qn = billQ.toLowerCase(), top = billTop(), idx = [];
     var sct = el.scrollTop;
-    billRows.forEach(function (r, i) { if (r.on || (qn ? r.name.toLowerCase().indexOf(qn) > -1 : (billAll || top.indexOf(i) > -1))) idx.push(i); });
+    var on1 = [], off1 = []; billRows.forEach(function (r, i) { if (r.on) on1.push(i); else if (qn ? r.name.toLowerCase().indexOf(qn) > -1 : (billAll || top.indexOf(i) > -1)) off1.push(i); }); idx = on1.concat(off1);
     var hidden = billRows.length - idx.length, exact = billRows.some(function (r) { return r.name.toLowerCase() === qn; });
     el.innerHTML = '<div class="hb-blhead"><span>خدمت</span><span>قیمت</span><span>تعداد</span><span>جمع</span></div>' + idx.map(function (i) {
       var r = billRows[i], row = '<div class="hb-blr' + (r.on ? " on" : "") + '"><input type="checkbox" class="hb-bck" data-hb-bon="' + i + '"' + (r.on ? " checked" : "") + ' tabindex="-1"><div class="hb-blmain" role="button" data-hb-bmain="' + i + '"><span class="hb-bln">' + (svcIcon(r.name) ? '<i class="hb-sic">' + svcIcon(r.name) + "</i> " : "") + esc(r.name) + '</span></div><span class="hb-blpr" data-hb-bp="' + i + '">' + (r.price ? grp3(r.price) : "۰") + '</span><div class="hb-blqs"><button type="button" class="hb-qb" data-hb-qm="' + i + '" aria-label="کم">−</button><input class="hb-blq" type="text" inputmode="numeric" data-hb-bq="' + i + '" value="' + r.qty + '"><button type="button" class="hb-qb" data-hb-qp="' + i + '" aria-label="زیاد">+</button></div><b class="hb-blt" data-hb-blt="' + i + '"></b></div>';
@@ -2606,7 +2606,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       + (!idx.length && qn ? '<p class="hb-qmsg">خدمتی با این نام در تعرفه‌ها نیست.</p>' : "")
       + (billQ && !exact ? '<button type="button" class="btn small ghost hb-bman" data-hb-bman>＋ افزودن «' + esc(billQ) + '» به‌صورت دستی</button>' : "")
       + (!qn && !billAll && hidden > 0 ? '<button type="button" class="btn small ghost hb-bman" data-hb-ball>همهٔ خدمات (' + toolFa(billRows.length) + ")</button>" : "");
-    el.scrollTop = sct;
+    el.scrollTop = billTop0 ? 0 : sct; billTop0 = false;
     billJd = {}; idx.forEach(function (i) {
       var r = billRows[i], c = el.querySelector('[data-pjd="br' + i + '"]'); if (!c) return;
       var jd = initJd(c, { optional: true, minY: 0, maxY: 2 }); jd.set(r.rep || ""); billJd[i] = jd;
@@ -2618,7 +2618,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     var box = ptBox(), v = billV; billQ = ""; billAll = true; billPct = false;
     box.innerHTML = '<div class="hb-ptform hb-bill"><div class="hb-blhdr"><h3 class="hb-pth">💳 صورتحساب «' + esc(v.name) + '»</h3><button type="button" class="btn small ghost hb-blbk" data-hb-blback>→ برگشت</button></div>' + '<input type="search" class="hb-bsearch" data-hb-bsearch autocomplete="off" placeholder="🔎 جستجوی خدمت (لمس نام خدمت = یکی اضافه)"><div class="hb-bl" data-hb-blist></div>'
       + (hasClin(v.note) ? "" : '<div class="hb-emptywarn" data-hb-ewarn><span>⚠️ پروندهٔ این مراجعه خالی است؛ تا کامل نشود، فاکتور به پذیرش نمی‌رود.</span><button type="button" class="btn small" data-hb-fillrec>📝 تکمیل پرونده</button></div>')
-      + '<p class="hb-err" data-hb-berr hidden></p><div class="hb-blbar"><div class="hb-bsum"><div class="hb-bsr"><span>جمع</span><b data-hb-bsub></b></div><div class="hb-bsr"><span>تخفیف</span><span class="hb-bdw"><small data-hb-bdhint></small><input type="text" inputmode="numeric" dir="ltr" data-hb-bdisc value="' + (disc ? grp3(disc) : "") + '"><span class="hb-bdm"><button type="button" class="sel" data-hb-bdm="t">تومان</button><button type="button" data-hb-bdm="p">٪</button></span></span></div><div class="hb-bsr"><label class="hb-bstax"><input type="checkbox" data-hb-btax' + (billTax ? " checked" : "") + '> مالیات ۱۰٪</label><b data-hb-btx></b></div><div class="hb-bsr hb-bsn"><span>نهایی</span><b data-hb-bfin></b></div></div><input type="text" class="hb-bnote" maxlength="200" data-hb-bnote placeholder="توضیح (اختیاری)" value="' + esc(note || "") + '"><div class="hb-bact"><button type="button" class="btn small ghost" data-hb-bfree>تخفیف کامل</button><button type="button" class="btn primary" data-hb-bsend>📤 ارسال به پذیرش</button><button type="button" class="btn small ghost" data-hb-blater>⏭ بعداً</button></div></div>' + "</div>";
+      + '<p class="hb-err" data-hb-berr hidden></p><div class="hb-blbar"><div class="hb-bsum"><div class="hb-bc hb-bc1"><span>جمع</span><b data-hb-bsub></b></div><div class="hb-bc hb-bc2"><span>تخفیف</span><span class="hb-bdw"><input type="text" inputmode="numeric" dir="ltr" data-hb-bdisc value="' + (disc ? grp3(disc) : "") + '"><span class="hb-bdm"><button type="button" class="sel" data-hb-bdm="t">تومان</button><button type="button" data-hb-bdm="p">٪</button></span></span><small data-hb-bdhint></small></div><div class="hb-bc hb-bc3"><label class="hb-bstax"><input type="checkbox" data-hb-btax' + (billTax ? " checked" : "") + '> مالیات ۱۰٪</label><b data-hb-btx></b></div><div class="hb-bc hb-bc4 hb-bsn"><span>نهایی</span><b data-hb-bfin></b></div></div><div class="hb-bact"><button type="button" class="btn small ghost" data-hb-bfree>تخفیف کامل</button><button type="button" class="btn primary" data-hb-bsend>📤 ارسال به پذیرش</button><button type="button" class="btn small ghost" data-hb-blater>⏭ بعداً</button></div><button type="button" class="hb-bnb' + (note ? " has" : "") + '" data-hb-bnopen>📝 توضیح' + (note ? " ✔" : "") + '</button><div class="hb-bnm" data-hb-bnm hidden><div class="hb-bnbox"><label>توضیح (اختیاری)</label><input type="text" maxlength="200" data-hb-bnote value="' + esc(note || "") + '"><button type="button" class="btn primary small" data-hb-bnok>تأیید</button></div></div></div></div>' + "</div>";
     billList(); billCalc(); syncBillMode();
     try { var hd = document.querySelector(".hb-staffhdr"); window.scrollTo(0, Math.max(0, box.getBoundingClientRect().top + window.pageYOffset - (hd ? hd.offsetHeight : 60) - 6)); } catch (e) {}
     setTimeout(billFit, 30); setTimeout(billFit, 300);
@@ -2640,7 +2640,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   window.addEventListener("resize", function () { setTimeout(billFit, 60); }); window.addEventListener("orientationchange", function () { setTimeout(billFit, 300); });
   function billDone() { billDraft = null; billV = null; if (billRet === "file") { billRet = "today"; ptMode = "file"; ptTab = "inv"; ptShow(); try { window.scrollTo(0, 0); } catch (e) {} } else ptToToday(); }
   document.addEventListener("click", function (e) { var t = e.target; if (!t.closest) return; var b = t.closest("[data-hb-bdm]"); if (!b) return; e.preventDefault(); billPct = b.getAttribute("data-hb-bdm") === "p"; var bx = ptBox(); [].forEach.call(bx.querySelectorAll("[data-hb-bdm]"), function (x) { x.classList.toggle("sel", x === b); }); var inp = bx.querySelector("[data-hb-bdisc]"); if (inp) { inp.value = ""; try { inp.focus(); } catch (e1) {} } billCalc(); });
-  function billSet(i, qty) { billRead(); var r = billRows[i]; if (!r) return; if (qty <= 0) { r.on = false; r.qty = 1; } else { r.on = true; r.qty = Math.min(99, qty); } billList(); billCalc(); }
+  function billSet(i, qty) { billRead(); var r = billRows[i]; if (!r) return; if (qty <= 0) { r.on = false; r.qty = 1; } else { if (!r.on) billTop0 = true; r.on = true; r.qty = Math.min(99, qty); } billList(); billCalc(); }
   document.addEventListener("click", function (e) {
     var t = e.target; if (!t.closest || !t.closest(".hb-bill")) return;
     var b = t.closest("[data-hb-qm],[data-hb-qp]");
@@ -2649,6 +2649,11 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   });
   document.addEventListener("input", function (e) { var t = e.target; if (t && t.hasAttribute && t.hasAttribute("data-hb-bq")) { var dg = faDigits(t.value).replace(/[^0-9]/g, ""); t.value = dg ? String(Math.min(99, +dg)) : ""; } });
   function billRead() { var box = ptBox(); billRows.forEach(function (r, i) { var c = box.querySelector('[data-hb-bon="' + i + '"]'); if (!c) return; r.on = c.checked; var qe = box.querySelector('[data-hb-bq="' + i + '"]'), pe = box.querySelector('[data-hb-bp="' + i + '"]'); if (qe) r.qty = Math.max(1, Math.min(99, numIn(qe.value) || 1));  var nm = box.querySelector('[data-hb-bn="' + i + '"]'); if (nm) r.name = nm.value.trim(); }); }
+  document.addEventListener("click", function (e) {
+    var t = e.target; if (!t.closest || !t.closest(".hb-bill")) return; var bx = ptBox(), m = bx.querySelector("[data-hb-bnm]"); if (!m) return;
+    if (t.closest("[data-hb-bnopen]")) { m.hidden = false; var ni = m.querySelector("input"); try { ni.focus(); } catch (e1) {} return; }
+    if (t.closest("[data-hb-bnok]") || t === m) { m.hidden = true; var b = bx.querySelector("[data-hb-bnopen]"), v = (bx.querySelector("[data-hb-bnote]") || {}).value || ""; if (b) { b.classList.toggle("has", !!v.trim()); b.textContent = "📝 توضیح" + (v.trim() ? " ✔" : ""); } setTimeout(billFit, 20); }
+  });
   function billSub() { var sub = 0; billRows.forEach(function (r) { if (r.on) sub += r.qty * r.price; }); return sub; }
   function billDisc(box) { var sub = billSub(), n = numIn((box.querySelector("[data-hb-bdisc]") || {}).value), d = billPct ? Math.round(sub * Math.min(100, n) / 100) : n; return Math.max(0, Math.min(sub, d)); }
   function billCalc() {

@@ -2592,3 +2592,27 @@ html.hb-billmode .hb-blbar, .hb-blbar { display: block !important; }
 .hb-bnote { display: block; width: 100%; max-width: 380px; margin: 4px auto 8px !important; min-height: 34px !important; font-size: 14px !important; padding: 2px 10px; box-sizing: border-box; background: #fff; color: #111; border: 1px solid #fff; border-radius: 8px; }
 .hb-bact { display: flex; align-items: center; justify-content: center; gap: 8px; } .hb-bact .btn { margin: 0; min-height: 40px; } .hb-bact .btn.primary { padding: 6px 18px; font-size: 15px; min-width: 150px; max-width: 220px; } .hb-bact .btn.ghost { flex: 0 0 auto; padding: 4px 12px; font-size: 13px; opacity: .92; }
 .hb-bact .btn.primary { white-space: nowrap; min-width: 0; flex: 1 1 auto; max-width: 210px; padding: 6px 8px; font-size: 14.5px; } .hb-bact .btn.ghost { white-space: nowrap; padding: 4px 10px; } .hb-bdm button { min-width: 40px; flex: 0 0 auto; }
+/* ===== صورتحساب: پایین فشرده ===== */
+.hb-bsum { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; margin-bottom: 6px; }
+.hb-bsr { display: none; }
+.hb-bc { display: flex; align-items: center; justify-content: space-between; gap: 6px; min-height: 34px; font-size: 13.5px; min-width: 0; } .hb-bc b { font-size: 14.5px; white-space: nowrap; }
+.hb-bc1 { order: 1; } .hb-bc4 { order: 2; } .hb-bc2 { order: 3; } .hb-bc3 { order: 4; }
+.hb-bc4 { border: 0; padding: 0; font-weight: 800; } .hb-bc4 b { font-size: 16.5px; }
+.hb-bc2 { flex-wrap: nowrap; } .hb-bc2 small { position: absolute; font-size: 10.5px; opacity: .85; display: none; }
+.hb-bdw { display: flex; align-items: center; gap: 4px; min-width: 0; } .hb-bdw input[type="text"] { width: 84px !important; min-height: 32px !important; font-size: 14px !important; padding: 2px 6px; text-align: left; }
+.hb-bdm button { min-width: 38px; min-height: 32px; font-size: 12.5px; }
+.hb-bstax { font-size: 13px; gap: 6px; } .hb-bstax input { width: 18px; height: 18px; }
+.hb-bact { display: flex; align-items: center; justify-content: center; gap: 8px; } .hb-bact .btn.primary { flex: 0 1 190px; min-width: 0; padding: 6px 6px; font-size: 14px; min-height: 40px; white-space: nowrap; } .hb-bact .btn.ghost { flex: 0 0 auto; min-height: 40px; padding: 4px 10px; font-size: 12.5px; white-space: nowrap; }
+.hb-bnb { display: block; margin: 6px auto 0; background: transparent; border: 1px dashed #8fb0dc; color: #dbe7f8; border-radius: 10px; font: inherit; font-size: 12.5px; min-height: 30px; padding: 0 14px; cursor: pointer; } .hb-bnb.has { border-style: solid; color: #fff; font-weight: 700; }
+.hb-bnm { position: fixed; inset: 0; z-index: 200; background: rgba(15, 30, 55, .55); display: flex; align-items: center; justify-content: center; padding: 16px; } .hb-bnm[hidden] { display: none; }
+.hb-bnbox { background: #fff; color: #1f3b63; border-radius: 14px; padding: 14px; width: 100%; max-width: 420px; display: grid; gap: 8px; box-shadow: 0 10px 30px rgba(0,0,0,.3); } .hb-bnbox label { font-size: 13px; font-weight: 700; } .hb-bnbox input { width: 100%; min-height: 44px; font-size: 16px; box-sizing: border-box; border: 1.5px solid #9fb0c6; border-radius: 10px; padding: 0 10px; } .hb-bnbox .btn { margin: 0; min-height: 42px; }
+.hb-bnote { display: none; }
+@media (min-width: 760px) { html.hb-billmode .hb-bill { max-width: 760px; margin-left: auto; margin-right: auto; } .hb-bsum { grid-template-columns: repeat(4, auto); gap: 4px 16px; } .hb-bc1 { order: 1; } .hb-bc2 { order: 2; } .hb-bc3 { order: 3; } .hb-bc4 { order: 4; } }
+/* ===== فرم بیمار جدید: متقارن و کوچک‌تر ===== */
+.hb-ptform [data-seg="hb-ptsp"] button { min-height: 34px; font-size: 13.5px; border-radius: 10px; padding: 0 4px; }
+.hb-ptform input[data-pt="phone"]:placeholder-shown { direction: rtl; text-align: right; }
+.hb-sxrow { display: grid !important; grid-template-columns: 1fr 1fr; gap: 8px 10px; align-items: center; } .hb-sxrow .seg { display: contents !important; } .hb-sxrow .seg button { width: 100%; min-height: 36px; font-size: 14px; padding: 0 6px; border-radius: 10px; }
+.hb-sxrow .hb-neut { grid-column: 1 / -1; justify-self: start; }
+.hb-agerow { display: grid !important; grid-template-columns: 1fr 1fr; gap: 4px 10px; align-items: center; } .hb-agerow .hb-lbl { grid-column: 1 / -1; font-size: 13px; } .hb-agebox { min-height: 40px !important; border-radius: 10px; padding: 0 10px; } .hb-agebox input { font-size: 17px !important; min-height: 36px !important; }
+.hb-ptform select { min-height: 40px; font-size: 14px; }
+.hb-bdm { flex: 0 0 auto; } .hb-bdm button { flex: 0 0 auto; min-width: 40px; } .hb-bc1, .hb-bc4 { padding-inline: 2px; }
