@@ -2582,3 +2582,13 @@ button.hb-rdrow.open { background: #eaf2fc; border-color: #1f5aa6; margin-bottom
 .hb-rdd2 { background: #f6f9fd; border: 1px solid #1f5aa6; border-top: 0; border-radius: 0 0 10px 10px; padding: 8px 12px 10px; margin: 0 0 6px; } .hb-rdd2[hidden] { display: none; }
 .hb-rdd2h { font-size: 12.5px; color: #5b6b80; } .hb-rdd2l { display: flex; justify-content: space-between; margin: 3px 0; font-size: 14px; }
 .hb-rdd2t { font-weight: 800; color: #1f3b63; border-top: 1px solid #c9d6e8; padding-top: 4px; } .hb-rdd2m { color: #c0392b; font-weight: 700; }
+/* پایین صورتحساب: جمع / تخفیف / مالیات / نهایی */
+html.hb-billmode .hb-blbar, .hb-blbar { display: block !important; }
+.hb-bsum { display: grid; gap: 4px; margin-bottom: 6px; } .hb-bsr { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 30px; font-size: 14px; } .hb-bsr b { font-size: 15px; direction: rtl; }
+.hb-bsn { border-top: 1px solid rgba(255,255,255,.35); padding-top: 4px; font-weight: 800; } .hb-bsn b { font-size: 18px; }
+.hb-bdw { display: flex; align-items: center; gap: 6px; } .hb-bdw small { font-size: 11.5px; opacity: .85; } .hb-bdw input[type="text"] { width: 110px !important; min-height: 34px !important; font-size: 15px !important; padding: 2px 8px; text-align: left; }
+.hb-bdm { display: inline-flex; border-radius: 8px; overflow: hidden; border: 1px solid #fff; } .hb-bdm button { border: 0; background: transparent; color: inherit; font: inherit; font-size: 13px; min-width: 44px; min-height: 34px; padding: 0 8px; cursor: pointer; } .hb-bdm button.sel { background: #fff; color: #1f3b63; font-weight: 800; }
+.hb-bstax { display: flex; align-items: center; gap: 8px; } .hb-bstax input { width: 20px; height: 20px; }
+.hb-bnote { display: block; width: 100%; max-width: 380px; margin: 4px auto 8px !important; min-height: 34px !important; font-size: 14px !important; padding: 2px 10px; box-sizing: border-box; background: #fff; color: #111; border: 1px solid #fff; border-radius: 8px; }
+.hb-bact { display: flex; align-items: center; justify-content: center; gap: 8px; } .hb-bact .btn { margin: 0; min-height: 40px; } .hb-bact .btn.primary { padding: 6px 18px; font-size: 15px; min-width: 150px; max-width: 220px; } .hb-bact .btn.ghost { flex: 0 0 auto; padding: 4px 12px; font-size: 13px; opacity: .92; }
+.hb-bact .btn.primary { white-space: nowrap; min-width: 0; flex: 1 1 auto; max-width: 210px; padding: 6px 8px; font-size: 14.5px; } .hb-bact .btn.ghost { white-space: nowrap; padding: 4px 10px; } .hb-bdm button { min-width: 40px; flex: 0 0 auto; }
