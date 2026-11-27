@@ -2667,3 +2667,6 @@ html.hb-mnuopen body { overflow: hidden; }
 .hb-mg { background: #eef4fb; border-color: #bcd0ea; } .hb-mg.open { background: #dce9fb; border-color: #1f5aa6; border-bottom-left-radius: 4px; border-bottom-right-radius: 4px; }
 .hb-msub { margin: 0 14px 6px 0; padding: 4px 8px 4px 0; border-right: 3px solid #1f5aa6; } .hb-msub[hidden] { display: none; }
 .hb-mis { min-height: 40px; font-size: 14px; font-weight: 600; background: #fff; } .hb-mi.on { background: #1f5aa6; color: #fff; border-color: #1f5aa6; } .hb-mg .hb-arw { font-size: 13px; }
+/* صفحهٔ اول: فقط مراجعین؛ بقیهٔ بخش‌ها از منوی ☰ */
+html .hb-drnav [data-hb-grp="book"], html .hb-drnav [data-hb-grp="more"],
+html .hb-drnav [data-hb-dtab="list"], html .hb-drnav [data-hb-dtab="req"], html .hb-drnav [data-hb-dtab="code"], html .hb-drnav [data-hb-dtab="adopt"], html .hb-drnav [data-hb-dtab="svc"], html .hb-drnav [data-hb-dtab="rep"], html .hb-drnav [data-hb-dtab="new"] { display: none !important; }
