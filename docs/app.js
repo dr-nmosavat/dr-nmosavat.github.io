@@ -1452,6 +1452,35 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function setPg(i) { curPg = i; try { goPg(i); } catch (e1) {} [].forEach.call(q("[data-hb-ptabs]").children, function (c, n) { c.classList.toggle("on", n === i); }); [].forEach.call(q("[data-hb-dots]").children, function (c, n) { c.classList.toggle("on", n === i); }); fitTrack(); }
   // سافاری آیفون/آیپد با scroll-snap و حرکت نرم برنامه‌ای کار نمی‌کند و مدل scrollLeft در راست‌به‌چپ هم بین نسخه‌ها فرق دارد؛
   // پس snap را لحظه‌ای خاموش می‌کنیم و فاصلهٔ واقعی اسلاید تا لبهٔ کارت را اندازه می‌گیریم (مستقل از علامت scrollLeft)
+  // منوی همبرگری (☰): بخش‌های فعلی + بخش‌های «به‌زودی» + پروفایل
+  (function () {
+    if (!DRPAGE) return;
+    var bar = document.querySelector(".hb-drbar"); if (!bar) return;
+    var hb = document.createElement("button"); hb.type = "button"; hb.className = "hb-hmb"; hb.setAttribute("data-hb-hmb", ""); hb.setAttribute("aria-label", "منو"); hb.textContent = "☰"; (document.querySelector(".hb-staffhdr") || bar).insertBefore(hb, (document.querySelector(".hb-staffhdr") || bar).firstChild);
+    var SOON = [["🧪", "آزمایشگاه"], ["🩻", "تصویربرداری"], ["💊", "داروخانه"], ["📦", "انبار"]];
+    function closeM() { var m = document.querySelector("[data-hb-mnu]"); if (m) m.remove(); document.documentElement.classList.remove("hb-mnuopen"); }
+    function openM() {
+      closeM(); var seen = {}, items = "";
+      [].forEach.call(root.querySelectorAll("[data-hb-dtab]"), function (b) { var v = b.getAttribute("data-hb-dtab"); if (seen[v]) return; seen[v] = 1; var tx = (b.textContent || "").replace(/\s+/g, " ").trim(); if (tx) items += '<button type="button" class="hb-mi" data-hb-mgo="' + v + '">' + esc(tx) + "</button>"; });
+      var soon = SOON.map(function (x) { return '<button type="button" class="hb-mi hb-misoon" data-hb-msoon="' + x[1] + '"><span>' + x[0] + " " + x[1] + "</span><small>به‌زودی</small></button>"; }).join("");
+      var ver = (document.querySelector(".hb-ver") || {}).textContent || "";
+      var m = document.createElement("div"); m.className = "hb-mnu"; m.setAttribute("data-hb-mnu", "");
+      m.innerHTML = '<div class="hb-mnuov" data-hb-mclose></div><div class="hb-mnup"><div class="hb-mnuh"><b>منو</b><button type="button" class="hb-mx" data-hb-mclose aria-label="بستن">✕</button></div><div class="hb-mnus">بخش‌ها</div>' + items + '<div class="hb-mnus">به‌زودی</div>' + soon
+        + '<div class="hb-mnus">حساب</div><button type="button" class="hb-mi" data-hb-mprof>👤 پروفایل <span class="hb-arw">▾</span></button><div class="hb-mprof" data-hb-mprofbox hidden><div><span>سمت</span><b>' + (SECP ? "منشی پذیرش" : "دکتر") + "</b></div><div><span>نام</span><b>" + (SECP ? "پذیرش کلینیک" : "دکتر نیلوفر مساوات") + "</b></div><div><span>کلینیک</span><b>دکتر نیلوفر مساوات · دامپزشک</b></div><div><span>امروز</span><b>" + esc(wdOf(isoNow()) + " " + jLabel(isoNow())) + "</b></div>" + (ver ? "<div><span>نسخه</span><b dir=\"ltr\">" + esc(ver) + "</b></div>" : "") + '<button type="button" class="btn small ghost hb-danger" data-hb-mout>خروج از حساب</button></div></div>';
+      document.body.appendChild(m); document.documentElement.classList.add("hb-mnuopen");
+    }
+    document.addEventListener("click", function (e) {
+      var t = e.target; if (!t.closest) return;
+      if (t.closest("[data-hb-hmb]")) { e.preventDefault(); if (document.querySelector("[data-hb-mnu]")) closeM(); else openM(); return; }
+      if (!t.closest("[data-hb-mnu]")) return;
+      if (t.closest("[data-hb-mclose]")) { closeM(); return; }
+      var b; if ((b = t.closest("[data-hb-mgo]"))) { var tb = root.querySelector('[data-hb-dtab="' + b.getAttribute("data-hb-mgo") + '"]'); closeM(); if (tb) tb.click(); try { window.scrollTo(0, 0); } catch (er) {} return; }
+      if ((b = t.closest("[data-hb-msoon]"))) { toast("🔜 " + b.getAttribute("data-hb-msoon") + " به‌زودی اضافه می‌شود.", 2600); return; }
+      if (t.closest("[data-hb-mprof]")) { var pb = document.querySelector("[data-hb-mprofbox]"); if (pb) pb.hidden = !pb.hidden; return; }
+      if (t.closest("[data-hb-mout]")) { closeM(); var ob = document.querySelector(".hb-staffhdr [data-hb-drbtn]"); if (ob) ob.click(); }
+    });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeM(); });
+  })();
   (function () { try { var sc = document.querySelector('script[src*="app.js?v="]'), v = sc ? sc.getAttribute("src").split("v=")[1] : ""; var el = document.createElement("p"); el.className = "hb-ver"; el.setAttribute("dir", "ltr"); el.textContent = "v" + v; root.appendChild(el); } catch (e) {} })();
   function goPg(i) {
     if (IOSMODE) { iosShow(i); return; }
