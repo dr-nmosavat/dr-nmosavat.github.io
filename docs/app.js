@@ -2114,6 +2114,19 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     sel.addEventListener("change", function () { rx.hidden = sel.value !== "__other"; if (!rx.hidden) rx.focus(); });
     fs.addEventListener("change", function () { fx.hidden = fs.value !== "__other"; if (!fx.hidden) fx.focus(); });
   }
+  // با عوض‌کردن تب (فاکتورها/سوابق/عملیات) پروندهٔ نیمه‌پر مراجعه و جای اسکرول حفظ شود
+  function ptVSnap() {
+    if (SECP || !ptF("reason")) return null; var mo = q("[data-hb-ptmore]");
+    return { y: window.pageYOffset, d: PTJ.d ? PTJ.d.get() : "", r: ptF("reason").value, rx: ptF("reasonx").value, f: ptF("find").value, n: ptF("note").value, t: ptF("treat").value, fol: PTJ.f ? PTJ.f.get() : "", fr: ptF("fureason").value, frx: ptF("fureasonx").value, open: !!(mo && mo.open), ed: ptEditV };
+  }
+  function ptVRestore(s0) {
+    if (!s0 || s0.ed !== ptEditV || !ptF("reason")) return;
+    try {
+      if (PTJ.d && s0.d) PTJ.d.set(s0.d); ptF("reason").value = s0.r; ptF("reasonx").value = s0.rx; ptF("reasonx").hidden = s0.r !== "__other";
+      ptF("find").value = s0.f; ptF("note").value = s0.n; ptF("treat").value = s0.t; if (PTJ.f) PTJ.f.set(s0.fol || ""); ptF("fureason").value = s0.fr; ptF("fureasonx").value = s0.frx; ptF("fureasonx").hidden = s0.fr !== "__other";
+      var mo = q("[data-hb-ptmore]"); if (mo) mo.open = s0.open || !!s0.fol; window.scrollTo(0, s0.y);
+    } catch (e) {}
+  }
   function ptVisitVals() {
     if (SECP) return { date: PTJ.d.get(), reason: ptF("reasonx").value.trim(), note: "", follow: "", fu: "" };
     var sel = ptF("reason"), fs = ptF("fureason");
@@ -2353,7 +2366,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (t.closest("[data-hb-ptnew]")) { ptPre = null; ptFromAp = ""; ptMode = "new"; return ptShow(); }
     if (t.closest("[data-hb-ptref]")) { ptLoaded = false; return ptLoad(); }
     if (t.closest("[data-hb-ptback]")) { ptOpenEdit = false; var bv0 = ptBackView; ptBackView = ""; ptMode = "list"; ptEditV = null; invOpenId = ""; if (bv0 === "today") return ptToToday(); if (bv0 && bv0 !== "pt") { dview(bv0); return; } return ptShow(); }
-    if ((b = t.closest("[data-hb-pttab]"))) { ptOpenEdit = false; var tv = b.getAttribute("data-hb-pttab"); ptTab = ptTab === tv ? "" : tv; invOpenId = ""; return ptShow(); }
+    if ((b = t.closest("[data-hb-pttab]"))) { ptOpenEdit = false; var tv = b.getAttribute("data-hb-pttab"); ptTab = ptTab === tv ? "" : tv; invOpenId = ""; var vs = ptVSnap(); ptShow(); ptVRestore(vs); return; }
     if ((b = t.closest("[data-hb-ptvtog]"))) { var vd1 = q('[data-hb-ptvd="' + b.getAttribute("data-hb-ptvtog") + '"]'); if (vd1) vd1.hidden = !vd1.hidden; return; }
     if ((b = t.closest("[data-hb-invfile]"))) { var fid = b.getAttribute("data-hb-invfile"); if (invOpenId === fid && q("[data-hb-invpanel]")) { invOpenId = ""; [].forEach.call(document.querySelectorAll("[data-hb-invpanel]"), function (e) { if (e.parentNode) e.parentNode.removeChild(e); }); b.classList.remove("open"); return; } invMount(fid); [].forEach.call(document.querySelectorAll(".hb-invc.open"), function (e) { e.classList.remove("open"); }); b.classList.add("open"); return; }
     if (t.closest("[data-hb-invedit]")) { var ve = invItems.filter(function (x) { return x.id === invOpenId; })[0], vv0 = ve && ptItems.filter(function (x) { return x.id === ve.vid; })[0]; if (!vv0) return toast("⚠️ مراجعهٔ این فاکتور پیدا نشد (شاید حذف شده)."); if (root.getAttribute("data-dview") !== "pt") { ptBackView = root.getAttribute("data-dview"); dview("pt"); } ptCur = ve.pkey; billRet = "file"; invOpenId = ""; billOpen(vv0); return; }
