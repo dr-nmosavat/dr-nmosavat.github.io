@@ -1458,7 +1458,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     var bar = document.querySelector(".hb-drbar"); if (!bar) return;
     var hb = document.createElement("button"); hb.type = "button"; hb.className = "hb-hmb"; hb.setAttribute("data-hb-hmb", ""); hb.setAttribute("aria-label", "منو"); hb.textContent = "☰"; (document.querySelector(".hb-staffhdr") || bar).insertBefore(hb, (document.querySelector(".hb-staffhdr") || bar).firstChild);
     var SOON = [["🧪", "آزمایشگاه"], ["🩻", "تصویربرداری"], ["💊", "داروخانه"], ["📦", "انبار"]];
-    function fitM() { var m = document.querySelector("[data-hb-mnu]"), vv = window.visualViewport; if (!m || !vv) return; m.style.inset = "auto"; m.style.left = vv.offsetLeft + "px"; m.style.top = vv.offsetTop + "px"; m.style.width = vv.width + "px"; m.style.height = vv.height + "px"; }
+    function fitM() { var m = document.querySelector("[data-hb-mnu]"), vv = window.visualViewport; if (!m || !vv) return; m.style.right = "auto"; m.style.bottom = "auto"; m.style.left = vv.offsetLeft + "px"; m.style.top = vv.offsetTop + "px"; m.style.width = vv.width + "px"; m.style.height = vv.height + "px"; }
     if (window.visualViewport) { window.visualViewport.addEventListener("resize", fitM); window.visualViewport.addEventListener("scroll", fitM); }
     function closeM() { var m = document.querySelector("[data-hb-mnu]"); if (m) m.remove(); document.documentElement.classList.remove("hb-mnuopen"); }
     function openM() {

@@ -2662,3 +2662,5 @@ html.hb-mnuopen body { overflow: hidden; }
 .hb-drbar { position: static; } .hb-staffhdr { position: relative; } .hb-hmb { top: 10px; bottom: auto; left: 12px; }
 /* iOS: جلوگیری از زوم خودکار هنگام لمس فیلدها (باعث بریده‌شدن منو و صفحه می‌شد) */
 @supports (-webkit-touch-callout: none) { input[type="text"], input[type="search"], input[type="tel"], input[type="number"], input:not([type]), textarea, select { font-size: 16px !important; } }
+/* سازگاری iOS قدیمی: «inset» را نمی‌شناسد */
+.hb-mnu, .hb-bnm, .hb-rsm { top: 0; right: 0; bottom: 0; left: 0; } .hb-mnuov { top: 0; right: 0; bottom: 0; left: 0; }
