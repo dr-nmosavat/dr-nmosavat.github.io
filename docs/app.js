@@ -2260,13 +2260,6 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   function ptFormHtml() {
     return '<div class="hb-ptform hb-ptvform"><h4 class="hb-ptsec hb-ptsec2" data-hb-ptvt>پروندهٔ بیمار · مراجعهٔ امروز</h4>' + ptVisitFields() + '<p class="hb-err" data-hb-pterr2 hidden></p><div class="hb-btns hb-center"><button type="button" class="btn small primary" data-hb-ptsavev>ثبت مراجعه</button><button type="button" class="btn small ghost" data-hb-ptvcancel hidden>انصراف از ویرایش</button></div></div>';
   }
-  function ptHistHtml(pk, g) {   // سابقهٔ خدمات هر مراجعه برای پذیرش (بدون یادداشت بالینی)
-    var inv = invItems.filter(function (x) { return x.pkey === pk && x.status !== "void"; }), used = {}, rows = [];
-    inv.forEach(function (v) { used[v.vid] = 1; rows.push({ d: v.date, h: '<div class="hb-hrow"><b>' + esc(fd(v.date)) + "</b><span>" + ((v.items || []).map(function (x) { return (svcIcon(x.name) ? svcIcon(x.name) + " " : "") + esc(x.name) + (x.qty > 1 ? " ×" + toolFa(x.qty) : ""); }).join("، ") || "—") + "</span><em>" + (v.status === "free" ? "تخفیف کامل" : money(v.total)) + "</em></div>" }); });
-    g.forEach(function (v) { if (!used[v.id]) rows.push({ d: v.date, h: '<div class="hb-hrow hb-hnone"><b>' + esc(fd(v.date)) + "</b><span>مراجعه" + (v.reason ? " · " + esc(v.reason) : "") + " (بدون فاکتور)</span></div>" }); });
-    rows.sort(function (a, b) { return a.d < b.d ? 1 : a.d > b.d ? -1 : 0; });
-    return (ptInvOk[pk] === 2 ? "" : '<p class="hb-qmsg">در حال بارگذاری…</p>') + (rows.length ? rows.map(function (r) { return r.h; }).join("") : '<p class="hb-qmsg">سابقه‌ای ثبت نشده است.</p>');
-  }
   function ptMedHtml(g) {
     return g.map(function (v) {
         var np = noteSplit(v.note || ""); return '<div class="hb-ptv"><div class="hb-ptvh" data-hb-ptvtog="' + esc(v.id) + '" role="button"><div class="hb-ptvt"><b>' + esc(fd(v.date)) + "</b>" + (v.reason ? " · " + esc(v.reason) : "") + (v.follow ? ' <small class="hb-ptfu">پیگیری: ' + esc(fd(v.follow)) + "</small>" : "") + ' <span class="hb-arw">▾</span></div></div>' + (np.c ? '<div class="hb-ptvc">🗣 شکایت پذیرش: ' + esc(np.c) + "</div>" : "") + visInv(v)
@@ -2296,8 +2289,8 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
         + (SECP ? "" : '<p class="hb-ptlastl">اولین مراجعه: ' + esc(fd(g[g.length - 1].date)) + (g.length > 1 ? " · " + toolFa(g.length) + " مراجعه" : "") + "</p>" + '<p class="hb-smsst" data-hb-ptsmsst>' + smsLine(r.pkey) + "</p>")
         + "</div>"
         + (SECP ? "" : ptFormHtml())
-        + '<div class="hb-ftabs three"><button type="button" class="btn' + (ptTab === "ops" ? " primary" : " ghost") + '" data-hb-pttab="ops">⚙️ عملیات</button><button type="button" class="btn' + (ptTab === "inv" ? " primary" : " ghost") + '" data-hb-pttab="inv">🧾 فاکتورها</button>' + (SECP ? '<button type="button" class="btn' + (ptTab === "hist" ? " primary" : " ghost") + '" data-hb-pttab="hist">🗂 سابقه</button>' : '<button type="button" class="btn' + (ptTab === "med" ? " primary" : " ghost") + '" data-hb-pttab="med">🩺 سوابق (' + toolFa(g.length) + ")</button>") + "</div>"
-        + '<div data-hb-pttabbox>' + (ptTab === "inv" ? ptInvHtml(r.pkey, g) : ptTab === "med" ? ptMedHtml(g) : ptTab === "hist" ? ptHistHtml(r.pkey, g) : ptTab === "ops" ? ptOpsHtml(r) : "") + "</div>";
+        + '<div class="hb-ftabs' + (SECP ? " two" : " three") + '"><button type="button" class="btn' + (ptTab === "ops" ? " primary" : " ghost") + '" data-hb-pttab="ops">⚙️ عملیات</button><button type="button" class="btn' + (ptTab === "inv" ? " primary" : " ghost") + '" data-hb-pttab="inv">🧾 فاکتورها</button>' + (SECP ? "" : '<button type="button" class="btn' + (ptTab === "med" ? " primary" : " ghost") + '" data-hb-pttab="med">🩺 سوابق (' + toolFa(g.length) + ")</button>") + "</div>"
+        + '<div data-hb-pttabbox>' + (ptTab === "inv" ? ptInvHtml(r.pkey, g) : ptTab === "med" ? ptMedHtml(g) : ptTab === "ops" ? ptOpsHtml(r) : "") + "</div>";
       brFill(box, "pt"); if (ptTab === "ops") { ptIdInit(r); if (ptOpenEdit) { var f0 = q("[data-hb-ptidf]"), a0 = q(".hb-ptacts"); if (f0) f0.hidden = false; if (a0) a0.hidden = true; } }
       if (ptTab === "inv") { if (invOpenId && invItems.some(function (x) { return x.id === invOpenId && x.pkey === r.pkey; })) invMount(invOpenId); }
       if (!SECP) {
