@@ -2633,3 +2633,10 @@ html.hb-billmode .hb-emptywarn, .hb-bill .hb-emptywarn { padding: 3px 8px; font-
 /* ثابت‌ماندن چیدمان خلاصهٔ صورتحساب با تیک مالیات */
 .hb-bsum .hb-bc { height: 36px; min-height: 36px; overflow: hidden; } .hb-bsum .hb-bc b { white-space: nowrap; min-width: 0; } .hb-bsum .hb-bc b.dim { opacity: .4; font-weight: 600; } .hb-bc3 .hb-bstax { white-space: nowrap; }
 @media (min-width: 760px) { .hb-bsum { grid-template-columns: 1fr 1.5fr 1.5fr 1.3fr; } }
+/* دکمهٔ تومان/درصد نباید بریده شود */
+.hb-bsum .hb-bc2 { overflow: visible; } .hb-bsum .hb-bc2 .hb-bdw { flex: 0 0 auto; gap: 6px; } .hb-bdm1 { flex: 0 0 auto; min-width: 96px; width: auto; padding: 0 8px; overflow: visible; }
+.hb-bdw input[type="text"] { width: 86px !important; }
+@media (min-width: 760px) { .hb-bsum { grid-template-columns: 1fr 2.1fr 1.4fr 1.2fr; } }
+/* چیدمان خلاصه در همهٔ اندازه‌ها: دو ستون، تخفیف تمام‌عرض */
+.hb-bsum { grid-template-columns: 1fr 1fr !important; } .hb-bsum .hb-bc1 { order: 1; } .hb-bsum .hb-bc3 { order: 2; } .hb-bsum .hb-bc2 { order: 3; grid-column: 1 / -1; } .hb-bsum .hb-bc4 { order: 4; grid-column: 1 / -1; border-top: 1px solid #b9cde8 !important; padding-top: 3px; }
+.hb-bsum .hb-bc2 .hb-bdw { margin-inline-start: auto; } .hb-bsum .hb-bc b { overflow: visible; }
