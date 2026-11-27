@@ -2640,3 +2640,4 @@ html.hb-billmode .hb-emptywarn, .hb-bill .hb-emptywarn { padding: 3px 8px; font-
 /* چیدمان خلاصه در همهٔ اندازه‌ها: دو ستون، تخفیف تمام‌عرض */
 .hb-bsum { grid-template-columns: 1fr 1fr !important; } .hb-bsum .hb-bc1 { order: 1; } .hb-bsum .hb-bc3 { order: 2; } .hb-bsum .hb-bc2 { order: 3; grid-column: 1 / -1; } .hb-bsum .hb-bc4 { order: 4; grid-column: 1 / -1; border-top: 1px solid #b9cde8 !important; padding-top: 3px; }
 .hb-bsum .hb-bc2 .hb-bdw { margin-inline-start: auto; } .hb-bsum .hb-bc b { overflow: visible; }
+.hb-bsum .hb-bc3 { justify-content: flex-start; gap: 10px; }
