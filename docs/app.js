@@ -1458,6 +1458,8 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     var bar = document.querySelector(".hb-drbar"); if (!bar) return;
     var hb = document.createElement("button"); hb.type = "button"; hb.className = "hb-hmb"; hb.setAttribute("data-hb-hmb", ""); hb.setAttribute("aria-label", "منو"); hb.textContent = "☰"; (document.querySelector(".hb-staffhdr") || bar).insertBefore(hb, (document.querySelector(".hb-staffhdr") || bar).firstChild);
     var SOON = [["🧪", "آزمایشگاه"], ["🩻", "تصویربرداری"], ["💊", "داروخانه"], ["📦", "انبار"]];
+    function fitM() { var m = document.querySelector("[data-hb-mnu]"), vv = window.visualViewport; if (!m || !vv) return; m.style.inset = "auto"; m.style.left = vv.offsetLeft + "px"; m.style.top = vv.offsetTop + "px"; m.style.width = vv.width + "px"; m.style.height = vv.height + "px"; }
+    if (window.visualViewport) { window.visualViewport.addEventListener("resize", fitM); window.visualViewport.addEventListener("scroll", fitM); }
     function closeM() { var m = document.querySelector("[data-hb-mnu]"); if (m) m.remove(); document.documentElement.classList.remove("hb-mnuopen"); }
     function openM() {
       closeM(); var seen = {}, items = "";
@@ -1467,7 +1469,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       var m = document.createElement("div"); m.className = "hb-mnu"; m.setAttribute("data-hb-mnu", "");
       m.innerHTML = '<div class="hb-mnuov" data-hb-mclose></div><div class="hb-mnup"><div class="hb-mnuh"><b>منو</b><button type="button" class="hb-mx" data-hb-mclose aria-label="بستن">✕</button></div><div class="hb-mnus">بخش‌ها</div>' + items + '<div class="hb-mnus">به‌زودی</div>' + soon
         + '<div class="hb-mnus">حساب</div><button type="button" class="hb-mi" data-hb-mprof>👤 پروفایل <span class="hb-arw">▾</span></button><div class="hb-mprof" data-hb-mprofbox hidden><div><span>سمت</span><b>' + (SECP ? "منشی پذیرش" : "دکتر") + "</b></div><div><span>نام</span><b>" + (SECP ? "پذیرش کلینیک" : "دکتر نیلوفر مساوات") + "</b></div><div><span>کلینیک</span><b>دکتر نیلوفر مساوات · دامپزشک</b></div><div><span>امروز</span><b>" + esc(wdOf(isoNow()) + " " + jLabel(isoNow())) + "</b></div>" + (ver ? "<div><span>نسخه</span><b dir=\"ltr\">" + esc(ver) + "</b></div>" : "") + '<button type="button" class="btn small ghost hb-danger" data-hb-mout>خروج از حساب</button></div></div>';
-      document.body.appendChild(m); document.documentElement.classList.add("hb-mnuopen");
+      document.body.appendChild(m); document.documentElement.classList.add("hb-mnuopen"); fitM();
     }
     document.addEventListener("click", function (e) {
       var t = e.target; if (!t.closest) return;

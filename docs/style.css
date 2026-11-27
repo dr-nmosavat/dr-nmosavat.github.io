@@ -2660,3 +2660,5 @@ html.hb-billmode .hb-emptywarn, .hb-bill .hb-emptywarn { padding: 3px 8px; font-
 html.hb-mnuopen body { overflow: hidden; }
 .hb-drbar { position: relative; } .hb-hmb { position: absolute; left: 6px; bottom: 6px; width: 38px; height: 38px; }
 .hb-drbar { position: static; } .hb-staffhdr { position: relative; } .hb-hmb { top: 10px; bottom: auto; left: 12px; }
+/* iOS: جلوگیری از زوم خودکار هنگام لمس فیلدها (باعث بریده‌شدن منو و صفحه می‌شد) */
+@supports (-webkit-touch-callout: none) { input[type="text"], input[type="search"], input[type="tel"], input[type="number"], input:not([type]), textarea, select { font-size: 16px !important; } }
