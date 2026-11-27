@@ -2629,3 +2629,4 @@ html.hb-billmode .hb-emptywarn, .hb-bill .hb-emptywarn { padding: 3px 8px; font-
 .hb-bact .hb-bnb { min-height: 34px; font-size: 12px; padding: 2px 10px; }
 @media (max-width: 559px) { .hb-bact { grid-template-columns: 1fr 1fr 1fr; } .hb-bag { display: contents; } .hb-bact .btn.primary { grid-column: 1 / -1; grid-row: 1; justify-self: center; width: 70%; } .hb-bact .btn.ghost { width: 100%; } .hb-bact > [data-hb-blater] { justify-self: stretch; } }
 @media (min-width: 560px) { .hb-bsum .hb-bc4 { border-top: 0; } }
+.hb-bdm1 { min-width: 92px; font-size: 12.5px; white-space: nowrap; } .hb-bdm1 i { font-style: normal; opacity: .55; font-weight: 600; } .hb-bdm1 i.on { opacity: 1; font-weight: 900; text-decoration: underline; text-underline-offset: 3px; }
