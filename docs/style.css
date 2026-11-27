@@ -2670,3 +2670,5 @@ html.hb-mnuopen body { overflow: hidden; }
 /* صفحهٔ اول: فقط مراجعین؛ بقیهٔ بخش‌ها از منوی ☰ */
 html .hb-drnav [data-hb-grp="book"], html .hb-drnav [data-hb-grp="more"],
 html .hb-drnav [data-hb-dtab="list"], html .hb-drnav [data-hb-dtab="req"], html .hb-drnav [data-hb-dtab="code"], html .hb-drnav [data-hb-dtab="adopt"], html .hb-drnav [data-hb-dtab="svc"], html .hb-drnav [data-hb-dtab="rep"], html .hb-drnav [data-hb-dtab="new"] { display: none !important; }
+/* دکمه‌های امروز/همه بیماران/نوبت‌ها فقط داخل بخش مراجعین */
+[data-dview]:not([data-dview="today"]):not([data-dview="pt"]):not([data-dview="appt"]) .hb-navpanel { display: none !important; }
