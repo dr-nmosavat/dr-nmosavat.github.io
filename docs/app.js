@@ -1457,17 +1457,27 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
     if (!DRPAGE) return;
     var bar = document.querySelector(".hb-drbar"); if (!bar) return;
     var hb = document.createElement("button"); hb.type = "button"; hb.className = "hb-hmb"; hb.setAttribute("data-hb-hmb", ""); hb.setAttribute("aria-label", "منو"); hb.textContent = "☰"; (document.querySelector(".hb-staffhdr") || bar).insertBefore(hb, (document.querySelector(".hb-staffhdr") || bar).firstChild);
-    var SOON = [["🧪", "آزمایشگاه"], ["🩻", "تصویربرداری"], ["💊", "داروخانه"], ["📦", "انبار"]];
+    var MG = [["🩺", "مراجعین", ["today", "pt", "appt"]], ["📒", "شناسنامه‌ها", ["list", "req", "code", "new", "adopt"]], ["💰", "مالی", ["rep", "svc"]]];
+    var MS = [["🔬", "پاراکلینیک", [["🧪", "آزمایشگاه"], ["🩻", "تصویربرداری"]]], ["💊", "دارو و تجهیزات", [["💊", "داروخانه"], ["📦", "انبار"]]]];
     function fitM() { var m = document.querySelector("[data-hb-mnu]"), vv = window.visualViewport; if (!m || !vv) return; m.style.right = "auto"; m.style.bottom = "auto"; m.style.left = vv.offsetLeft + "px"; m.style.top = vv.offsetTop + "px"; m.style.width = vv.width + "px"; m.style.height = vv.height + "px"; }
     if (window.visualViewport) { window.visualViewport.addEventListener("resize", fitM); window.visualViewport.addEventListener("scroll", fitM); }
     function closeM() { var m = document.querySelector("[data-hb-mnu]"); if (m) m.remove(); document.documentElement.classList.remove("hb-mnuopen"); }
     function openM() {
-      closeM(); var seen = {}, items = "";
-      [].forEach.call(root.querySelectorAll("[data-hb-dtab]"), function (b) { var v = b.getAttribute("data-hb-dtab"); if (seen[v]) return; seen[v] = 1; var tx = (b.textContent || "").replace(/\s+/g, " ").trim(); if (tx) items += '<button type="button" class="hb-mi" data-hb-mgo="' + v + '">' + esc(tx) + "</button>"; });
-      var soon = SOON.map(function (x) { return '<button type="button" class="hb-mi hb-misoon" data-hb-msoon="' + x[1] + '"><span>' + x[0] + " " + x[1] + "</span><small>به‌زودی</small></button>"; }).join("");
+      closeM(); var tx = {}, cur = root.getAttribute("data-dview") || "";
+      [].forEach.call(root.querySelectorAll("[data-hb-dtab]"), function (b) { var v = b.getAttribute("data-hb-dtab"), t = (b.textContent || "").replace(/\s+/g, " ").trim(); if (t && !tx[v]) tx[v] = t; });
+      var items = "";
+      MG.forEach(function (g, gi) {
+        var av = g[2].filter(function (k) { return tx[k]; }); if (!av.length) return;
+        if (av.length === 1) { items += '<button type="button" class="hb-mi' + (cur === av[0] ? " on" : "") + '" data-hb-mgo="' + av[0] + '">' + esc(tx[av[0]]) + "</button>"; return; }
+        var open = av.indexOf(cur) > -1;
+        items += '<button type="button" class="hb-mi hb-mg' + (open ? " open" : "") + '" data-hb-mg="' + gi + '"><span>' + g[0] + " " + g[1] + '</span><span class="hb-arw">' + (open ? "▴" : "▾") + '</span></button><div class="hb-msub" data-hb-msub="' + gi + '"' + (open ? "" : " hidden") + ">" + av.map(function (k) { return '<button type="button" class="hb-mi hb-mis' + (cur === k ? " on" : "") + '" data-hb-mgo="' + k + '">' + esc(tx[k]) + "</button>"; }).join("") + "</div>";
+      });
+      MS.forEach(function (g, gi) {
+        items += '<button type="button" class="hb-mi hb-mg hb-misoon" data-hb-mg="s' + gi + '"><span>' + g[0] + " " + g[1] + '</span><span><small>به‌زودی</small> <span class="hb-arw">▾</span></span></button><div class="hb-msub" data-hb-msub="s' + gi + '" hidden>' + g[2].map(function (x) { return '<button type="button" class="hb-mi hb-mis hb-misoon" data-hb-msoon="' + x[1] + '"><span>' + x[0] + " " + x[1] + "</span><small>به‌زودی</small></button>"; }).join("") + "</div>";
+      });
       var ver = (document.querySelector(".hb-ver") || {}).textContent || "";
       var m = document.createElement("div"); m.className = "hb-mnu"; m.setAttribute("data-hb-mnu", "");
-      m.innerHTML = '<div class="hb-mnuov" data-hb-mclose></div><div class="hb-mnup"><div class="hb-mnuh"><b>منو</b><button type="button" class="hb-mx" data-hb-mclose aria-label="بستن">✕</button></div><div class="hb-mnus">بخش‌ها</div>' + items + '<div class="hb-mnus">به‌زودی</div>' + soon
+      m.innerHTML = '<div class="hb-mnuov" data-hb-mclose></div><div class="hb-mnup"><div class="hb-mnuh"><b>منو</b><button type="button" class="hb-mx" data-hb-mclose aria-label="بستن">✕</button></div><div class="hb-mnus">بخش‌ها</div>' + items
         + '<div class="hb-mnus">حساب</div><button type="button" class="hb-mi" data-hb-mprof>👤 پروفایل <span class="hb-arw">▾</span></button><div class="hb-mprof" data-hb-mprofbox hidden><div><span>سمت</span><b>' + (SECP ? "منشی پذیرش" : "دکتر") + "</b></div><div><span>نام</span><b>" + (SECP ? "پذیرش کلینیک" : "دکتر نیلوفر مساوات") + "</b></div><div><span>کلینیک</span><b>دکتر نیلوفر مساوات · دامپزشک</b></div><div><span>امروز</span><b>" + esc(wdOf(isoNow()) + " " + jLabel(isoNow())) + "</b></div>" + (ver ? "<div><span>نسخه</span><b dir=\"ltr\">" + esc(ver) + "</b></div>" : "") + '<button type="button" class="btn small ghost hb-danger" data-hb-mout>خروج از حساب</button></div></div>';
       document.body.appendChild(m); document.documentElement.classList.add("hb-mnuopen"); fitM();
     }
@@ -1476,6 +1486,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
       if (t.closest("[data-hb-hmb]")) { e.preventDefault(); if (document.querySelector("[data-hb-mnu]")) closeM(); else openM(); return; }
       if (!t.closest("[data-hb-mnu]")) return;
       if (t.closest("[data-hb-mclose]")) { closeM(); return; }
+      var gb = t.closest("[data-hb-mg]"); if (gb) { var id = gb.getAttribute("data-hb-mg"), sub = document.querySelector('[data-hb-msub="' + id + '"]'), was = sub && !sub.hidden; [].forEach.call(document.querySelectorAll("[data-hb-msub]"), function (x) { x.hidden = true; }); [].forEach.call(document.querySelectorAll("[data-hb-mg]"), function (x) { x.classList.remove("open"); var w = x.querySelector(".hb-arw"); if (w) w.textContent = "▾"; }); if (sub && !was) { sub.hidden = false; gb.classList.add("open"); var aw = gb.querySelector(".hb-arw"); if (aw) aw.textContent = "▴"; } return; }
       var b; if ((b = t.closest("[data-hb-mgo]"))) { var tb = root.querySelector('[data-hb-dtab="' + b.getAttribute("data-hb-mgo") + '"]'); closeM(); if (tb) tb.click(); try { window.scrollTo(0, 0); } catch (er) {} return; }
       if ((b = t.closest("[data-hb-msoon]"))) { toast("🔜 " + b.getAttribute("data-hb-msoon") + " به‌زودی اضافه می‌شود.", 2600); return; }
       if (t.closest("[data-hb-mprof]")) { var pb = document.querySelector("[data-hb-mprofbox]"); if (pb) pb.hidden = !pb.hidden; return; }
