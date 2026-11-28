@@ -6,14 +6,14 @@ var INFO = {
   instagram: "dr.niloofarmosavat",
   bale: "dr_niloofar_mosavat",
   hours: "۱۱:۰۰ تا ۲۱:۰۰",
-  address: "ونک، شیخ بهایی شمالی، برج مرمر، طبقه اول",
+  address: "",
   homeVisit: "منظریه، اختیاریه، پاسداران، بلوار کاوه، قیطریه (با هماهنگی قبلی)",
-  neshan: "https://nshn.ir/d6sbvrTDWxOVnZ",
+  neshan: "",
   balad: "",
   wheelApi: "https://script.google.com/macros/s/AKfycbzo2VYI-uF9SoyoMkgMbCnM5s5-zOvsPJDp4Ea9C2GHmeBEsJMoVhlbccVgtnpqx_TM/exec",   // آدرس Apps Script چرخ؛ خالی یعنی چرخ محلی
   sheetApi: "https://script.google.com/macros/s/AKfycbzo2VYI-uF9SoyoMkgMbCnM5s5-zOvsPJDp4Ea9C2GHmeBEsJMoVhlbccVgtnpqx_TM/exec"    // همان آدرس برای همگام‌سازی شناسنامه؛ خالی یعنی فقط روی خود گوشی
 };
-var mapQuery = "مرکز تخصصی دامپزشکی ونک، شیخ بهایی شمالی، برج مرمر";
+var mapQuery = "مرکز تخصصی دامپزشکی ونک";
 var gmaps = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(mapQuery);
 var waText = encodeURIComponent("سلام، برای گرفتن نوبت پیام می‌دم.");
 var waLink = INFO.whatsapp ? "https://wa.me/" + INFO.whatsapp + "?text=" + waText : "";
@@ -29,7 +29,7 @@ if (host) {
     { label: "نشانی", key: "address" },
     { label: "ساعت کاری کلینیک", key: "hours" },
     { label: "ویزیت تخصصی در منزل یا محل", key: "homeVisit" },
-    { label: "مسیریابی", key: "gmaps", value: gmaps, link: function (v) { return v; }, text: function () { return "باز کردن در گوگل مپ"; } },
+    { label: "مسیریابی", key: "gmaps", value: "", link: function (v) { return v; }, text: function () { return "باز کردن در گوگل مپ"; } },
     { label: "نشان", key: "neshan", link: function (v) { return v; }, text: function () { return "مسیریابی در نشان"; } },
     { label: "بلد", key: "balad", link: function (v) { return v; }, text: function () { return "مسیریابی در بلد"; } },
     { label: "تلفن", key: "phone", link: function (v) { return "tel:" + v; } }
