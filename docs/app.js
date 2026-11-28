@@ -5,7 +5,7 @@ var INFO = {
   whatsapp: "989057392125",
   instagram: "dr.niloofarmosavat",
   bale: "dr_niloofar_mosavat",
-  hours: "۱۱:۰۰ تا ۲۱:۰۰",
+  hours: "",
   address: "",
   homeVisit: "منظریه، اختیاریه، پاسداران، بلوار کاوه، قیطریه (با هماهنگی قبلی)",
   neshan: "",
@@ -112,8 +112,8 @@ var WHEN = (function () {
   }
   function hintFor(key) {
     var r = typeof SCHEDULE !== "undefined" ? SCHEDULE.inperson[key] : null;
-    if (Array.isArray(r) && r.length) return "این روز دکتر در کلینیک حضور دارد: از " + t(r[0][0]) + " تا " + t(r[r.length - 1][1]) + ".";
-    return "این روز ویزیت فقط با وقت قبلی (حضوری یا آنلاین) انجام می‌شود.";
+    if (Array.isArray(r) && r.length) return "زمان نهایی را دکتر در پیام تأیید می‌کند.";
+    return "زمان نهایی را دکتر در پیام تأیید می‌کند.";
   }
   function link(dateSel, hourSel, hintEl) {
     if (!dateSel || !hourSel) return;
@@ -461,10 +461,10 @@ var DAY_NAME = { sat: "شنبه", sun: "یکشنبه", mon: "دوشنبه", tue:
     var dateText = [parts.weekday, parts.day, parts.month, parts.year].filter(Boolean).join(" ");
     cards.forEach(function (c) {
       c.querySelector(".tc-date").textContent = dateText;
-      c.querySelector(".tc-in").textContent = inText(inV, true);
+      var ci = c.querySelector(".tc-in"); if (ci) ci.textContent = inText(inV, true);
       c.querySelector(".tc-on").textContent = onText(onV, true);
       var open = isOpen(inV, n.h);
-      var st = c.querySelector(".tc-state");
+      var st = c.querySelector(".tc-state") || document.createElement("span");
       if (open) st.textContent = "اکنون در کلینیک هستند";
       else if (Array.isArray(inV)) st.textContent = "اکنون خارج از شیفت";
       else st.textContent = "امروز با وقت قبلی";
@@ -513,8 +513,7 @@ var DAY_NAME = { sat: "شنبه", sun: "یکشنبه", mon: "دوشنبه", tue:
       clinic = (open ? "اکنون در کلینیک هستند · " : "ویزیت حضوری امروز ") + span;
     } else clinic = "امروز ویزیت حضوری فقط با وقت قبلی";
     return [
-      "امروز " + [p.weekday, p.day, p.month, p.year].filter(Boolean).join(" ") + " ساعت " + nf.format(parseInt(q.hour, 10) % 24) + ":" + nf.format(parseInt(q.minute, 10)),
-      clinic
+      "امروز " + [p.weekday, p.day, p.month, p.year].filter(Boolean).join(" ") + " ساعت " + nf.format(parseInt(q.hour, 10) % 24) + ":" + nf.format(parseInt(q.minute, 10))
     ];
   }
   function group(list) {
