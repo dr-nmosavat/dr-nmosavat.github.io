@@ -1,6 +1,6 @@
 // اطلاعات تماس. مقدار خالی یعنی آن ردیف نمایش داده نمی‌شود.
 var INFO = {
-  clinic: "مرکز تخصصی دامپزشکی ونک",
+  clinic: "مطب دکتر مساوات",
   phone: "",
   whatsapp: "989057392125",
   instagram: "dr.niloofarmosavat",
@@ -13,7 +13,7 @@ var INFO = {
   wheelApi: "https://script.google.com/macros/s/AKfycbzo2VYI-uF9SoyoMkgMbCnM5s5-zOvsPJDp4Ea9C2GHmeBEsJMoVhlbccVgtnpqx_TM/exec",   // آدرس Apps Script چرخ؛ خالی یعنی چرخ محلی
   sheetApi: "https://script.google.com/macros/s/AKfycbzo2VYI-uF9SoyoMkgMbCnM5s5-zOvsPJDp4Ea9C2GHmeBEsJMoVhlbccVgtnpqx_TM/exec"    // همان آدرس برای همگام‌سازی شناسنامه؛ خالی یعنی فقط روی خود گوشی
 };
-var mapQuery = "مرکز تخصصی دامپزشکی ونک";
+var mapQuery = "مطب دکتر مساوات";
 var gmaps = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(mapQuery);
 var waText = encodeURIComponent("سلام، برای گرفتن نوبت پیام می‌دم.");
 var waLink = INFO.whatsapp ? "https://wa.me/" + INFO.whatsapp + "?text=" + waText : "";
@@ -1059,7 +1059,7 @@ function toolFa(n) { return String(n).replace(/\d/g, function (d) { return "۰۱
   try { if (window.navigator.standalone || (window.matchMedia && matchMedia("(display-mode: standalone)").matches)) document.documentElement.classList.add("hb-standalone"); } catch (e) {}
   var ISDRP = document.body.classList.contains("hb-drpage"), KEY = ISDRP ? "dm_hb_drdb" : "dm_hb", TMPKEY = "dm_hb_tmp";
   var MON = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"];
-  var PLACES = ["مرکز دامپزشکی ونک (دکتر مساوات)", "کلینیک ژیوان، تجریش", "کلینیک ژیوان، هروی", "تهران پت کلینیک، تهرانپارس", "ویزیت در منزل"];
+  var PLACES = ["مطب دکتر مساوات", "کلینیک ژیوان، تجریش", "کلینیک ژیوان، هروی", "تهران پت کلینیک، تهرانپارس", "ویزیت در منزل"];
   var DOG_VT = ["۴گانه سگ", "۵گانه سگ", "۶گانه سگ", "۷گانه سگ", "۸گانه سگ", "۹گانه سگ", "۱۰گانه سگ", "هاری", "بوردتلا (سرفهٔ کنل)", "لپتوسپیروز", "کرونا ویروس سگ"];
   var CAT_VT = ["۳گانه گربه", "۴گانه گربه", "هاری"];
   var CAT_VT_LEGACY = ["۳گانه گربه (FVRCP)", "۴گانه گربه", "لوسمی گربه (FeLV)", "هاری", "کلامیدیا گربه"];   // فقط برای سازگاری لینک‌های قدیمی
